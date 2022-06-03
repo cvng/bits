@@ -1,0 +1,19 @@
+# https://www.graphql-config.com/docs/user/user-usage
+
+schema: "docs/schema.gql"
+documents: "packages/**/*.gql"
+
+extensions:
+  codegen:
+    config:
+      declarationKind: "interface"
+      scalars:
+        uuid: "string"
+      strictScalars: true
+
+    generates:
+      packages/sdk/sdk.ts:
+        plugins:
+          - typescript
+          - typescript-operations
+          - typescript-graphql-request

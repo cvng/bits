@@ -1,0 +1,19 @@
+{
+  "tasks": {
+    "run": "deno run --allow-read --allow-env --allow-net --watch packages/http/main.ts",
+    "check": "deno check packages/http/main.ts",
+    "lint": "deno lint",
+    "fmt": "deno fmt",
+    "generate": "tasks/generate.sh",
+    "playground": "tasks/playground.sh",
+    "dbdiff": "tasks/dbdiff.sh",
+    "sqlfix": "tasks/sqlfix.sh"
+  },
+  "lint": {
+    "files": { "exclude": ["node_modules"] }
+  },
+  "fmt": {
+    "files": { "exclude": ["node_modules"] }
+  },
+  "importMap": "./import_map.json"
+}

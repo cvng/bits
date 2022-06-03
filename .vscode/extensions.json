@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "redhat.vscode-yaml",
+    "usernamehw.errorlens",
+    "denoland.vscode-deno",
+    "graphql.vscode-graphql",
+    "dorzey.vscode-sqlfluff"
+  ]
+}

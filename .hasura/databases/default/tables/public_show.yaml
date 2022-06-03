@@ -1,0 +1,20 @@
+table:
+  schema: public
+  name: show
+insert_permissions:
+  - role: user
+    permission:
+      check:
+        name:
+          _eq: X-Hasura-User-Id
+      columns: []
+      backend_only: false
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - name
+        - id
+      filter:
+        name:
+          _eq: X-Hasura-User-Id

@@ -1,0 +1,2 @@
+git+https://github.com/sqlfluff/sqlfluff.git@main#egg=sqlfluff
+git+https://github.com/djrobstep/migra.git@master#egg=migra[pg]
