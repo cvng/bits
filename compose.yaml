@@ -16,7 +16,7 @@ services:
 
   # https://hasura.io/docs/latest/graphql/core/deployment/graphql-engine-flags/reference
   graphql-engine:
-    image: hasura/graphql-engine:v2.6.1
+    image: hasura/graphql-engine:v2.8.0
     ports:
     - "8080:8080"
     depends_on:
@@ -28,6 +28,8 @@ services:
       HASURA_GRAPHQL_DEV_MODE: "true"
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
       HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
+      HASURA_GRAPHQL_EXPERIMENTAL_FEATURES: naming_convention
+      HASURA_GRAPHQL_DEFAULT_NAMING_CONVENTION: graphql-default
       WEBHOOK_URL: http://host.docker.internal:3000
 
 volumes:
