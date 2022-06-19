@@ -1,9 +1,8 @@
 {
   "imports": {
     "bits/": "./packages/",
-    "dotenv/": "https://deno.land/x/dotenv@v3.2.0/",
     "graphql_request/": "https://deno.land/x/graphql_request@v4.1.0/",
     "inflector/": "https://deno.land/x/inflector@0.1.0/",
-    "std/": "https://deno.land/std@0.139.0/"
+    "std/": "https://deno.land/std@0.144.0/"
   }
 }

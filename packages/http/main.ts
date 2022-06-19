@@ -2,8 +2,8 @@ import { serve } from "std/http/server.ts";
 import { loadConfig } from "./config.ts";
 import { createHandler } from "./handler.ts";
 
-function main() {
-  const config = loadConfig();
+async function main() {
+  const config = await loadConfig();
 
   const handler = createHandler(config);
 

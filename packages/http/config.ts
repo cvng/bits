@@ -1,4 +1,4 @@
-import * as dotenv from "dotenv/mod.ts";
+import * as dotenv from "std/dotenv/mod.ts";
 
 export interface Config {
   graphql: GraphQLConfig;
@@ -14,9 +14,9 @@ export interface ServerConfig {
   port: number;
 }
 
-export function loadConfig(): Config {
-  // https://deno.land/x/dotenv@v3.2.0#safe-mode
-  const env = dotenv.config({ safe: true });
+export async function loadConfig(): Promise<Config> {
+  // https://deno.land/std@0.144.0/dotenv#safe-mode
+  const env = await dotenv.config({ safe: true });
 
   const config: Config = {
     graphql: {
