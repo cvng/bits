@@ -4,6 +4,7 @@
     "@graphql-codegen/typescript": "2.4.11",
     "@graphql-codegen/typescript-graphql-request": "4.4.8",
     "@graphql-codegen/typescript-operations": "2.4.0",
-    "graphqurl": "1.0.1"
+    "graphqurl": "1.0.1",
+    "hasura-cli": "2.8.0"
   }
 }

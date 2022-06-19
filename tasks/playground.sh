@@ -1,1 +1,1 @@
-hasura console --no-browser --skip-update-check
+npx hasura console --no-browser --skip-update-check

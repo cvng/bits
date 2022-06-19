@@ -1,17 +1,17 @@
 python3 --version
-# Python 3.9.12
+# Python 3.8.9
 
 docker --version
-# Docker version 20.10.13, build a224086
+# Docker version 20.10.16, build aa7e414
 
 deno --version
-# deno 1.21.1 (release, x86_64-apple-darwin)
-# v8 10.0.139.17
+# deno 1.22.2 (release, aarch64-apple-darwin)
+# v8 10.3.174.6
 # typescript 4.6.2
 
 node --version
-# v16.14.0
+# v16.15.1
 
-hasura version --skip-update-check
-# INFO hasura cli                                    version=v2.6.1
-# INFO hasura graphql engine                         endpoint="http://localhost:8080" version=v2.6.1
+npx hasura version --skip-update-check
+# INFO hasura cli                                    version=v2.8.0
+# INFO hasura graphql engine                         endpoint="http://localhost:8080" version=v2.8.0
