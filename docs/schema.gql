@@ -13,19 +13,150 @@ directive @cached(
   refresh: Boolean! = false
 ) on QUERY
 
-input CreateShowInput {
+"""
+columns and relationships of "show"
+"""
+type Show {
+  id: uuid!
   name: String!
+  namingConvention: String
 }
 
-type CreateShowPayload {
-  id: ID
-  show: show
+"""
+aggregated selection of "show"
+"""
+type ShowAggregate {
+  aggregate: ShowAggregateFields
+  nodes: [Show!]!
+}
+
+"""
+aggregate fields of "show"
+"""
+type ShowAggregateFields {
+  count(columns: [ShowSelectColumn!], distinct: Boolean): Int!
+  max: ShowMaxFields
+  min: ShowMinFields
+}
+
+"""
+Boolean expression to filter rows from the table "show". All fields are combined with a logical 'AND'.
+"""
+input ShowBoolExp {
+  _and: [ShowBoolExp!]
+  _not: ShowBoolExp
+  _or: [ShowBoolExp!]
+  id: UuidComparisonExp
+  name: StringComparisonExp
+  namingConvention: StringComparisonExp
+}
+
+"""
+unique or primary key constraints on table "show"
+"""
+enum ShowConstraint {
+  """
+  unique or primary key constraint on columns "id"
+  """
+  show_pkey
+}
+
+"""
+input type for inserting data into table "show"
+"""
+input ShowInsertInput {
+  id: uuid
+  name: String
+  namingConvention: String
+}
+
+"""aggregate max on columns"""
+type ShowMaxFields {
+  id: uuid
+  name: String
+  namingConvention: String
+}
+
+"""aggregate min on columns"""
+type ShowMinFields {
+  id: uuid
+  name: String
+  namingConvention: String
+}
+
+"""
+response of any mutation on the table "show"
+"""
+type ShowMutationResponse {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [Show!]!
+}
+
+"""
+on_conflict condition type for table "show"
+"""
+input ShowOnConflict {
+  constraint: ShowConstraint!
+  update_columns: [ShowUpdateColumn!]! = []
+  where: ShowBoolExp
+}
+
+"""Ordering options when selecting data from "show"."""
+input ShowOrderBy {
+  id: orderBy
+  name: orderBy
+  namingConvention: orderBy
+}
+
+"""primary key columns input for table: show"""
+input ShowPkColumnsInput {
+  id: uuid!
+}
+
+"""
+select columns of table "show"
+"""
+enum ShowSelectColumn {
+  """column name"""
+  id
+
+  """column name"""
+  name
+
+  """column name"""
+  namingConvention
+}
+
+"""
+input type for updating data in table "show"
+"""
+input ShowSetInput {
+  id: uuid
+  name: String
+  namingConvention: String
+}
+
+"""
+update columns of table "show"
+"""
+enum ShowUpdateColumn {
+  """column name"""
+  id
+
+  """column name"""
+  name
+
+  """column name"""
+  namingConvention
 }
 
 """
 Boolean expression to compare columns of type "String". All fields are combined with logical 'AND'.
 """
-input String_comparison_exp {
+input StringComparisonExp {
   _eq: String
   _gt: String
   _gte: String
@@ -38,7 +169,7 @@ input String_comparison_exp {
   does the column match the given POSIX regular expression, case insensitive
   """
   _iregex: String
-  _is_null: Boolean
+  _isNull: Boolean
 
   """does the column match the given pattern"""
   _like: String
@@ -75,114 +206,108 @@ input String_comparison_exp {
   _similar: String
 }
 
+"""
+Boolean expression to compare columns of type "uuid". All fields are combined with logical 'AND'.
+"""
+input UuidComparisonExp {
+  _cast: uuid_cast_exp
+  _eq: uuid
+  _gt: uuid
+  _gte: uuid
+  _in: [uuid!]
+  _isNull: Boolean
+  _lt: uuid
+  _lte: uuid
+  _neq: uuid
+  _nin: [uuid!]
+}
+
 """mutation root"""
 type mutation_root {
-  create_show(input: CreateShowInput!): CreateShowPayload!
-
   """
   delete data from the table: "show"
   """
-  delete_show(
+  deleteShow(
     """filter the rows which have to be deleted"""
-    where: show_bool_exp!
-  ): show_mutation_response
+    where: ShowBoolExp!
+  ): ShowMutationResponse
 
   """
   delete single row from the table: "show"
   """
-  delete_show_by_pk(id: uuid!): show
+  deleteShowByPk(id: uuid!): Show
 
   """
   insert data into the table: "show"
   """
-  insert_show(
+  insertShow(
     """the rows to be inserted"""
-    objects: [show_insert_input!]!
+    objects: [ShowInsertInput!]!
 
     """upsert condition"""
-    on_conflict: show_on_conflict
-  ): show_mutation_response
+    onConflict: ShowOnConflict
+  ): ShowMutationResponse
 
   """
   insert a single row into the table: "show"
   """
-  insert_show_one(
+  insertShowOne(
     """the row to be inserted"""
-    object: show_insert_input!
+    object: ShowInsertInput!
 
     """upsert condition"""
-    on_conflict: show_on_conflict
-  ): show
+    onConflict: ShowOnConflict
+  ): Show
 
   """
   update data of the table: "show"
   """
-  update_show(
+  updateShow(
     """sets the columns of the filtered rows to the given values"""
-    _set: show_set_input
+    _set: ShowSetInput
 
     """filter the rows which have to be updated"""
-    where: show_bool_exp!
-  ): show_mutation_response
+    where: ShowBoolExp!
+  ): ShowMutationResponse
 
   """
   update single row of the table: "show"
   """
-  update_show_by_pk(
+  updateShowByPk(
     """sets the columns of the filtered rows to the given values"""
-    _set: show_set_input
-    pk_columns: show_pk_columns_input!
-  ): show
+    _set: ShowSetInput
+    pk_columns: ShowPkColumnsInput!
+  ): Show
 }
 
 """column ordering options"""
-enum order_by {
+enum orderBy {
   """in ascending order, nulls last"""
   asc
 
   """in ascending order, nulls first"""
-  asc_nulls_first
+  ascNullsFirst
 
   """in ascending order, nulls last"""
-  asc_nulls_last
+  ascNullsLast
 
   """in descending order, nulls first"""
   desc
 
   """in descending order, nulls first"""
-  desc_nulls_first
+  descNullsFirst
 
   """in descending order, nulls last"""
-  desc_nulls_last
+  descNullsLast
 }
 
 type query_root {
   """
-  fetch data from the table: "show"
-  """
-  show(
-    """distinct select on columns"""
-    distinct_on: [show_select_column!]
-
-    """limit the number of rows returned"""
-    limit: Int
-
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-
-    """sort the rows by one or more columns"""
-    order_by: [show_order_by!]
-
-    """filter the rows returned"""
-    where: show_bool_exp
-  ): [show!]!
-
-  """
   fetch aggregated fields from the table: "show"
   """
-  show_aggregate(
+  showAggregate(
     """distinct select on columns"""
-    distinct_on: [show_select_column!]
+    distinctOn: [ShowSelectColumn!]
 
     """limit the number of rows returned"""
     limit: Int
@@ -191,168 +316,43 @@ type query_root {
     offset: Int
 
     """sort the rows by one or more columns"""
-    order_by: [show_order_by!]
+    orderBy: [ShowOrderBy!]
 
     """filter the rows returned"""
-    where: show_bool_exp
-  ): show_aggregate!
+    where: ShowBoolExp
+  ): ShowAggregate!
 
   """fetch data from the table: "show" using primary key columns"""
-  show_by_pk(id: uuid!): show
-}
+  showByPk(id: uuid!): Show
 
-"""
-columns and relationships of "show"
-"""
-type show {
-  id: uuid!
-  name: String!
-}
+  """
+  fetch data from the table: "show"
+  """
+  shows(
+    """distinct select on columns"""
+    distinctOn: [ShowSelectColumn!]
 
-"""
-aggregated selection of "show"
-"""
-type show_aggregate {
-  aggregate: show_aggregate_fields
-  nodes: [show!]!
-}
+    """limit the number of rows returned"""
+    limit: Int
 
-"""
-aggregate fields of "show"
-"""
-type show_aggregate_fields {
-  count(columns: [show_select_column!], distinct: Boolean): Int!
-  max: show_max_fields
-  min: show_min_fields
-}
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
 
-"""
-Boolean expression to filter rows from the table "show". All fields are combined with a logical 'AND'.
-"""
-input show_bool_exp {
-  _and: [show_bool_exp!]
-  _not: show_bool_exp
-  _or: [show_bool_exp!]
-  id: uuid_comparison_exp
-  name: String_comparison_exp
-}
+    """sort the rows by one or more columns"""
+    orderBy: [ShowOrderBy!]
 
-"""
-unique or primary key constraints on table "show"
-"""
-enum show_constraint {
-  """unique or primary key constraint"""
-  show_pkey
-}
-
-"""
-input type for inserting data into table "show"
-"""
-input show_insert_input {
-  id: uuid
-  name: String
-}
-
-"""aggregate max on columns"""
-type show_max_fields {
-  id: uuid
-  name: String
-}
-
-"""aggregate min on columns"""
-type show_min_fields {
-  id: uuid
-  name: String
-}
-
-"""
-response of any mutation on the table "show"
-"""
-type show_mutation_response {
-  """number of rows affected by the mutation"""
-  affected_rows: Int!
-
-  """data from the rows affected by the mutation"""
-  returning: [show!]!
-}
-
-"""
-on_conflict condition type for table "show"
-"""
-input show_on_conflict {
-  constraint: show_constraint!
-  update_columns: [show_update_column!]! = []
-  where: show_bool_exp
-}
-
-"""Ordering options when selecting data from "show"."""
-input show_order_by {
-  id: order_by
-  name: order_by
-}
-
-"""primary key columns input for table: show"""
-input show_pk_columns_input {
-  id: uuid!
-}
-
-"""
-select columns of table "show"
-"""
-enum show_select_column {
-  """column name"""
-  id
-
-  """column name"""
-  name
-}
-
-"""
-input type for updating data in table "show"
-"""
-input show_set_input {
-  id: uuid
-  name: String
-}
-
-"""
-update columns of table "show"
-"""
-enum show_update_column {
-  """column name"""
-  id
-
-  """column name"""
-  name
+    """filter the rows returned"""
+    where: ShowBoolExp
+  ): [Show!]!
 }
 
 type subscription_root {
   """
-  fetch data from the table: "show"
-  """
-  show(
-    """distinct select on columns"""
-    distinct_on: [show_select_column!]
-
-    """limit the number of rows returned"""
-    limit: Int
-
-    """skip the first n rows. Use only with order_by"""
-    offset: Int
-
-    """sort the rows by one or more columns"""
-    order_by: [show_order_by!]
-
-    """filter the rows returned"""
-    where: show_bool_exp
-  ): [show!]!
-
-  """
   fetch aggregated fields from the table: "show"
   """
-  show_aggregate(
+  showAggregate(
     """distinct select on columns"""
-    distinct_on: [show_select_column!]
+    distinctOn: [ShowSelectColumn!]
 
     """limit the number of rows returned"""
     limit: Int
@@ -361,30 +361,39 @@ type subscription_root {
     offset: Int
 
     """sort the rows by one or more columns"""
-    order_by: [show_order_by!]
+    orderBy: [ShowOrderBy!]
 
     """filter the rows returned"""
-    where: show_bool_exp
-  ): show_aggregate!
+    where: ShowBoolExp
+  ): ShowAggregate!
 
   """fetch data from the table: "show" using primary key columns"""
-  show_by_pk(id: uuid!): show
+  showByPk(id: uuid!): Show
+
+  """
+  fetch data from the table: "show"
+  """
+  shows(
+    """distinct select on columns"""
+    distinctOn: [ShowSelectColumn!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    orderBy: [ShowOrderBy!]
+
+    """filter the rows returned"""
+    where: ShowBoolExp
+  ): [Show!]!
 }
 
 scalar uuid
 
-"""
-Boolean expression to compare columns of type "uuid". All fields are combined with logical 'AND'.
-"""
-input uuid_comparison_exp {
-  _eq: uuid
-  _gt: uuid
-  _gte: uuid
-  _in: [uuid!]
-  _is_null: Boolean
-  _lt: uuid
-  _lte: uuid
-  _neq: uuid
-  _nin: [uuid!]
+input uuid_cast_exp {
+  String: StringComparisonExp
 }
 

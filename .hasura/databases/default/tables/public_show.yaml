@@ -1,6 +1,11 @@
 table:
   schema: public
   name: show
+configuration:
+  custom_root_fields:
+    select: shows
+  column_config: {}
+  custom_column_names: {}
 insert_permissions:
   - role: user
     permission:
@@ -8,7 +13,6 @@ insert_permissions:
         name:
           _eq: X-Hasura-User-Id
       columns: []
-      backend_only: false
 select_permissions:
   - role: user
     permission:

@@ -1,0 +1,14 @@
+type Mutation {
+  createShow(
+    input: CreateShowInput!
+  ): CreateShowPayload!
+}
+
+input CreateShowInput {
+  name: String!
+}
+
+type CreateShowPayload {
+  id: uuid
+}
+

@@ -1,6 +1,21 @@
-actions: []
+actions:
+  - name: createShow
+    definition:
+      kind: synchronous
+      handler: http://host.docker.internal:3000
 custom_types:
   enums: []
-  input_objects: []
-  objects: []
+  input_objects:
+    - name: CreateShowInput
+  objects:
+    - name: CreateShowPayload
+      relationships:
+        - remote_table:
+            schema: public
+            name: show
+          name: show
+          source: default
+          type: object
+          field_mapping:
+            id: id
   scalars: []

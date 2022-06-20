@@ -1,6 +1,6 @@
 mutation createShow($name: String) {
-  show: insert_show_one(object: { name: $name }) {
-    ... on show {
+  show: insertShowOne(object: { name: $name }) {
+    ... on Show {
       id
     }
   }
