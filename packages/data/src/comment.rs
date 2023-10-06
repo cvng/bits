@@ -1,8 +1,9 @@
+use crate::Id;
 use crate::ShowId;
 use crate::UserId;
 use async_graphql::SimpleObject;
 
-pub type CommentId = crate::Id;
+pub type CommentId = Id;
 
 #[derive(Clone, SimpleObject)]
 #[graphql(name = "BaseComment")]
