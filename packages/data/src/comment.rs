@@ -1,0 +1,14 @@
+use crate::Id;
+use crate::ShowId;
+use crate::UserId;
+use async_graphql::SimpleObject;
+
+pub type CommentId = Id;
+
+#[derive(Clone, SimpleObject)]
+#[graphql(name = "BaseComment")]
+pub struct Comment {
+    pub id: CommentId,
+    pub author_id: UserId,
+    pub show_id: ShowId,
+}

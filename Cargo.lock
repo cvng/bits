@@ -279,10 +279,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "bits-data"
+version = "0.1.0"
+dependencies = [
+ "async-graphql",
+]
+
+[[package]]
 name = "bits-graphql"
 version = "0.1.0"
 dependencies = [
  "async-graphql",
+ "bits-data",
  "futures-util",
 ]
 
