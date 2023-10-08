@@ -24,6 +24,7 @@ pub async fn create_show(input: CreateShowInput) -> Result<CreateShowPayload> {
     let show = Show {
         id: Uuid::new_v4().into(),
         creator_id: input.creator_id,
+        name: input.name,
     };
 
     dispatch(vec![Event::ShowCreated(ShowCreated { show: show.clone() })])?;

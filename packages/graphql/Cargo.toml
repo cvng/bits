@@ -7,4 +7,5 @@ edition = "2021"
 async-graphql = "6.0.7"
 bits-data = { path = "../data" }
 bits-ops = { path = "../ops" }
+bits-core = { path = "../core" }
 futures-util = "0.3.0"

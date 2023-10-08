@@ -6,7 +6,7 @@ mod show_created;
 
 pub use bits_data as data;
 pub use db::db;
-pub use db::Database;
+pub use db::DatabaseGuard;
 pub use dispatch::dispatch;
 pub use error::Error;
 pub use error::Result;

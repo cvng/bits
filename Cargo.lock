@@ -299,6 +299,7 @@ name = "bits-graphql"
 version = "0.1.0"
 dependencies = [
  "async-graphql",
+ "bits-core",
  "bits-data",
  "bits-ops",
  "futures-util",

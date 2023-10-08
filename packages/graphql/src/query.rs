@@ -1,11 +1,12 @@
-use crate::objects::Show;
 use async_graphql::Object;
+use bits_core::db;
+use bits_data::Show;
 
 pub struct QueryRoot;
 
 #[Object]
 impl QueryRoot {
     async fn shows(&self) -> Vec<Show> {
-        vec![] // TODO: implement
+        db().shows.values().cloned().collect()
     }
 }
