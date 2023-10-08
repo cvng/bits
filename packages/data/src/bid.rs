@@ -8,7 +8,7 @@ pub type BidId = Id;
 #[derive(Clone, SimpleObject)]
 #[graphql(name = "BaseBid")]
 pub struct Bid {
-  pub id: BidId,
-  pub bidder_id: UserId,
-  pub product_id: ShowProductId,
+    pub id: BidId,
+    pub bidder_id: UserId,
+    pub product_id: ShowProductId,
 }

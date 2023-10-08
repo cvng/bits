@@ -6,5 +6,5 @@ pub type UserId = Id;
 #[derive(Clone, SimpleObject)]
 #[graphql(name = "BaseUser")]
 pub struct User {
-  pub id: UserId,
+    pub id: UserId,
 }

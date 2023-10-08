@@ -6,7 +6,7 @@ pub struct QueryRoot;
 
 #[Object]
 impl QueryRoot {
-  async fn shows(&self) -> Vec<Show> {
-    db().shows.values().cloned().collect()
-  }
+    async fn shows(&self) -> Vec<Show> {
+        db().shows.values().cloned().collect()
+    }
 }

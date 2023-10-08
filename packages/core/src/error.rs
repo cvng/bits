@@ -1,12 +1,9 @@
-#[derive(Debug)]
-pub enum Error {
-  InternalError,
-}
+use thiserror::Error;
 
-impl std::fmt::Display for Error {
-  fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    todo!()
-  }
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error("not found")]
+    NotFound(String),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

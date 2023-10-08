@@ -1,3 +1,5 @@
-max_width = 80
-tab_spaces = 2
+# https://rust-lang.github.io/rustfmt
+
 imports_granularity = "Item"
+# max_width = 80 # TODO
+# tab_spaces = 2 # TODO

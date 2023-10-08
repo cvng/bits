@@ -13,19 +13,19 @@ pub type DatabaseGuard = MutexGuard<'static, Database>;
 
 #[derive(Debug, Error)]
 pub enum DatabaseError {
-  #[error("database lock panicked")]
-  Lock(#[from] PoisonError<DatabaseGuard>),
+    #[error("database lock poisoned")]
+    Lock(#[from] PoisonError<DatabaseGuard>),
 }
 
 #[derive(Default)]
 pub struct Database {
-  pub shows: HashMap<ShowId, Show>,
+    pub shows: HashMap<ShowId, Show>,
 }
 
 pub fn db() -> DatabaseGuard {
-  DATABASE
-    .get_or_init(|| Mutex::new(Database::default()))
-    .lock()
-    .map_err(DatabaseError::Lock)
-    .unwrap()
+    DATABASE
+        .get_or_init(|| Mutex::new(Database::default()))
+        .lock()
+        .map_err(DatabaseError::Lock)
+        .unwrap()
 }

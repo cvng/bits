@@ -10,14 +10,14 @@ pub type ShowProductId = Id;
 #[derive(Debug, Clone, SimpleObject)]
 #[graphql(name = "BaseShow")]
 pub struct Show {
-  pub id: ShowId,
-  pub creator_id: UserId,
-  pub name: String,
+    pub id: ShowId,
+    pub creator_id: UserId,
+    pub name: String,
 }
 
 #[derive(Clone, SimpleObject)]
 pub struct ShowProduct {
-  pub id: ShowProductId,
-  pub show_id: ShowId,
-  pub product_id: ProductId,
+    pub id: ShowProductId,
+    pub show_id: ShowId,
+    pub product_id: ProductId,
 }

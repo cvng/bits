@@ -1,9 +1,7 @@
 mod commands;
-mod context;
 mod database;
-mod dispatcher;
+mod dispatch;
 mod error;
-mod events;
 mod handlers;
 
 pub use bits_data::*;
