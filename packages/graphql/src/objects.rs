@@ -2,7 +2,7 @@
 
 use async_graphql::ComplexObject;
 use async_graphql::SimpleObject;
-use bits_data as data;
+use bits_core as data;
 
 #[derive(SimpleObject)]
 #[graphql(complex)]

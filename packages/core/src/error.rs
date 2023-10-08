@@ -1,6 +1,6 @@
 #[derive(Debug)]
 pub enum Error {
-    ShowAlreadyExists,
+    InternalError,
 }
 
 impl std::fmt::Display for Error {

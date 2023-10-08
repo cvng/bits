@@ -1,6 +1,6 @@
 use async_graphql::Object;
 use bits_core::db;
-use bits_data::Show;
+use bits_core::Show;
 
 pub struct QueryRoot;
 

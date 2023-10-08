@@ -282,6 +282,7 @@ dependencies = [
 name = "bits-core"
 version = "0.1.0"
 dependencies = [
+ "async-graphql",
  "bits-data",
  "thiserror",
 ]
@@ -300,18 +301,7 @@ version = "0.1.0"
 dependencies = [
  "async-graphql",
  "bits-core",
- "bits-data",
- "bits-ops",
  "futures-util",
-]
-
-[[package]]
-name = "bits-ops"
-version = "0.1.0"
-dependencies = [
- "async-graphql",
- "bits-core",
- "bits-data",
 ]
 
 [[package]]
