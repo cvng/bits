@@ -6,11 +6,11 @@ pub struct MutationRoot;
 
 #[Object]
 impl MutationRoot {
-    async fn create_show(
-        &self,
-        _ctx: &Context<'_>,
-        input: bits_core::CreateShowInput,
-    ) -> Result<bits_core::CreateShowPayload> {
-        Ok(bits_core::create_show(input).await?)
-    }
+  async fn create_show(
+    &self,
+    _ctx: &Context<'_>,
+    input: bits_core::CreateShowInput,
+  ) -> Result<bits_core::CreateShowPayload> {
+    Ok(bits_core::create_show(input).await?)
+  }
 }
