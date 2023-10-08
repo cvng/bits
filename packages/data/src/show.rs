@@ -7,7 +7,7 @@ pub type ShowId = Id;
 
 pub type ShowProductId = Id;
 
-#[derive(Clone, SimpleObject)]
+#[derive(Debug, Clone, SimpleObject)]
 #[graphql(name = "BaseShow")]
 pub struct Show {
     pub id: ShowId,

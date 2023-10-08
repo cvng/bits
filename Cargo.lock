@@ -279,10 +279,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "bits-core"
+version = "0.1.0"
+dependencies = [
+ "bits-data",
+ "thiserror",
+]
+
+[[package]]
 name = "bits-data"
 version = "0.1.0"
 dependencies = [
  "async-graphql",
+ "uuid",
 ]
 
 [[package]]
@@ -291,7 +300,17 @@ version = "0.1.0"
 dependencies = [
  "async-graphql",
  "bits-data",
+ "bits-ops",
  "futures-util",
+]
+
+[[package]]
+name = "bits-ops"
+version = "0.1.0"
+dependencies = [
+ "async-graphql",
+ "bits-core",
+ "bits-data",
 ]
 
 [[package]]
@@ -1471,6 +1490,15 @@ name = "utf-8"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09cc8ee72d2a9becf2f2febe0205bbed8fc6615b7cb429ad062dc7b7ddd036a9"
+
+[[package]]
+name = "uuid"
+version = "1.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "79daa5ed5740825c40b389c5e50312b9c86df53fccd33f281df655642b43869d"
+dependencies = [
+ "getrandom",
+]
 
 [[package]]
 name = "version_check"

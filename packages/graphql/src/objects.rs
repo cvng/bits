@@ -2,12 +2,13 @@
 
 use async_graphql::ComplexObject;
 use async_graphql::SimpleObject;
+use bits_data as data;
 
 #[derive(SimpleObject)]
 #[graphql(complex)]
 pub struct Auction {
     #[graphql(flatten)]
-    inner: bits_data::Auction,
+    inner: data::Auction,
 }
 
 #[ComplexObject]
@@ -20,26 +21,26 @@ impl Auction {
 #[derive(SimpleObject)]
 pub struct Bid {
     #[graphql(flatten)]
-    inner: bits_data::Bid,
+    inner: data::Bid,
 }
 
 #[derive(SimpleObject)]
 pub struct Comment {
     #[graphql(flatten)]
-    inner: bits_data::Comment,
+    inner: data::Comment,
 }
 
 #[derive(SimpleObject)]
 pub struct Product {
     #[graphql(flatten)]
-    inner: bits_data::Product,
+    inner: data::Product,
 }
 
 #[derive(SimpleObject)]
 #[graphql(complex)]
 pub struct Show {
     #[graphql(flatten)]
-    inner: bits_data::Show,
+    inner: data::Show,
 }
 
 #[ComplexObject]
@@ -53,7 +54,7 @@ impl Show {
     }
 
     async fn creator(&self) -> User {
-        bits_data::User {
+        data::User {
             id: self.inner.creator_id.clone(),
         }
         .into()
@@ -67,11 +68,11 @@ impl Show {
 #[derive(SimpleObject)]
 pub struct User {
     #[graphql(flatten)]
-    inner: bits_data::User,
+    inner: data::User,
 }
 
-impl From<bits_data::User> for User {
-    fn from(inner: bits_data::User) -> Self {
+impl From<data::User> for User {
+    fn from(inner: data::User) -> Self {
         Self { inner }
     }
 }
