@@ -12,27 +12,27 @@ use tower_http::cors::CorsLayer;
 pub type Server<I, S> = axum::Server<I, S>;
 
 async fn graphiql() -> impl IntoResponse {
-    response::Html(
-        GraphiQLSource::build()
-            .endpoint("/graphql")
-            .subscription_endpoint("/graphql/ws")
-            .finish(),
-    )
+  response::Html(
+    GraphiQLSource::build()
+      .endpoint("/graphql")
+      .subscription_endpoint("/graphql/ws")
+      .finish(),
+  )
 }
 
 pub fn app() -> Router {
-    let schema = bits_graphql::schema().finish();
+  let schema = bits_graphql::schema().finish();
 
-    let cors = CorsLayer::new()
-        .allow_methods([Method::GET, Method::POST])
-        .allow_headers(Any)
-        .allow_origin(Any);
+  let cors = CorsLayer::new()
+    .allow_methods([Method::GET, Method::POST])
+    .allow_headers(Any)
+    .allow_origin(Any);
 
-    Router::new()
-        .route(
-            "/graphql",
-            get(graphiql).post_service(GraphQL::new(schema.clone())),
-        )
-        .route_service("/graphql/ws", GraphQLSubscription::new(schema))
-        .layer(cors)
+  Router::new()
+    .route(
+      "/graphql",
+      get(graphiql).post_service(GraphQL::new(schema.clone())),
+    )
+    .route_service("/graphql/ws", GraphQLSubscription::new(schema))
+    .layer(cors)
 }

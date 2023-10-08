@@ -6,5 +6,5 @@ pub type ProductId = Id;
 #[derive(Clone, SimpleObject)]
 #[graphql(name = "BaseProduct")]
 pub struct Product {
-    pub id: ProductId,
+  pub id: ProductId,
 }
