@@ -15,3 +15,4 @@ pub use id::*;
 pub use product::*;
 pub use show::*;
 pub use user::*;
+pub use uuid::Uuid;
