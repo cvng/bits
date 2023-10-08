@@ -9,10 +9,12 @@ use thiserror::Error;
 
 static DATABASE: OnceLock<Mutex<Database>> = OnceLock::new();
 
+pub type DatabaseGuard = MutexGuard<'static, Database>;
+
 #[derive(Debug, Error)]
 pub enum DatabaseError {
     #[error("database lock panicked")]
-    Lock(#[from] PoisonError<MutexGuard<'static, Database>>),
+    Lock(#[from] PoisonError<DatabaseGuard>),
 }
 
 #[derive(Default)]
@@ -20,7 +22,7 @@ pub struct Database {
     pub shows: HashMap<ShowId, Show>,
 }
 
-pub fn db<'a>() -> MutexGuard<'a, Database> {
+pub fn db() -> DatabaseGuard {
     DATABASE
         .get_or_init(|| Mutex::new(Database::default()))
         .lock()
