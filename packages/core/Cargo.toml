@@ -1,9 +1,9 @@
 [package]
-name = "bits-graphql"
+name = "bits-core"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 async-graphql = "6.0.7"
-bits-core = { path = "../core" }
-futures-util = "0.3.0"
+bits-data = { path = "../data" }
+thiserror = "1.0.49"

@@ -2,6 +2,7 @@
 
 use async_graphql::ComplexObject;
 use async_graphql::SimpleObject;
+use bits_core as bits_data;
 
 #[derive(SimpleObject)]
 #[graphql(complex)]
@@ -61,6 +62,12 @@ impl Show {
 
     async fn products(&self) -> Vec<Product> {
         todo!()
+    }
+}
+
+impl From<bits_data::Show> for Show {
+    fn from(inner: bits_data::Show) -> Self {
+        Self { inner }
     }
 }
 
