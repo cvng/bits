@@ -7,11 +7,11 @@ pub struct MutationRoot;
 
 #[Object]
 impl MutationRoot {
-    async fn create_show(
-        &self,
-        _ctx: &Context<'_>,
-        input: commands::CreateShowInput,
-    ) -> Result<commands::CreateShowPayload> {
-        Ok(commands::create_show(input).await?)
-    }
+  async fn create_show(
+    &self,
+    _ctx: &Context<'_>,
+    input: commands::CreateShowInput,
+  ) -> Result<commands::CreateShowPayload> {
+    Ok(commands::create_show(input).await?)
+  }
 }
