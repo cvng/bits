@@ -1,5 +1,3 @@
-#![allow(unreachable_code)] // TODO: implement
-
 use async_graphql::ComplexObject;
 use async_graphql::SimpleObject;
 use bits_core as bits_data;

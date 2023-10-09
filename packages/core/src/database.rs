@@ -1,5 +1,4 @@
-use bits_data::Show;
-use bits_data::ShowId;
+use bits_data as data;
 use std::collections::HashMap;
 use std::sync::Mutex;
 use std::sync::MutexGuard;
@@ -19,7 +18,9 @@ pub enum DatabaseError {
 
 #[derive(Default)]
 pub struct Database {
-  pub shows: HashMap<ShowId, Show>,
+  pub shows: HashMap<data::ShowId, data::Show>,
+  pub show_products: HashMap<data::ShowProductId, data::ShowProduct>,
+  pub products: HashMap<data::ProductId, data::Product>,
 }
 
 pub fn db() -> DatabaseGuard {
