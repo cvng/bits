@@ -1,8 +1,8 @@
-use crate::Id;
+use crate::id;
 use crate::ShowId;
 use async_graphql::SimpleObject;
 
-pub type AuctionId = Id;
+id!(AuctionId);
 
 #[derive(Clone, SimpleObject)]
 #[graphql(name = "BaseAuction")]

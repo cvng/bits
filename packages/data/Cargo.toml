@@ -5,4 +5,6 @@ edition = "2021"
 
 [dependencies]
 async-graphql = "6.0.7"
-uuid = { version = "1.4.1", features = ["v4"] }
+fixedstr = "0.5.0"
+serde = "1.0.188"
+uuid = { version = "1.4.1", features = ["v4", "serde"] }

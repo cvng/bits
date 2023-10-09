@@ -1,11 +1,10 @@
-use crate::Id;
+use crate::id;
 use crate::ProductId;
 use crate::UserId;
 use async_graphql::SimpleObject;
 
-pub type ShowId = Id;
-
-pub type ShowProductId = Id;
+id!(ShowId);
+id!(ShowProductId);
 
 #[derive(Clone, SimpleObject)]
 #[graphql(name = "BaseShow")]

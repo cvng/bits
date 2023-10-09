@@ -14,7 +14,7 @@ pub struct Auction {
 #[ComplexObject]
 impl Auction {
   async fn bids(&self) -> Vec<Bid> {
-    todo!()
+    vec![]
   }
 }
 
@@ -45,23 +45,23 @@ pub struct Show {
 
 #[ComplexObject]
 impl Show {
-  async fn auction(&self) -> Auction {
-    todo!()
+  async fn auction(&self) -> Option<Auction> {
+    None
   }
 
   async fn comments(&self) -> Vec<Comment> {
-    todo!()
+    vec![]
   }
 
   async fn creator(&self) -> User {
     bits_data::User {
-      id: self.inner.creator_id.clone(),
+      id: self.inner.creator_id,
     }
     .into()
   }
 
   async fn products(&self) -> Vec<Product> {
-    todo!()
+    vec![]
   }
 }
 

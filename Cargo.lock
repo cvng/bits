@@ -292,6 +292,8 @@ name = "bits-data"
 version = "0.1.0"
 dependencies = [
  "async-graphql",
+ "fixedstr",
+ "serde",
  "uuid",
 ]
 
@@ -463,6 +465,12 @@ name = "fastrand"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "25cbce373ec4653f1a01a31e8a5e5ec0c622dc27ff9c4e6606eefef5cbbed4a5"
+
+[[package]]
+name = "fixedstr"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9569a6601665f748c74999b7af8265badbd0a2d585e481ea9746be87c3d699bb"
 
 [[package]]
 name = "fnv"
@@ -1489,6 +1497,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "79daa5ed5740825c40b389c5e50312b9c86df53fccd33f281df655642b43869d"
 dependencies = [
  "getrandom",
+ "serde",
 ]
 
 [[package]]
