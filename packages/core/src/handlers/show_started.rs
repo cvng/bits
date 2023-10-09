@@ -15,6 +15,7 @@ pub fn show_started(event: ShowStarted) -> Result<()> {
   database::db()
     .shows
     .insert(show.id, show)
-    .ok_or(Error::NotFound(show.id.into()))
-    .map(|_| ())
+    .ok_or(Error::NotFound(show.id.into()))?;
+
+  Ok(())
 }
