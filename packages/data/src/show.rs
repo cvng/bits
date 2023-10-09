@@ -1,4 +1,5 @@
 use crate::id;
+use crate::DateTime;
 use crate::ProductId;
 use crate::Text;
 use crate::UserId;
@@ -13,6 +14,7 @@ pub struct Show {
   pub id: ShowId,
   pub creator_id: UserId,
   pub name: Text,
+  pub started_at: Option<DateTime>,
 }
 
 #[derive(Clone, SimpleObject)]

@@ -26,6 +26,7 @@ pub async fn create_show(input: CreateShowInput) -> Result<CreateShowPayload> {
     id: ShowId::new(),
     creator_id: input.creator_id,
     name: input.name,
+    started_at: None,
   };
 
   dispatch::dispatch(vec![ShowCreated { show }.into()])?;

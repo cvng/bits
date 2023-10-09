@@ -14,4 +14,12 @@ impl MutationRoot {
   ) -> Result<commands::CreateShowPayload> {
     Ok(commands::create_show(input).await?)
   }
+
+  async fn start_show(
+    &self,
+    _ctx: &Context<'_>,
+    input: commands::StartShowInput,
+  ) -> Result<commands::StartShowPayload> {
+    Ok(commands::start_show(input).await?)
+  }
 }
