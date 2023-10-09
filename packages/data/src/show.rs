@@ -1,17 +1,18 @@
-use crate::Id;
+use crate::id;
 use crate::ProductId;
+use crate::Text;
 use crate::UserId;
 use async_graphql::SimpleObject;
 
-pub type ShowId = Id;
+id!(ShowId);
+id!(ShowProductId);
 
-pub type ShowProductId = Id;
-
-#[derive(Clone, SimpleObject)]
+#[derive(Clone, Copy, SimpleObject)]
 #[graphql(name = "BaseShow")]
 pub struct Show {
   pub id: ShowId,
   pub creator_id: UserId,
+  pub name: Text,
 }
 
 #[derive(Clone, SimpleObject)]

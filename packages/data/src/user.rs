@@ -1,7 +1,7 @@
-use crate::Id;
+use crate::id;
 use async_graphql::SimpleObject;
 
-pub type UserId = Id;
+id!(UserId);
 
 #[derive(Clone, SimpleObject)]
 #[graphql(name = "BaseUser")]

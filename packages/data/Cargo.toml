@@ -4,5 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+arrayvec = { version = "0.7.4", features = ["serde"] }
 async-graphql = "6.0.7"
-uuid = { version = "1.4.1", features = ["v4"] }
+serde = "1.0.188"
+uuid = { version = "1.4.1", features = ["v4", "serde"] }
