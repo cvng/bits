@@ -9,6 +9,7 @@ macro_rules! id {
       Ord,
       PartialEq,
       PartialOrd,
+      Default,
       serde::Serialize,
       serde::Deserialize,
     )]

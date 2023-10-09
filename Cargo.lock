@@ -37,6 +37,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "arrayvec"
+version = "0.7.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "96d30a06541fbafbc7f82ed10c06164cfbd2c401138f6addd8404629c4b16711"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "ascii_utils"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -291,8 +300,8 @@ dependencies = [
 name = "bits-data"
 version = "0.1.0"
 dependencies = [
+ "arrayvec",
  "async-graphql",
- "fixedstr",
  "serde",
  "uuid",
 ]
@@ -465,12 +474,6 @@ name = "fastrand"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "25cbce373ec4653f1a01a31e8a5e5ec0c622dc27ff9c4e6606eefef5cbbed4a5"
-
-[[package]]
-name = "fixedstr"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9569a6601665f748c74999b7af8265badbd0a2d585e481ea9746be87c3d699bb"
 
 [[package]]
 name = "fnv"

@@ -1,6 +1,7 @@
+use arrayvec::ArrayString;
 use async_graphql::scalar;
 
 #[derive(Copy, Clone, serde::Serialize, serde::Deserialize)]
-pub struct Text(fixedstr::str8);
+pub struct Text(ArrayString<255>);
 
-scalar!(Text);
+scalar!(Text, "String");
