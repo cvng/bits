@@ -11,6 +11,7 @@ macro_rules! id {
       Ord,
       PartialEq,
       PartialOrd,
+      Debug,
       Default,
       serde::Serialize,
       serde::Deserialize,

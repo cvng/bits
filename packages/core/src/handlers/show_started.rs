@@ -1,6 +1,6 @@
 use crate::database;
-use crate::Error;
-use crate::Result;
+use crate::error::Error;
+use crate::error::Result;
 use bits_data::ShowStarted;
 
 pub fn show_started(event: ShowStarted) -> Result<()> {

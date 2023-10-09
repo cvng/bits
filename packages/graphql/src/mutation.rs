@@ -10,16 +10,16 @@ impl MutationRoot {
   async fn create_show(
     &self,
     _ctx: &Context<'_>,
-    input: commands::CreateShowInput,
-  ) -> Result<commands::CreateShowPayload> {
-    Ok(commands::create_show(input).await?)
+    input: commands::create_show::CreateShowInput,
+  ) -> Result<commands::create_show::CreateShowPayload> {
+    Ok(commands::create_show::create_show(input).await?)
   }
 
   async fn start_show(
     &self,
     _ctx: &Context<'_>,
-    input: commands::StartShowInput,
-  ) -> Result<commands::StartShowPayload> {
-    Ok(commands::start_show(input).await?)
+    input: commands::start_show::StartShowInput,
+  ) -> Result<commands::start_show::StartShowPayload> {
+    Ok(commands::start_show::start_show(input).await?)
   }
 }

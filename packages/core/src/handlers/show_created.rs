@@ -1,5 +1,5 @@
 use crate::database;
-use crate::Result;
+use crate::error::Result;
 use bits_data::ShowCreated;
 
 pub fn show_created(event: ShowCreated) -> Result<()> {
