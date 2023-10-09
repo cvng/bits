@@ -1,1 +1,1 @@
-pub type Text = fixedstr::str8;
+pub type Text = String; // fixedstr::str8;
