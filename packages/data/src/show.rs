@@ -1,5 +1,6 @@
 use crate::id;
 use crate::ProductId;
+use crate::Text;
 use crate::UserId;
 use async_graphql::SimpleObject;
 
@@ -11,6 +12,7 @@ id!(ShowProductId);
 pub struct Show {
   pub id: ShowId,
   pub creator_id: UserId,
+  pub name: Text,
 }
 
 #[derive(Clone, SimpleObject)]

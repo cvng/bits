@@ -2,13 +2,13 @@
 macro_rules! id {
   ($t:ident) => {
     #[derive(
-      Copy,
       Clone,
-      Default,
-      Debug,
-      PartialEq,
+      Copy,
       Eq,
       Hash,
+      Ord,
+      PartialEq,
+      PartialOrd,
       serde::Serialize,
       serde::Deserialize,
     )]
@@ -34,21 +34,6 @@ macro_rules! id {
       }
     }
 
-    #[async_graphql::Scalar(name = "ID")]
-    impl async_graphql::ScalarType for $t {
-      fn parse(
-        value: async_graphql::Value,
-      ) -> async_graphql::InputValueResult<Self> {
-        if let async_graphql::Value::String(value) = value {
-          Ok(uuid::Uuid::parse_str(&value).map($t)?)
-        } else {
-          Err(async_graphql::InputValueError::expected_type(value))
-        }
-      }
-
-      fn to_value(&self) -> async_graphql::Value {
-        async_graphql::Value::String(self.0.to_string())
-      }
-    }
+    async_graphql::scalar!($t, "ID");
   };
 }
