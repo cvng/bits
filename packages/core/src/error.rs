@@ -1,5 +1,5 @@
-use thiserror::Error;
 use bits_data::Uuid;
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum Error {
