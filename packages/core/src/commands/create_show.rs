@@ -31,9 +31,10 @@ pub async fn create_show(input: CreateShowInput) -> Result<CreateShowPayload> {
   dispatch::dispatch(vec![ShowCreated { show }.into()])?;
 
   Ok(CreateShowPayload {
-    show: *database::db()
+    show: database::db()
       .shows
       .get(&show.id)
+      .cloned()
       .ok_or_else(|| Error::NotFound(show.id.to_string()))?,
   })
 }
