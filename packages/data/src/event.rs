@@ -1,4 +1,6 @@
+use crate::DateTime;
 use crate::Show;
+use crate::ShowId;
 
 pub enum Event {
   ShowCreated(ShowCreated),
@@ -15,7 +17,8 @@ impl From<ShowCreated> for Event {
   }
 }
 pub struct ShowStarted {
-  pub show: Show,
+  pub id: ShowId,
+  pub started_at: DateTime,
 }
 
 impl From<ShowStarted> for Event {

@@ -1,11 +1,20 @@
 use crate::database;
+use crate::Error;
 use crate::Result;
 use bits_data::ShowStarted;
 
 pub fn show_started(event: ShowStarted) -> Result<()> {
-  let ShowStarted { show } = event;
+  let mut show = database::db()
+    .shows
+    .get(&event.id)
+    .cloned()
+    .ok_or_else(|| Error::NotFound(event.id.into()))?;
 
-  database::db().shows.insert(show.id, show);
+  show.started_at = Some(event.started_at);
 
-  Ok(())
+  database::db()
+    .shows
+    .insert(show.id, show)
+    .ok_or(Error::NotFound(show.id.into()))
+    .map(|_| ())
 }

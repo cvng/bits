@@ -36,6 +36,6 @@ pub async fn create_show(input: CreateShowInput) -> Result<CreateShowPayload> {
       .shows
       .get(&show.id)
       .cloned()
-      .ok_or_else(|| Error::NotFound(show.id.to_string()))?,
+      .ok_or_else(|| Error::NotFound(show.id.into()))?,
   })
 }

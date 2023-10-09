@@ -20,15 +20,27 @@ pub struct StartShowPayload {
 }
 
 pub async fn start_show(input: StartShowInput) -> Result<StartShowPayload> {
-  let mut show = database::db()
+  let show = database::db()
     .shows
     .get(&input.id)
     .cloned()
-    .ok_or_else(|| Error::NotFound(input.id.to_string()))?;
+    .ok_or_else(|| Error::NotFound(input.id.into()))?;
 
-  show.started_at = Some(Utc::now());
+  if show.started_at.is_some() {
+    return Err(Error::AlreadyStarted(input.id.into()));
+  }
 
-  dispatch::dispatch(vec![ShowStarted { show }.into()])?;
+  dispatch::dispatch(vec![ShowStarted {
+    id: input.id,
+    started_at: Utc::now(),
+  }
+  .into()])?;
 
-  Ok(StartShowPayload { show })
+  Ok(StartShowPayload {
+    show: database::db()
+      .shows
+      .get(&input.id)
+      .cloned()
+      .ok_or_else(|| Error::NotFound(input.id.into()))?,
+  })
 }
