@@ -24,10 +24,6 @@ pub struct CreateShowPayload {
 pub enum Error {
   #[error("not found: {0}")]
   NotFound(ShowId),
-  #[error("already started: {0}")]
-  AlreadyStarted(ShowId),
-  #[error("missing products: {0}")]
-  MissingProducts(ShowId),
 }
 
 pub async fn create_show(

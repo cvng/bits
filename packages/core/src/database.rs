@@ -20,6 +20,7 @@ pub enum DatabaseError {
 pub struct Database {
   pub shows: HashMap<data::ShowId, data::Show>,
   pub show_products: HashMap<data::ShowProductId, data::ShowProduct>,
+  pub products: HashMap<data::ProductId, data::Product>,
 }
 
 pub fn db() -> DatabaseGuard {

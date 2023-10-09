@@ -55,7 +55,7 @@ pub async fn start_show(
   }
 
   dispatch::dispatch(vec![ShowStarted {
-    id: input.id,
+    id: show.id,
     started_at: Utc::now(),
   }
   .into()])
