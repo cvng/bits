@@ -1,4 +1,4 @@
-use crate::Amount; // <1>
+use crate::Amount;
 use crate::AuctionId;
 use crate::AuctionProductId;
 use crate::BidId;
