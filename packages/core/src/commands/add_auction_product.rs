@@ -5,22 +5,22 @@ use async_graphql::SimpleObject;
 use bits_data::Auction;
 use bits_data::AuctionId;
 use bits_data::AuctionMarkedReady;
+use bits_data::AuctionProduct;
+use bits_data::AuctionProductAdded;
+use bits_data::AuctionProductId;
 use bits_data::Product;
 use bits_data::ProductId;
-use bits_data::ShowProduct;
-use bits_data::ShowProductAdded;
-use bits_data::ShowProductId;
 use bits_data::Utc;
 use thiserror::Error;
 
 #[derive(InputObject)]
-pub struct AddShowProductInput {
+pub struct AddAuctionProductInput {
   pub auction_id: AuctionId,
   pub product_id: ProductId,
 }
 
 #[derive(SimpleObject)]
-pub struct AddShowProductPayload {
+pub struct AddAuctionProductPayload {
   pub auction: Auction,
   pub product: Product,
 }
@@ -33,9 +33,9 @@ pub enum Error {
   ProductNotFound(ProductId),
 }
 
-pub async fn add_show_product(
-  input: AddShowProductInput,
-) -> Result<AddShowProductPayload, Error> {
+pub async fn add_auction_product(
+  input: AddAuctionProductInput,
+) -> Result<AddAuctionProductPayload, Error> {
   let auction = database::db()
     .auctions
     .get(&input.auction_id)
@@ -48,16 +48,16 @@ pub async fn add_show_product(
     .cloned()
     .ok_or(Error::ProductNotFound(input.product_id))?;
 
-  let show_product = ShowProduct {
-    id: ShowProductId::new(),
+  let auction_product = AuctionProduct {
+    id: AuctionProductId::new(),
     auction_id: auction.id,
     product_id: product.id,
   };
 
-  let mut events = vec![ShowProductAdded {
-    id: show_product.id,
-    auction_id: show_product.auction_id,
-    product_id: show_product.product_id,
+  let mut events = vec![AuctionProductAdded {
+    id: auction_product.id,
+    auction_id: auction_product.auction_id,
+    product_id: auction_product.product_id,
   }
   .into()];
 
@@ -73,5 +73,5 @@ pub async fn add_show_product(
 
   dispatch::dispatch(events).ok();
 
-  Ok(AddShowProductPayload { auction, product })
+  Ok(AddAuctionProductPayload { auction, product })
 }

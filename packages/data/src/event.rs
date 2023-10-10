@@ -1,5 +1,6 @@
 use crate::Amount; // <1>
 use crate::AuctionId;
+use crate::AuctionProductId;
 use crate::BidId;
 use crate::CommentId;
 use crate::DateTime;
@@ -7,18 +8,17 @@ use crate::Product;
 use crate::ProductId;
 use crate::Show;
 use crate::ShowId;
-use crate::ShowProductId;
 use crate::Text;
 use crate::UserId;
 
 pub enum Event {
   AuctionMarkedReady(AuctionMarkedReady),
+  AuctionProductAdded(AuctionProductAdded),
   BidPlaced(BidPlaced),
   CommentAdded(CommentAdded),
   ProductCreated(ProductCreated),
   ShowCreated(ShowCreated),
   ShowStarted(ShowStarted),
-  ShowProductAdded(ShowProductAdded),
 }
 
 pub struct AuctionMarkedReady {
@@ -35,7 +35,7 @@ impl From<AuctionMarkedReady> for Event {
 pub struct BidPlaced {
   pub id: BidId,
   pub user_id: UserId,
-  pub product_id: ShowProductId,
+  pub product_id: AuctionProductId,
   pub amount: Amount,
 }
 
@@ -89,14 +89,14 @@ impl From<ShowStarted> for Event {
   }
 }
 
-pub struct ShowProductAdded {
-  pub id: ShowProductId,
+pub struct AuctionProductAdded {
+  pub id: AuctionProductId,
   pub auction_id: AuctionId,
   pub product_id: ProductId,
 }
 
-impl From<ShowProductAdded> for Event {
-  fn from(event: ShowProductAdded) -> Self {
-    Self::ShowProductAdded(event)
+impl From<AuctionProductAdded> for Event {
+  fn from(event: AuctionProductAdded) -> Self {
+    Self::AuctionProductAdded(event)
   }
 }
