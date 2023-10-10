@@ -2,6 +2,7 @@ use crate::database;
 use crate::dispatch;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
+use bits_data::AuctionId;
 use bits_data::Show;
 use bits_data::ShowId;
 use bits_data::ShowStarted;
@@ -24,8 +25,10 @@ pub enum Error {
   NotFound(ShowId),
   #[error("already started: {0}")]
   AlreadyStarted(ShowId),
-  #[error("missing products: {0}")]
-  MissingProducts(ShowId),
+  #[error("auction not found: {0}")]
+  AuctionNotFound(ShowId),
+  #[error("auction not ready: {0}")]
+  AuctionNotReady(AuctionId),
 }
 
 pub async fn start_show(
@@ -42,16 +45,16 @@ pub async fn start_show(
     return Err(Error::AlreadyStarted(show.id));
   }
 
-  let show_products = database::db()
-    .show_products
+  let auction = database::db()
+    .auctions
     .values()
-    .filter(|show_product| show_product.show_id == show.id)
+    .find(|auction| auction.show_id == show.id)
     .cloned()
-    .collect::<Vec<_>>();
+    .ok_or(Error::AuctionNotFound(show.id))?;
 
-  // Check that there are products for this show.
-  if show_products.is_empty() {
-    return Err(Error::MissingProducts(show.id));
+  // Check that the auction is ready.
+  if auction.ready_at.is_none() {
+    return Err(Error::AuctionNotReady(auction.id));
   }
 
   dispatch::dispatch(vec![ShowStarted {

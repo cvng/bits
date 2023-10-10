@@ -1,5 +1,6 @@
 use crate::id;
 use crate::ShowId;
+use crate::Text;
 use crate::UserId;
 use async_graphql::SimpleObject;
 
@@ -11,4 +12,5 @@ pub struct Comment {
   pub id: CommentId,
   pub user_id: UserId,
   pub show_id: ShowId,
+  pub text: Text,
 }

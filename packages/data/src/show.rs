@@ -1,4 +1,5 @@
 use crate::id;
+use crate::AuctionId;
 use crate::DateTime;
 use crate::ProductId;
 use crate::Text;
@@ -14,13 +15,12 @@ pub struct Show {
   pub id: ShowId,
   pub creator_id: UserId,
   pub name: Text,
-  pub ready_at: Option<DateTime>,
   pub started_at: Option<DateTime>,
 }
 
 #[derive(Clone, SimpleObject)]
 pub struct ShowProduct {
   pub id: ShowProductId,
-  pub show_id: ShowId,
+  pub auction_id: AuctionId,
   pub product_id: ProductId,
 }

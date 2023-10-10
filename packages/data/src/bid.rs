@@ -1,4 +1,5 @@
 use crate::id;
+use crate::Amount;
 use crate::ShowProductId;
 use crate::UserId;
 use async_graphql::SimpleObject;
@@ -11,4 +12,5 @@ pub struct Bid {
   pub id: BidId,
   pub user_id: UserId,
   pub product_id: ShowProductId,
+  pub amount: Amount,
 }

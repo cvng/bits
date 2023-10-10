@@ -7,6 +7,22 @@ pub struct MutationRoot;
 
 #[Object]
 impl MutationRoot {
+  async fn bid(
+    &self,
+    _ctx: &Context<'_>,
+    input: commands::bid::BidInput,
+  ) -> Result<commands::bid::BidPayload> {
+    Ok(commands::bid::bid(input).await?)
+  }
+
+  async fn comment(
+    &self,
+    _ctx: &Context<'_>,
+    input: commands::comment::CommentInput,
+  ) -> Result<commands::comment::CommentPayload> {
+    Ok(commands::comment::comment(input).await?)
+  }
+
   async fn create_product(
     &self,
     _ctx: &Context<'_>,

@@ -6,7 +6,7 @@ use bits_data::ShowProductAdded;
 pub fn show_product_added(event: ShowProductAdded) -> Result<()> {
   let show_product = ShowProduct {
     id: event.id,
-    show_id: event.show_id,
+    auction_id: event.auction_id,
     product_id: event.product_id,
   };
 
