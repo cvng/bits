@@ -22,10 +22,22 @@ pub struct Bid {
   inner: bits_data::Bid,
 }
 
+impl From<bits_data::Bid> for Bid {
+  fn from(inner: bits_data::Bid) -> Self {
+    Self { inner }
+  }
+}
+
 #[derive(SimpleObject)]
 pub struct Comment {
   #[graphql(flatten)]
   inner: bits_data::Comment,
+}
+
+impl From<bits_data::Comment> for Comment {
+  fn from(inner: bits_data::Comment) -> Self {
+    Self { inner }
+  }
 }
 
 #[derive(SimpleObject)]
