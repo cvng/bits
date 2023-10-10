@@ -9,6 +9,6 @@ id!(BidId);
 #[graphql(name = "BaseBid")]
 pub struct Bid {
   pub id: BidId,
-  pub bidder_id: UserId,
+  pub user_id: UserId,
   pub product_id: ShowProductId,
 }

@@ -9,6 +9,6 @@ id!(CommentId);
 #[graphql(name = "BaseComment")]
 pub struct Comment {
   pub id: CommentId,
-  pub author_id: UserId,
+  pub user_id: UserId,
   pub show_id: ShowId,
 }
