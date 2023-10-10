@@ -18,8 +18,11 @@ pub enum DatabaseError {
 
 #[derive(Default)]
 pub struct Database {
+  pub auctions: HashMap<data::AuctionId, data::Auction>,
+  pub auction_products: HashMap<data::AuctionProductId, data::AuctionProduct>,
+  pub bids: HashMap<data::BidId, data::Bid>,
+  pub comments: HashMap<data::CommentId, data::Comment>,
   pub shows: HashMap<data::ShowId, data::Show>,
-  pub show_products: HashMap<data::ShowProductId, data::ShowProduct>,
   pub products: HashMap<data::ProductId, data::Product>,
 }
 

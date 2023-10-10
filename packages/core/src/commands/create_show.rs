@@ -33,7 +33,6 @@ pub async fn create_show(
     id: ShowId::new(),
     creator_id: input.creator_id,
     name: input.name,
-    ready_at: None,
     started_at: None,
   };
 
