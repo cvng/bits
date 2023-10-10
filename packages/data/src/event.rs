@@ -8,6 +8,7 @@ use crate::ShowProductId;
 pub enum Event {
   ProductCreated(ProductCreated),
   ShowCreated(ShowCreated),
+  ShowMarkedReady(ShowMarkedReady),
   ShowStarted(ShowStarted),
   ShowProductAdded(ShowProductAdded),
 }
@@ -29,6 +30,17 @@ pub struct ShowCreated {
 impl From<ShowCreated> for Event {
   fn from(event: ShowCreated) -> Self {
     Self::ShowCreated(event)
+  }
+}
+
+pub struct ShowMarkedReady {
+  pub id: ShowId,
+  pub ready_at: DateTime,
+}
+
+impl From<ShowMarkedReady> for Event {
+  fn from(event: ShowMarkedReady) -> Self {
+    Self::ShowMarkedReady(event)
   }
 }
 

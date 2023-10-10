@@ -6,9 +6,11 @@ use bits_data::Product;
 use bits_data::ProductId;
 use bits_data::Show;
 use bits_data::ShowId;
+use bits_data::ShowMarkedReady;
 use bits_data::ShowProduct;
 use bits_data::ShowProductAdded;
 use bits_data::ShowProductId;
+use bits_data::Utc;
 use thiserror::Error;
 
 #[derive(InputObject)]
@@ -52,13 +54,24 @@ pub async fn add_show_product(
     product_id: product.id,
   };
 
-  dispatch::dispatch(vec![ShowProductAdded {
+  let mut events = vec![ShowProductAdded {
     id: show_product.id,
     show_id: show_product.show_id,
     product_id: show_product.product_id,
   }
-  .into()])
-  .ok();
+  .into()];
+
+  if show.ready_at.is_none() {
+    events.push(
+      ShowMarkedReady {
+        id: show.id,
+        ready_at: Utc::now(),
+      }
+      .into(),
+    )
+  }
+
+  dispatch::dispatch(events).ok();
 
   Ok(AddShowProductPayload { show, product })
 }

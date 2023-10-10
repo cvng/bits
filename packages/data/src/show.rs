@@ -14,6 +14,7 @@ pub struct Show {
   pub id: ShowId,
   pub creator_id: UserId,
   pub name: Text,
+  pub ready_at: Option<DateTime>,
   pub started_at: Option<DateTime>,
 }
 
