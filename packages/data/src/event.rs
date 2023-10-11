@@ -11,6 +11,7 @@ use crate::ShowId;
 use crate::Text;
 use crate::UserId;
 
+#[derive(Clone)]
 pub enum Event {
   AuctionMarkedReady(AuctionMarkedReady),
   AuctionProductAdded(AuctionProductAdded),
@@ -21,6 +22,7 @@ pub enum Event {
   ShowStarted(ShowStarted),
 }
 
+#[derive(Clone)]
 pub struct AuctionMarkedReady {
   pub id: AuctionId,
   pub ready_at: DateTime,
@@ -32,6 +34,7 @@ impl From<AuctionMarkedReady> for Event {
   }
 }
 
+#[derive(Clone)]
 pub struct BidPlaced {
   pub id: BidId,
   pub user_id: UserId,
@@ -45,6 +48,7 @@ impl From<BidPlaced> for Event {
   }
 }
 
+#[derive(Clone)]
 pub struct CommentAdded {
   pub id: CommentId,
   pub user_id: UserId,
@@ -58,6 +62,7 @@ impl From<CommentAdded> for Event {
   }
 }
 
+#[derive(Clone)]
 pub struct ProductCreated {
   pub product: Product,
 }
@@ -68,6 +73,7 @@ impl From<ProductCreated> for Event {
   }
 }
 
+#[derive(Clone)]
 pub struct ShowCreated {
   pub show: Show,
 }
@@ -78,6 +84,7 @@ impl From<ShowCreated> for Event {
   }
 }
 
+#[derive(Clone)]
 pub struct ShowStarted {
   pub id: ShowId,
   pub started_at: DateTime,
@@ -89,6 +96,7 @@ impl From<ShowStarted> for Event {
   }
 }
 
+#[derive(Clone)]
 pub struct AuctionProductAdded {
   pub id: AuctionProductId,
   pub auction_id: AuctionId,
