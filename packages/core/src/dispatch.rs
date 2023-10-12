@@ -1,6 +1,8 @@
 use crate::error::Result;
 use crate::handlers::auction_marked_ready;
 use crate::handlers::auction_product_added;
+use crate::handlers::auction_revived;
+use crate::handlers::auction_started;
 use crate::handlers::bid_placed;
 use crate::handlers::comment_added;
 use crate::handlers::product_created;
@@ -16,6 +18,8 @@ pub fn dispatch(events: Vec<Event>) -> Result<()> {
     Event::AuctionProductAdded(evt) => {
       auction_product_added::auction_product_added(evt)
     }
+    Event::AuctionRevived(evt) => auction_revived::auction_revived(evt),
+    Event::AuctionStarted(evt) => auction_started::auction_started(evt),
     Event::BidPlaced(evt) => bid_placed::bid_placed(evt),
     Event::CommentAdded(evt) => comment_added::comment_added(evt),
     Event::ProductCreated(evt) => product_created::product_created(evt),

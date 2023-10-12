@@ -14,6 +14,8 @@ use crate::UserId;
 pub enum Event {
   AuctionMarkedReady(AuctionMarkedReady),
   AuctionProductAdded(AuctionProductAdded),
+  AuctionRevived(AuctionRevived),
+  AuctionStarted(AuctionStarted),
   BidPlaced(BidPlaced),
   CommentAdded(CommentAdded),
   ProductCreated(ProductCreated),
@@ -26,10 +28,20 @@ pub struct AuctionMarkedReady {
   pub ready_at: DateTime,
 }
 
-impl From<AuctionMarkedReady> for Event {
-  fn from(event: AuctionMarkedReady) -> Self {
-    Self::AuctionMarkedReady(event)
-  }
+pub struct AuctionProductAdded {
+  pub id: AuctionProductId,
+  pub auction_id: AuctionId,
+  pub product_id: ProductId,
+}
+
+pub struct AuctionRevived {
+  pub id: AuctionId,
+  pub expired_at: DateTime,
+}
+
+pub struct AuctionStarted {
+  pub id: AuctionId,
+  pub started_at: DateTime,
 }
 
 pub struct BidPlaced {
@@ -37,12 +49,7 @@ pub struct BidPlaced {
   pub user_id: UserId,
   pub product_id: AuctionProductId,
   pub amount: Amount,
-}
-
-impl From<BidPlaced> for Event {
-  fn from(event: BidPlaced) -> Self {
-    Self::BidPlaced(event)
-  }
+  pub created_at: DateTime,
 }
 
 pub struct CommentAdded {
@@ -52,51 +59,15 @@ pub struct CommentAdded {
   pub text: Text,
 }
 
-impl From<CommentAdded> for Event {
-  fn from(event: CommentAdded) -> Self {
-    Self::CommentAdded(event)
-  }
-}
-
 pub struct ProductCreated {
   pub product: Product,
-}
-
-impl From<ProductCreated> for Event {
-  fn from(event: ProductCreated) -> Self {
-    Self::ProductCreated(event)
-  }
 }
 
 pub struct ShowCreated {
   pub show: Show,
 }
 
-impl From<ShowCreated> for Event {
-  fn from(event: ShowCreated) -> Self {
-    Self::ShowCreated(event)
-  }
-}
-
 pub struct ShowStarted {
   pub id: ShowId,
   pub started_at: DateTime,
-}
-
-impl From<ShowStarted> for Event {
-  fn from(event: ShowStarted) -> Self {
-    Self::ShowStarted(event)
-  }
-}
-
-pub struct AuctionProductAdded {
-  pub id: AuctionProductId,
-  pub auction_id: AuctionId,
-  pub product_id: ProductId,
-}
-
-impl From<AuctionProductAdded> for Event {
-  fn from(event: AuctionProductAdded) -> Self {
-    Self::AuctionProductAdded(event)
-  }
 }

@@ -9,6 +9,7 @@ pub fn bid_placed(event: BidPlaced) -> Result<()> {
     user_id: event.user_id,
     product_id: event.product_id,
     amount: event.amount,
+    created_at: event.created_at,
   };
 
   database::db().bids.insert(bid.id, bid);

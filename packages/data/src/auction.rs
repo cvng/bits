@@ -13,6 +13,8 @@ pub struct Auction {
   pub id: AuctionId,
   pub show_id: ShowId,
   pub ready_at: Option<DateTime>,
+  pub started_at: Option<DateTime>,
+  pub expired_at: Option<DateTime>,
 }
 
 #[derive(Clone, SimpleObject)]

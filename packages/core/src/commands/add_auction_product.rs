@@ -8,6 +8,7 @@ use bits_data::AuctionMarkedReady;
 use bits_data::AuctionProduct;
 use bits_data::AuctionProductAdded;
 use bits_data::AuctionProductId;
+use bits_data::Event;
 use bits_data::Product;
 use bits_data::ProductId;
 use bits_data::Utc;
@@ -54,21 +55,17 @@ pub async fn add_auction_product(
     product_id: product.id,
   };
 
-  let mut events = vec![AuctionProductAdded {
+  let mut events = vec![Event::AuctionProductAdded(AuctionProductAdded {
     id: auction_product.id,
     auction_id: auction_product.auction_id,
     product_id: auction_product.product_id,
-  }
-  .into()];
+  })];
 
   if auction.ready_at.is_none() {
-    events.push(
-      AuctionMarkedReady {
-        id: auction.id,
-        ready_at: Utc::now(),
-      }
-      .into(),
-    )
+    events.push(Event::AuctionMarkedReady(AuctionMarkedReady {
+      id: auction.id,
+      ready_at: Utc::now(),
+    }))
   }
 
   dispatch::dispatch(events).ok();

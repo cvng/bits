@@ -2,6 +2,7 @@ use crate::database;
 use crate::dispatch;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
+use bits_data::Event;
 use bits_data::Product;
 use bits_data::ProductCreated;
 use bits_data::ProductId;
@@ -32,7 +33,8 @@ pub async fn create_product(
     name: input.name,
   };
 
-  dispatch::dispatch(vec![ProductCreated { product }.into()]).ok();
+  dispatch::dispatch(vec![Event::ProductCreated(ProductCreated { product })])
+    .ok();
 
   Ok(CreateProductPayload {
     product: database::db()
