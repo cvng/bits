@@ -1,4 +1,3 @@
-use crate::database;
 use crate::dispatch;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
@@ -39,11 +38,5 @@ pub async fn create_show(
 
   dispatch::dispatch(vec![Event::ShowCreated(ShowCreated { show })]).ok();
 
-  Ok(CreateShowPayload {
-    show: database::db()
-      .shows
-      .get(&show.id)
-      .cloned()
-      .ok_or(Error::NotFound(show.id))?,
-  })
+  Ok(CreateShowPayload { show })
 }

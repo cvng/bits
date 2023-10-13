@@ -73,11 +73,5 @@ pub async fn start_show(
   ])
   .ok();
 
-  Ok(StartShowPayload {
-    show: database::db()
-      .shows
-      .get(&input.id)
-      .cloned()
-      .ok_or(Error::NotFound(input.id))?,
-  })
+  Ok(StartShowPayload { show })
 }
