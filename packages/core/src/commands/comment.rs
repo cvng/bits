@@ -11,8 +11,6 @@ use bits_data::Show;
 use bits_data::ShowId;
 use bits_data::Text;
 use bits_data::UserId;
-#[cfg(test)]
-use insta::assert_json_snapshot;
 use serde::Serialize;
 use thiserror::Error;
 
