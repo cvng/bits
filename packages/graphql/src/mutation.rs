@@ -20,7 +20,7 @@ impl MutationRoot {
     _ctx: &Context<'_>,
     input: commands::comment::CommentInput,
   ) -> Result<commands::comment::CommentPayload> {
-    Ok(commands::comment::comment(input).await?)
+    Ok(commands::comment::comment(input)?)
   }
 
   async fn create_product(

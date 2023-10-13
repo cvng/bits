@@ -3,7 +3,14 @@ name = "bits-core"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+doctest = false
+
 [dependencies]
 async-graphql = "6.0.7"
 bits-data = { path = "../data" }
+serde = "1.0.188"
 thiserror = "1.0.49"
+
+[dev-dependencies]
+insta = { version = "1.34.0", features = ["json", "redactions"] }
