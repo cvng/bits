@@ -7,7 +7,7 @@ use async_graphql::SimpleObject;
 
 id!(BidId);
 
-#[derive(Clone, SimpleObject)]
+#[derive(Clone, Copy, SimpleObject)]
 #[graphql(name = "BaseBid")]
 pub struct Bid {
   pub id: BidId,

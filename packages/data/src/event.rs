@@ -1,23 +1,19 @@
-use crate::Amount;
 use crate::AuctionId;
-use crate::AuctionProductId;
-use crate::BidId;
-use crate::CommentId;
+use crate::AuctionProduct;
+use crate::Bid;
+use crate::Comment;
 use crate::DateTime;
 use crate::Product;
-use crate::ProductId;
 use crate::Show;
 use crate::ShowId;
-use crate::Text;
-use crate::UserId;
 
 pub enum Event {
   AuctionMarkedReady(AuctionMarkedReady),
-  AuctionProductAdded(AuctionProductAdded),
+  AuctionProductCreated(AuctionProductCreated),
   AuctionRevived(AuctionRevived),
   AuctionStarted(AuctionStarted),
-  BidPlaced(BidPlaced),
-  CommentAdded(CommentAdded),
+  BidCreated(BidCreated),
+  CommentCreated(CommentCreated),
   ProductCreated(ProductCreated),
   ShowCreated(ShowCreated),
   ShowStarted(ShowStarted),
@@ -28,10 +24,8 @@ pub struct AuctionMarkedReady {
   pub ready_at: DateTime,
 }
 
-pub struct AuctionProductAdded {
-  pub id: AuctionProductId,
-  pub auction_id: AuctionId,
-  pub product_id: ProductId,
+pub struct AuctionProductCreated {
+  pub auction_product: AuctionProduct,
 }
 
 pub struct AuctionRevived {
@@ -44,19 +38,12 @@ pub struct AuctionStarted {
   pub started_at: DateTime,
 }
 
-pub struct BidPlaced {
-  pub id: BidId,
-  pub user_id: UserId,
-  pub product_id: AuctionProductId,
-  pub amount: Amount,
-  pub created_at: DateTime,
+pub struct BidCreated {
+  pub bid: Bid,
 }
 
-pub struct CommentAdded {
-  pub id: CommentId,
-  pub user_id: UserId,
-  pub show_id: ShowId,
-  pub text: Text,
+pub struct CommentCreated {
+  pub comment: Comment,
 }
 
 pub struct ProductCreated {

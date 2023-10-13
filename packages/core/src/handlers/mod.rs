@@ -1,9 +1,9 @@
 pub mod auction_marked_ready;
-pub mod auction_product_added;
+pub mod auction_product_created;
 pub mod auction_revived;
 pub mod auction_started;
-pub mod bid_placed;
-pub mod comment_added;
+pub mod bid_created;
+pub mod comment_created;
 pub mod product_created;
 pub mod show_created;
 pub mod show_started;

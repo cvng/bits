@@ -7,8 +7,8 @@ use bits_data::AuctionId;
 use bits_data::AuctionProductId;
 use bits_data::AuctionRevived;
 use bits_data::Bid;
+use bits_data::BidCreated;
 use bits_data::BidId;
-use bits_data::BidPlaced;
 use bits_data::Duration;
 use bits_data::Event;
 use bits_data::UserId;
@@ -51,7 +51,7 @@ pub async fn bid(input: BidInput) -> Result<BidPayload, Error> {
     .cloned()
     .ok_or(Error::ProductNotFound(input.product_id))?;
 
-  let auction = database::db()
+  let mut auction = database::db()
     .auctions
     .get(&product.auction_id)
     .cloned()
@@ -79,17 +79,15 @@ pub async fn bid(input: BidInput) -> Result<BidPayload, Error> {
     created_at: Utc::now(),
   };
 
+  let expired_at = expired_at + Duration::seconds(AUCTION_REFRESH_SECS);
+
+  auction.expired_at = Some(expired_at);
+
   dispatch::dispatch(vec![
-    Event::BidPlaced(BidPlaced {
-      id: bid.id,
-      user_id: bid.user_id,
-      product_id: bid.product_id,
-      amount: bid.amount,
-      created_at: bid.created_at,
-    }),
+    Event::BidCreated(BidCreated { bid }),
     Event::AuctionRevived(AuctionRevived {
       id: auction.id,
-      expired_at: expired_at + Duration::seconds(AUCTION_REFRESH_SECS),
+      expired_at,
     }),
   ])
   .ok();

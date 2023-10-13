@@ -6,7 +6,7 @@ use async_graphql::SimpleObject;
 
 id!(CommentId);
 
-#[derive(Clone, SimpleObject)]
+#[derive(Clone, Copy, SimpleObject)]
 #[graphql(name = "BaseComment")]
 pub struct Comment {
   pub id: CommentId,
