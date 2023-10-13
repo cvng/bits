@@ -24,6 +24,7 @@ pub struct Database {
   pub comments: HashMap<data::CommentId, data::Comment>,
   pub shows: HashMap<data::ShowId, data::Show>,
   pub products: HashMap<data::ProductId, data::Product>,
+  pub users: HashMap<data::UserId, data::User>,
 }
 
 pub fn db() -> DatabaseGuard {

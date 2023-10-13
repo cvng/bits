@@ -8,7 +8,7 @@ pub fn auction_revived(event: AuctionRevived) -> Result<()> {
     .auctions
     .get(&event.id)
     .cloned()
-    .ok_or_else(|| Error::NotFound(event.id.into()))?;
+    .ok_or(Error::NotFound(event.id.into()))?;
 
   auction.expired_at = Some(event.expired_at);
 

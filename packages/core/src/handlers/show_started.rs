@@ -8,7 +8,7 @@ pub fn show_started(event: ShowStarted) -> Result<()> {
     .shows
     .get(&event.id)
     .cloned()
-    .ok_or_else(|| Error::NotFound(event.id.into()))?;
+    .ok_or(Error::NotFound(event.id.into()))?;
 
   show.started_at = Some(event.started_at);
 

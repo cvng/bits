@@ -8,7 +8,7 @@ pub fn auction_marked_ready(event: AuctionMarkedReady) -> Result<()> {
     .auctions
     .get(&event.id)
     .cloned()
-    .ok_or_else(|| Error::NotFound(event.id.into()))?;
+    .ok_or(Error::NotFound(event.id.into()))?;
 
   auction.ready_at = Some(event.ready_at);
 

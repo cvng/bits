@@ -4,6 +4,7 @@ use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Amount;
 use bits_data::AuctionId;
+use bits_data::AuctionProduct;
 use bits_data::AuctionProductId;
 use bits_data::AuctionRevived;
 use bits_data::Bid;
@@ -11,6 +12,7 @@ use bits_data::BidCreated;
 use bits_data::BidId;
 use bits_data::Duration;
 use bits_data::Event;
+use bits_data::User;
 use bits_data::UserId;
 use bits_data::Utc;
 use thiserror::Error;
@@ -32,6 +34,8 @@ pub struct BidPayload {
 
 #[derive(Error, Debug)]
 pub enum Error {
+  #[error("bid not found: {0}")]
+  BidNotFound(BidId),
   #[error("auction not found: {0}")]
   AuctionNotFound(AuctionId),
   #[error("auction not ready: {0}")]
@@ -40,8 +44,12 @@ pub enum Error {
   AuctionExpired(AuctionId),
   #[error("auction not expired: {0}")]
   AuctionNotExpired(AuctionId),
+  #[error("invalid bid")]
+  InvalidBid,
   #[error("product not found: {0}")]
   ProductNotFound(AuctionProductId),
+  #[error("user not found: {0}")]
+  UserNotFound(UserId),
 }
 
 pub async fn bid(input: BidInput) -> Result<BidPayload, Error> {
@@ -71,6 +79,18 @@ pub async fn bid(input: BidInput) -> Result<BidPayload, Error> {
     return Err(Error::AuctionNotExpired(auction.id));
   };
 
+  if let Some(best_bid_id) = product.best_bid_id {
+    let best_bid = database::db()
+      .bids
+      .get(&best_bid_id)
+      .cloned()
+      .ok_or(Error::BidNotFound(best_bid_id))?;
+
+    if input.amount <= best_bid.amount {
+      return Err(Error::InvalidBid);
+    }
+  }
+
   let bid = Bid {
     id: BidId::new(),
     user_id: input.user_id,
@@ -93,4 +113,18 @@ pub async fn bid(input: BidInput) -> Result<BidPayload, Error> {
   .ok();
 
   Ok(BidPayload { bid })
+}
+
+fn _auction_product_winner(auction_product: &AuctionProduct) -> Option<User> {
+  let Some(best_bid_id) = auction_product.best_bid_id else {
+    return None;
+  };
+
+  let best_bid = database::db().bids.get(&best_bid_id).cloned();
+
+  let Some(best_bid) = best_bid else {
+    return None;
+  };
+
+  database::db().users.get(&best_bid.user_id).cloned()
 }
