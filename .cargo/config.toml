@@ -1,6 +1,6 @@
 # https://doc.rust-lang.org/cargo/reference/config.html
 
 [alias]
-dev = "watch --clear --exec run"
+dev = "watch --clear --exec check"
 lint = "clippy"
 snap = "insta"
