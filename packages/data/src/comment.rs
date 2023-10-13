@@ -3,7 +3,6 @@ use crate::ShowId;
 use crate::Text;
 use crate::UserId;
 use async_graphql::SimpleObject;
-use serde::Serialize;
 
 id!(CommentId);
 

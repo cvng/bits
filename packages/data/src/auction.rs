@@ -18,7 +18,7 @@ pub struct Auction {
   pub expired_at: Option<DateTime>,
 }
 
-#[derive(Clone, SimpleObject)]
+#[derive(Clone, Serialize, SimpleObject)]
 pub struct AuctionProduct {
   pub id: AuctionProductId,
   pub auction_id: AuctionId,

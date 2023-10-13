@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate serde;
+
 mod auction;
 mod bid;
 mod comment;
