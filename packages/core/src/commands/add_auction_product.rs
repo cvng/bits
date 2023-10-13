@@ -6,8 +6,9 @@ use bits_data::Auction;
 use bits_data::AuctionId;
 use bits_data::AuctionMarkedReady;
 use bits_data::AuctionProduct;
-use bits_data::AuctionProductAdded;
+use bits_data::AuctionProductCreated;
 use bits_data::AuctionProductId;
+use bits_data::Event;
 use bits_data::Product;
 use bits_data::ProductId;
 use bits_data::Utc;
@@ -36,7 +37,7 @@ pub enum Error {
 pub async fn add_auction_product(
   input: AddAuctionProductInput,
 ) -> Result<AddAuctionProductPayload, Error> {
-  let auction = database::db()
+  let mut auction = database::db()
     .auctions
     .get(&input.auction_id)
     .cloned()
@@ -54,21 +55,19 @@ pub async fn add_auction_product(
     product_id: product.id,
   };
 
-  let mut events = vec![AuctionProductAdded {
-    id: auction_product.id,
-    auction_id: auction_product.auction_id,
-    product_id: auction_product.product_id,
-  }
-  .into()];
+  let mut events = vec![Event::AuctionProductCreated(AuctionProductCreated {
+    auction_product,
+  })];
 
   if auction.ready_at.is_none() {
-    events.push(
-      AuctionMarkedReady {
-        id: auction.id,
-        ready_at: Utc::now(),
-      }
-      .into(),
-    )
+    let ready_at = Utc::now();
+
+    auction.ready_at = Some(ready_at);
+
+    events.push(Event::AuctionMarkedReady(AuctionMarkedReady {
+      id: auction.id,
+      ready_at,
+    }));
   }
 
   dispatch::dispatch(events).ok();

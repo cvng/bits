@@ -1,16 +1,16 @@
 use crate::database;
+use crate::error::Error;
 use crate::error::Result;
-use crate::Error;
-use bits_data::AuctionMarkedReady;
+use bits_data::AuctionStarted;
 
-pub fn auction_marked_ready(event: AuctionMarkedReady) -> Result<()> {
+pub fn auction_started(event: AuctionStarted) -> Result<()> {
   let mut auction = database::db()
     .auctions
     .get(&event.id)
     .cloned()
     .ok_or_else(|| Error::NotFound(event.id.into()))?;
 
-  auction.ready_at = Some(event.ready_at);
+  auction.started_at = Some(event.started_at);
 
   database::db().auctions.insert(auction.id, auction);
 

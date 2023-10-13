@@ -12,10 +12,7 @@ pub fn show_started(event: ShowStarted) -> Result<()> {
 
   show.started_at = Some(event.started_at);
 
-  database::db()
-    .shows
-    .insert(show.id, show)
-    .ok_or(Error::NotFound(show.id.into()))?;
+  database::db().shows.insert(show.id, show);
 
   Ok(())
 }

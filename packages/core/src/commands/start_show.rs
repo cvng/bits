@@ -3,6 +3,8 @@ use crate::dispatch;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::AuctionId;
+use bits_data::AuctionStarted;
+use bits_data::Event;
 use bits_data::Show;
 use bits_data::ShowId;
 use bits_data::ShowStarted;
@@ -57,18 +59,19 @@ pub async fn start_show(
     return Err(Error::AuctionNotReady(auction.id));
   }
 
-  dispatch::dispatch(vec![ShowStarted {
-    id: show.id,
-    started_at: Utc::now(),
-  }
-  .into()])
+  let now = Utc::now();
+
+  dispatch::dispatch(vec![
+    Event::ShowStarted(ShowStarted {
+      id: show.id,
+      started_at: now,
+    }),
+    Event::AuctionStarted(AuctionStarted {
+      id: auction.id,
+      started_at: now,
+    }),
+  ])
   .ok();
 
-  Ok(StartShowPayload {
-    show: database::db()
-      .shows
-      .get(&input.id)
-      .cloned()
-      .ok_or(Error::NotFound(input.id))?,
-  })
+  Ok(StartShowPayload { show })
 }

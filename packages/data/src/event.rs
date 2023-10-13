@@ -1,21 +1,19 @@
-use crate::Amount;
 use crate::AuctionId;
-use crate::AuctionProductId;
-use crate::BidId;
-use crate::CommentId;
+use crate::AuctionProduct;
+use crate::Bid;
+use crate::Comment;
 use crate::DateTime;
 use crate::Product;
-use crate::ProductId;
 use crate::Show;
 use crate::ShowId;
-use crate::Text;
-use crate::UserId;
 
 pub enum Event {
   AuctionMarkedReady(AuctionMarkedReady),
-  AuctionProductAdded(AuctionProductAdded),
-  BidPlaced(BidPlaced),
-  CommentAdded(CommentAdded),
+  AuctionProductCreated(AuctionProductCreated),
+  AuctionRevived(AuctionRevived),
+  AuctionStarted(AuctionStarted),
+  BidCreated(BidCreated),
+  CommentCreated(CommentCreated),
   ProductCreated(ProductCreated),
   ShowCreated(ShowCreated),
   ShowStarted(ShowStarted),
@@ -26,77 +24,37 @@ pub struct AuctionMarkedReady {
   pub ready_at: DateTime,
 }
 
-impl From<AuctionMarkedReady> for Event {
-  fn from(event: AuctionMarkedReady) -> Self {
-    Self::AuctionMarkedReady(event)
-  }
+pub struct AuctionProductCreated {
+  pub auction_product: AuctionProduct,
 }
 
-pub struct BidPlaced {
-  pub id: BidId,
-  pub user_id: UserId,
-  pub product_id: AuctionProductId,
-  pub amount: Amount,
+pub struct AuctionRevived {
+  pub id: AuctionId,
+  pub expired_at: DateTime,
 }
 
-impl From<BidPlaced> for Event {
-  fn from(event: BidPlaced) -> Self {
-    Self::BidPlaced(event)
-  }
+pub struct AuctionStarted {
+  pub id: AuctionId,
+  pub started_at: DateTime,
 }
 
-pub struct CommentAdded {
-  pub id: CommentId,
-  pub user_id: UserId,
-  pub show_id: ShowId,
-  pub text: Text,
+pub struct BidCreated {
+  pub bid: Bid,
 }
 
-impl From<CommentAdded> for Event {
-  fn from(event: CommentAdded) -> Self {
-    Self::CommentAdded(event)
-  }
+pub struct CommentCreated {
+  pub comment: Comment,
 }
 
 pub struct ProductCreated {
   pub product: Product,
 }
 
-impl From<ProductCreated> for Event {
-  fn from(event: ProductCreated) -> Self {
-    Self::ProductCreated(event)
-  }
-}
-
 pub struct ShowCreated {
   pub show: Show,
-}
-
-impl From<ShowCreated> for Event {
-  fn from(event: ShowCreated) -> Self {
-    Self::ShowCreated(event)
-  }
 }
 
 pub struct ShowStarted {
   pub id: ShowId,
   pub started_at: DateTime,
-}
-
-impl From<ShowStarted> for Event {
-  fn from(event: ShowStarted) -> Self {
-    Self::ShowStarted(event)
-  }
-}
-
-pub struct AuctionProductAdded {
-  pub id: AuctionProductId,
-  pub auction_id: AuctionId,
-  pub product_id: ProductId,
-}
-
-impl From<AuctionProductAdded> for Event {
-  fn from(event: AuctionProductAdded) -> Self {
-    Self::AuctionProductAdded(event)
-  }
 }

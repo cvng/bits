@@ -1,7 +1,7 @@
-use crate::database;
 use crate::dispatch;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
+use bits_data::Event;
 use bits_data::Show;
 use bits_data::ShowCreated;
 use bits_data::ShowId;
@@ -36,13 +36,7 @@ pub async fn create_show(
     started_at: None,
   };
 
-  dispatch::dispatch(vec![ShowCreated { show }.into()]).ok();
+  dispatch::dispatch(vec![Event::ShowCreated(ShowCreated { show })]).ok();
 
-  Ok(CreateShowPayload {
-    show: database::db()
-      .shows
-      .get(&show.id)
-      .cloned()
-      .ok_or(Error::NotFound(show.id))?,
-  })
+  Ok(CreateShowPayload { show })
 }
