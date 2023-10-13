@@ -53,6 +53,7 @@ pub async fn add_auction_product(
     id: AuctionProductId::new(),
     auction_id: auction.id,
     product_id: product.id,
+    best_bid_id: None,
   };
 
   let mut events = vec![Event::AuctionProductCreated(AuctionProductCreated {

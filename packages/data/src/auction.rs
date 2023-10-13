@@ -1,4 +1,5 @@
 use crate::id;
+use crate::BidId;
 use crate::DateTime;
 use crate::ProductId;
 use crate::ShowId;
@@ -22,4 +23,5 @@ pub struct AuctionProduct {
   pub id: AuctionProductId,
   pub auction_id: AuctionId,
   pub product_id: ProductId,
+  pub best_bid_id: Option<BidId>,
 }

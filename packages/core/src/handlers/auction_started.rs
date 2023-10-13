@@ -8,7 +8,7 @@ pub fn auction_started(event: AuctionStarted) -> Result<()> {
     .auctions
     .get(&event.id)
     .cloned()
-    .ok_or_else(|| Error::NotFound(event.id.into()))?;
+    .ok_or(Error::NotFound(event.id.into()))?;
 
   auction.started_at = Some(event.started_at);
 
