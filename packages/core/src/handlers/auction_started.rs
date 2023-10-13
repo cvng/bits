@@ -12,10 +12,7 @@ pub fn auction_started(event: AuctionStarted) -> Result<()> {
 
   auction.started_at = Some(event.started_at);
 
-  database::db()
-    .auctions
-    .insert(auction.id, auction)
-    .ok_or(Error::NotFound(auction.id.into()))?;
+  database::db().auctions.insert(auction.id, auction);
 
   Ok(())
 }
