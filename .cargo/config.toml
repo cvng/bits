@@ -1,5 +1,5 @@
 # https://doc.rust-lang.org/cargo/reference/config.html
 
 [alias]
-dev = "watch --clear --exec check"
+dev = "watch --clear --exec run"
 lint = "clippy"
