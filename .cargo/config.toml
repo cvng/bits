@@ -3,3 +3,4 @@
 [alias]
 dev = "watch --clear --exec run"
 lint = "clippy"
+snap = "insta"
