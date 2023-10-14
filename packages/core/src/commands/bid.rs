@@ -1,8 +1,9 @@
 use crate::database;
-use crate::dispatch;
+use crate::Command;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Amount;
+use bits_data::Auction;
 use bits_data::AuctionId;
 use bits_data::AuctionProduct;
 use bits_data::AuctionProductId;
@@ -52,67 +53,88 @@ pub enum Error {
   UserNotFound(UserId),
 }
 
-pub async fn bid(input: BidInput) -> Result<BidPayload, Error> {
-  let product = database::db()
-    .auction_products
-    .get(&input.product_id)
-    .cloned()
-    .ok_or(Error::ProductNotFound(input.product_id))?;
+pub struct BidCommand {
+  pub bid: Bid,
+  pub auction: Auction,
+  pub product: AuctionProduct,
+}
 
-  let mut auction = database::db()
-    .auctions
-    .get(&product.auction_id)
-    .cloned()
-    .ok_or(Error::AuctionNotFound(product.auction_id))?;
+impl Command for BidCommand {
+  type Error = Error;
+  type Input = BidInput;
+  type Payload = BidPayload;
 
-  if auction.ready_at.is_none() {
-    return Err(Error::AuctionNotReady(auction.id));
-  }
-
-  if let Some(started_at) = auction.started_at {
-    if started_at - Utc::now() < Duration::seconds(AUCTION_TIMEOUT_SECS) {
-      return Err(Error::AuctionExpired(auction.id));
-    }
-  }
-
-  let Some(expired_at) = auction.expired_at else {
-    return Err(Error::AuctionNotExpired(auction.id));
-  };
-
-  if let Some(best_bid_id) = product.best_bid_id {
-    let best_bid = database::db()
-      .bids
-      .get(&best_bid_id)
+  fn new(input: Self::Input) -> Result<Self, Error> {
+    let product = database::db()
+      .auction_products
+      .get(&input.product_id)
       .cloned()
-      .ok_or(Error::BidNotFound(best_bid_id))?;
+      .ok_or(Error::ProductNotFound(input.product_id))?;
 
-    if input.amount <= best_bid.amount {
-      return Err(Error::InvalidBid);
-    }
+    let auction = database::db()
+      .auctions
+      .get(&product.auction_id)
+      .cloned()
+      .ok_or(Error::AuctionNotFound(product.auction_id))?;
+
+    let bid = Bid {
+      id: BidId::new(),
+      user_id: input.user_id,
+      product_id: input.product_id,
+      amount: input.amount,
+      created_at: Utc::now(),
+    };
+
+    Ok(Self {
+      bid,
+      auction,
+      product,
+    })
   }
 
-  let bid = Bid {
-    id: BidId::new(),
-    user_id: input.user_id,
-    product_id: input.product_id,
-    amount: input.amount,
-    created_at: Utc::now(),
-  };
+  fn payload(&self) -> Result<Self::Payload, Self::Error> {
+    Ok(BidPayload { bid: self.bid })
+  }
 
-  let expired_at = expired_at + Duration::seconds(AUCTION_REFRESH_SECS);
+  fn events(&mut self) -> Result<Vec<Event>, Self::Error> {
+    if self.auction.ready_at.is_none() {
+      return Err(Error::AuctionNotReady(self.auction.id));
+    }
 
-  auction.expired_at = Some(expired_at);
+    if let Some(started_at) = self.auction.started_at {
+      if started_at - Utc::now() < Duration::seconds(AUCTION_TIMEOUT_SECS) {
+        return Err(Error::AuctionExpired(self.auction.id));
+      }
+    }
 
-  dispatch::dispatch(vec![
-    Event::BidCreated(BidCreated { bid }),
-    Event::AuctionRevived(AuctionRevived {
-      id: auction.id,
-      expired_at,
-    }),
-  ])
-  .ok();
+    if let Some(best_bid_id) = self.product.best_bid_id {
+      let best_bid = database::db()
+        .bids
+        .get(&best_bid_id)
+        .cloned()
+        .ok_or(Error::BidNotFound(best_bid_id))?;
 
-  Ok(BidPayload { bid })
+      if self.bid.amount <= best_bid.amount {
+        return Err(Error::InvalidBid);
+      }
+    }
+
+    let Some(expired_at) = self.auction.expired_at else {
+      return Err(Error::AuctionNotExpired(self.auction.id));
+    };
+
+    let expired_at = expired_at + Duration::seconds(AUCTION_REFRESH_SECS);
+
+    self.auction.expired_at = Some(expired_at);
+
+    Ok(vec![
+      Event::BidCreated(BidCreated { bid: self.bid }),
+      Event::AuctionRevived(AuctionRevived {
+        id: self.auction.id,
+        expired_at,
+      }),
+    ])
+  }
 }
 
 fn _auction_product_winner(auction_product: &AuctionProduct) -> Option<User> {

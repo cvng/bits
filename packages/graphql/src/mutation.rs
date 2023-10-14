@@ -13,7 +13,7 @@ impl MutationRoot {
     _ctx: &Context<'_>,
     input: commands::bid::BidInput,
   ) -> Result<commands::bid::BidPayload> {
-    Ok(commands::bid::bid(input).await?)
+    Ok(commands::bid::BidCommand::new(input)?.run()?)
   }
 
   async fn comment(
@@ -21,7 +21,7 @@ impl MutationRoot {
     _ctx: &Context<'_>,
     input: commands::comment::CommentInput,
   ) -> Result<commands::comment::CommentPayload> {
-    Ok(commands::comment::CommentCommand::new(input).run()?)
+    Ok(commands::comment::CommentCommand::new(input)?.run()?)
   }
 
   async fn create_product(

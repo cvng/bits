@@ -1,5 +1,4 @@
 use crate::database;
-use crate::dispatch;
 use crate::dispatch::Command;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
@@ -39,36 +38,34 @@ impl Command for CommentCommand {
   type Input = CommentInput;
   type Payload = CommentPayload;
 
-  fn new(input: Self::Input) -> Self {
-    Self {
+  fn new(input: Self::Input) -> Result<Self, Self::Error> {
+    database::db()
+      .shows
+      .get(&input.show_id)
+      .cloned()
+      .ok_or(Error::ShowNotFound(input.show_id))?;
+
+    Ok(Self {
       comment: Comment {
         id: CommentId::new(),
         user_id: input.user_id,
         show_id: input.show_id,
         text: input.text,
       },
-    }
+    })
   }
 
-  fn run(&self) -> Result<CommentPayload, Error> {
-    database::db()
-      .shows
-      .get(&self.comment.show_id)
-      .cloned()
-      .ok_or(Error::ShowNotFound(self.comment.show_id))?;
-
-    dispatch::dispatch(self.handle()?).ok();
-
+  fn payload(&self) -> Result<Self::Payload, Self::Error> {
     Ok(CommentPayload {
       comment: self.comment,
     })
   }
 
-  fn handle(&self) -> Result<Vec<Event>, Error> {
-    let comment = self.comment;
-
+  fn events(&mut self) -> Result<Vec<Event>, Error> {
     Ok(vec![Event::CommentCreated {
-      payload: CommentCreated { comment },
+      payload: CommentCreated {
+        comment: self.comment,
+      },
     }])
   }
 }
@@ -97,7 +94,7 @@ fn test_comment() {
 
   database::db().shows.insert(info.show.id, info.show);
 
-  let payload = CommentCommand::new(info.input).handle().unwrap();
+  let payload = CommentCommand::new(info.input).unwrap().events().unwrap();
 
   with_settings!(
     { info => &info },

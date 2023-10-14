@@ -15,9 +15,21 @@ pub trait Command {
   type Input;
   type Payload;
 
-  fn new(input: Self::Input) -> Self;
-  fn run(&self) -> Result<Self::Payload, Self::Error>;
-  fn handle(&self) -> Result<Vec<Event>, Self::Error>;
+  fn new(input: Self::Input) -> Result<Self, Self::Error>
+  where
+    Self: Sized;
+
+  fn events(&mut self) -> Result<Vec<Event>, Self::Error>;
+
+  fn payload(&self) -> Result<Self::Payload, Self::Error>;
+
+  fn run(&mut self) -> Result<Self::Payload, Self::Error> {
+    let events = self.events()?;
+
+    dispatch(events).ok();
+
+    self.payload()
+  }
 }
 
 pub(crate) fn dispatch(events: Vec<Event>) -> error::Result<()> {
@@ -31,8 +43,8 @@ pub(crate) fn dispatch(events: Vec<Event>) -> error::Result<()> {
     Event::AuctionRevived(evt) => auction_revived::auction_revived(evt),
     Event::AuctionStarted(evt) => auction_started::auction_started(evt),
     Event::BidCreated(evt) => bid_created::bid_created(evt),
-    Event::CommentCreated { payload: evt } => {
-      comment_created::comment_created(evt)
+    Event::CommentCreated { payload } => {
+      comment_created::comment_created(payload)
     }
     Event::ProductCreated(evt) => product_created::product_created(evt),
     Event::ShowCreated(evt) => show_created::show_created(evt),
