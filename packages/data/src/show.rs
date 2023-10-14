@@ -6,7 +6,7 @@ use async_graphql::SimpleObject;
 
 id!(ShowId);
 
-#[derive(Clone, Copy, Serialize, SimpleObject)]
+#[derive(Copy, Clone, Serialize, SimpleObject)]
 #[graphql(name = "BaseShow")]
 pub struct Show {
   pub id: ShowId,

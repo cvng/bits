@@ -26,7 +26,7 @@ pub struct AddAuctionProductPayload {
   pub product: Product,
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
   #[error("auction not found: {0}")]
   AuctionNotFound(AuctionId),

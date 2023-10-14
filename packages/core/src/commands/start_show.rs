@@ -21,7 +21,7 @@ pub struct StartShowPayload {
   pub show: Show,
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
   #[error("not found: {0}")]
   NotFound(ShowId),

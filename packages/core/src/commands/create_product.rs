@@ -18,7 +18,7 @@ pub struct CreateProductPayload {
   pub product: Product,
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
   #[error("not found: {0}")]
   NotFound(ProductId),

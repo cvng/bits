@@ -31,7 +31,9 @@ pub(crate) fn dispatch(events: Vec<Event>) -> error::Result<()> {
     Event::AuctionRevived(evt) => auction_revived::auction_revived(evt),
     Event::AuctionStarted(evt) => auction_started::auction_started(evt),
     Event::BidCreated(evt) => bid_created::bid_created(evt),
-    Event::CommentCreated(evt) => comment_created::comment_created(evt),
+    Event::CommentCreated { payload: evt } => {
+      comment_created::comment_created(evt)
+    }
     Event::ProductCreated(evt) => product_created::product_created(evt),
     Event::ShowCreated(evt) => show_created::show_created(evt),
     Event::ShowStarted(evt) => show_started::show_started(evt),

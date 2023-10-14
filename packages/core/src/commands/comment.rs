@@ -12,19 +12,19 @@ use bits_data::Text;
 use bits_data::UserId;
 use thiserror::Error;
 
-#[derive(Clone, Copy, InputObject)]
+#[derive(Copy, Clone, Serialize, InputObject)]
 pub struct CommentInput {
   pub user_id: UserId,
   pub show_id: ShowId,
   pub text: Text,
 }
 
-#[derive(SimpleObject, Serialize)]
+#[derive(Serialize, SimpleObject)]
 pub struct CommentPayload {
   pub comment: Comment,
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
   #[error("show not found: {0}")]
   ShowNotFound(ShowId),
@@ -67,41 +67,54 @@ impl Command for CommentCommand {
   fn handle(&self) -> Result<Vec<Event>, Error> {
     let comment = self.comment;
 
-    Ok(vec![Event::CommentCreated(CommentCreated { comment })])
+    Ok(vec![Event::CommentCreated {
+      payload: CommentCreated { comment },
+    }])
   }
 }
 
 #[test]
 fn test_comment() {
-  database::db().shows.insert(
-    "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
-    bits_data::Show {
+  #[derive(Serialize)]
+  struct Info {
+    show: bits_data::Show,
+    input: CommentInput,
+  }
+
+  let info = Info {
+    show: bits_data::Show {
       id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
       creator_id: UserId::new(),
       name: Text::new("name"),
       started_at: None,
     },
+    input: CommentInput {
+      user_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
+      show_id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
+      text: Text::new("text"),
+    },
+  };
+
+  database::db().shows.insert(info.show.id, info.show);
+
+  let payload = CommentCommand::new(info.input).handle().unwrap();
+
+  with_settings!(
+    { info => &info },
+    { assert_json_snapshot!(payload, {"[0].payload.comment.id" => "[uuid]"}, @r###"
+      [
+        {
+          "type": "comment_created",
+          "payload": {
+            "comment": {
+              "id": "[uuid]",
+              "user_id": "9ad4e977-8156-450e-ad00-944f9fc730ab",
+              "show_id": "f5e84179-7f8d-461b-a1d9-497974de10a6",
+              "text": "text"
+            }
+          }
+        }
+      ]
+      "###) }
   );
-
-  let payload = CommentCommand::new(CommentInput {
-    user_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
-    show_id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
-    text: Text::new("text"),
-  })
-  .handle()
-  .unwrap();
-
-  assert_json_snapshot!(payload, {"[0].comment.id" => "[uuid]"}, @r###"
-  [
-    {
-      "event": "comment_created",
-      "comment": {
-        "id": "[uuid]",
-        "user_id": "9ad4e977-8156-450e-ad00-944f9fc730ab",
-        "show_id": "f5e84179-7f8d-461b-a1d9-497974de10a6",
-        "text": "text"
-      }
-    }
-  ]
-  "###);
 }

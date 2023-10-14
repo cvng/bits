@@ -8,14 +8,14 @@ use crate::Show;
 use crate::ShowId;
 
 #[derive(Serialize)]
-#[serde(tag = "event", rename_all = "snake_case")]
+#[serde(tag = "type", rename_all = "snake_case")]
 pub enum Event {
   AuctionMarkedReady(AuctionMarkedReady),
   AuctionProductCreated(AuctionProductCreated),
   AuctionRevived(AuctionRevived),
   AuctionStarted(AuctionStarted),
   BidCreated(BidCreated),
-  CommentCreated(CommentCreated),
+  CommentCreated { payload: CommentCreated },
   ProductCreated(ProductCreated),
   ShowCreated(ShowCreated),
   ShowStarted(ShowStarted),

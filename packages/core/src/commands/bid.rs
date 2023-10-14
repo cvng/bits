@@ -32,7 +32,7 @@ pub struct BidPayload {
   pub bid: Bid,
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
   #[error("bid not found: {0}")]
   BidNotFound(BidId),
