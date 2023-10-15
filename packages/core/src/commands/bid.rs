@@ -5,11 +5,8 @@ use async_graphql::SimpleObject;
 use bits_data::Amount;
 use bits_data::Auction;
 use bits_data::AuctionId;
-use bits_data::AuctionProduct;
 use bits_data::AuctionProductId;
-use bits_data::AuctionRevived;
 use bits_data::Bid;
-use bits_data::BidCreated;
 use bits_data::BidId;
 use bits_data::Duration;
 use bits_data::Event;
@@ -54,7 +51,7 @@ pub enum Error {
 
 struct State {
   pub auction: Auction,
-  pub product: AuctionProduct,
+  pub best_bid: Option<Bid>,
 }
 
 struct BidCommand;
@@ -78,7 +75,11 @@ impl Command for BidCommand {
       .cloned()
       .ok_or(Error::AuctionNotFound(product.auction_id))?;
 
-    Ok(State { product, auction })
+    let best_bid = product
+      .best_bid_id
+      .and_then(|best_bid_id| database::db().bids.get(&best_bid_id).cloned());
+
+    Ok(State { auction, best_bid })
   }
 
   fn events(
@@ -104,34 +105,21 @@ impl Command for BidCommand {
       }
     }
 
-    if let Some(best_bid_id) = state.product.best_bid_id {
-      let best_bid = database::db()
-        .bids
-        .get(&best_bid_id)
-        .cloned()
-        .ok_or(Error::BidNotFound(best_bid_id))?;
-
+    if let Some(best_bid) = state.best_bid {
       if bid.amount <= best_bid.amount {
         return Err(Error::InvalidBid);
       }
     }
 
-    let Some(expired_at) = state.auction.expired_at else {
-      return Err(Error::AuctionNotExpired(state.auction.id));
-    };
-
-    let expired_at = expired_at + Duration::seconds(AUCTION_REFRESH_SECS);
+    let expired_at = state
+      .auction
+      .expired_at
+      .map(|expired_at| expired_at + Duration::seconds(AUCTION_REFRESH_SECS))
+      .unwrap_or_else(|| Utc::now() + Duration::seconds(AUCTION_REFRESH_SECS));
 
     Ok(vec![
-      Event::BidCreated {
-        payload: BidCreated { bid },
-      },
-      Event::AuctionRevived {
-        payload: AuctionRevived {
-          id: state.auction.id,
-          expired_at,
-        },
-      },
+      Event::bid_created(bid),
+      Event::auction_revived(state.auction.id, expired_at),
     ])
   }
 

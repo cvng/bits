@@ -21,6 +21,26 @@ pub enum Event {
   ShowStarted(ShowStarted),
 }
 
+impl Event {
+  pub fn auction_revived(id: AuctionId, expired_at: DateTime) -> Self {
+    Self::AuctionRevived {
+      payload: AuctionRevived { id, expired_at },
+    }
+  }
+
+  pub fn bid_created(bid: Bid) -> Self {
+    Self::BidCreated {
+      payload: BidCreated { bid },
+    }
+  }
+
+  pub fn comment_created(comment: Comment) -> Self {
+    Self::CommentCreated {
+      payload: CommentCreated { comment },
+    }
+  }
+}
+
 #[derive(Clone, Serialize)]
 pub struct AuctionMarkedReady {
   pub id: AuctionId,

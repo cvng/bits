@@ -3,7 +3,6 @@ use crate::dispatch::Command;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Comment;
-use bits_data::CommentCreated;
 use bits_data::CommentId;
 use bits_data::Event;
 use bits_data::Show;
@@ -65,9 +64,7 @@ impl Command for CommentCommand {
       text: input.text,
     };
 
-    Ok(vec![Event::CommentCreated {
-      payload: CommentCreated { comment },
-    }])
+    Ok(vec![Event::comment_created(comment)])
   }
 
   fn payload(&self, events: Vec<Event>) -> Option<Self::Payload> {
