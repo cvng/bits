@@ -112,7 +112,7 @@ impl Command for BidCommand {
       .started_at
       .ok_or(Error::AuctionNotStarted(auction.id))?;
 
-    let mut expired_at = auction
+    let expired_at = auction
       .expired_at
       .ok_or(Error::AuctionNotStarted(auction.id))?;
 
@@ -128,7 +128,7 @@ impl Command for BidCommand {
       )
       .ok_or(Error::InvalidAmount(bid.amount))?;
 
-    expired_at += Duration::seconds(AUCTION_REFRESH_SECS);
+    let expired_at = bid.created_at + Duration::seconds(AUCTION_REFRESH_SECS);
 
     Ok(vec![
       Event::bid_created(bid),
@@ -150,13 +150,17 @@ pub fn bid(input: BidInput) -> Result<BidPayload, Error> {
 
 #[test]
 fn test_bid() {
+  let now = Utc::now();
+
   let state = State {
     auction: Some(Auction {
       id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
       show_id: bits_data::ShowId::new(),
       ready_at: Some("2023-10-15T22:46:58.012577Z".parse().unwrap()),
-      started_at: Some("2023-10-15T22:46:58.012577Z".parse().unwrap()),
-      expired_at: Some("2023-10-15T23:01:58.012577Z".parse().unwrap()),
+      started_at: Some(now),
+      expired_at: Some(
+        now + Duration::seconds(bits_data::AUCTION_TIMEOUT_SECS),
+      ),
     }),
     product: Some(bits_data::AuctionProduct {
       id: "6bc8e88e-fc47-41c6-8dae-b180d1efae98".parse().unwrap(),
@@ -178,6 +182,7 @@ fn test_bid() {
   assert_json_snapshot!(events, {
     "[0].payload.bid.id" => "[uuid]",
     "[0].payload.bid.created_at" => "[datetime]",
+    "[1].payload.expired_at" => "[datetime]",
   }, @r###"
   [
     {
@@ -196,7 +201,7 @@ fn test_bid() {
       "type": "auction_revived",
       "payload": {
         "id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
-        "expired_at": "2023-10-15T23:02:13.012577Z"
+        "expired_at": "[datetime]"
       }
     }
   ]
