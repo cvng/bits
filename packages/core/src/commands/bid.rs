@@ -5,6 +5,7 @@ use async_graphql::SimpleObject;
 use bits_data::Amount;
 use bits_data::Auction;
 use bits_data::AuctionId;
+use bits_data::AuctionProduct;
 use bits_data::AuctionProductId;
 use bits_data::Bid;
 use bits_data::BidId;
@@ -48,7 +49,8 @@ pub enum Error {
 }
 
 struct State {
-  pub auction: Auction,
+  pub auction: Option<Auction>,
+  pub product: Option<AuctionProduct>,
   pub best_bid: Option<Bid>,
 }
 
@@ -64,20 +66,23 @@ impl Command for BidCommand {
     let product = database::db()
       .auction_products
       .get(&input.product_id)
-      .cloned()
-      .ok_or(Error::ProductNotFound(input.product_id))?;
+      .cloned();
 
-    let auction = database::db()
-      .auctions
-      .get(&product.auction_id)
-      .cloned()
-      .ok_or(Error::AuctionNotFound(product.auction_id))?;
+    let auction = product.and_then(|product| {
+      database::db().auctions.get(&product.auction_id).cloned()
+    });
 
-    let best_bid = product
-      .best_bid_id
-      .and_then(|best_bid_id| database::db().bids.get(&best_bid_id).cloned());
+    let best_bid = product.and_then(|product| {
+      product
+        .best_bid_id
+        .and_then(|best_bid_id| database::db().bids.get(&best_bid_id).cloned())
+    });
 
-    Ok(State { auction, best_bid })
+    Ok(State {
+      auction,
+      product,
+      best_bid,
+    })
   }
 
   fn events(
@@ -85,6 +90,14 @@ impl Command for BidCommand {
     state: &Self::State,
     input: &Self::Input,
   ) -> Result<Vec<Event>, Self::Error> {
+    let product = state
+      .product
+      .ok_or(Error::ProductNotFound(input.product_id))?;
+
+    let auction = state
+      .auction
+      .ok_or(Error::AuctionNotFound(product.auction_id))?;
+
     let bid = Bid {
       id: BidId::new(),
       user_id: input.user_id,
@@ -93,24 +106,19 @@ impl Command for BidCommand {
       created_at: Utc::now(),
     };
 
-    state
-      .auction
-      .ready_at
-      .ok_or(Error::AuctionNotReady(state.auction.id))?;
+    auction.ready_at.ok_or(Error::AuctionNotReady(auction.id))?;
 
-    state
-      .auction
+    auction
       .started_at
-      .ok_or(Error::AuctionNotStarted(state.auction.id))?;
+      .ok_or(Error::AuctionNotStarted(auction.id))?;
 
-    let mut expired_at = state
-      .auction
+    let mut expired_at = auction
       .expired_at
-      .ok_or(Error::AuctionNotStarted(state.auction.id))?;
+      .ok_or(Error::AuctionNotStarted(auction.id))?;
 
     (bid.created_at < expired_at)
       .then_some(())
-      .ok_or(Error::AuctionExpired(state.auction.id))?;
+      .ok_or(Error::AuctionExpired(auction.id))?;
 
     state
       .best_bid
@@ -124,7 +132,7 @@ impl Command for BidCommand {
 
     Ok(vec![
       Event::bid_created(bid),
-      Event::auction_revived(state.auction.id, expired_at),
+      Event::auction_revived(auction.id, expired_at),
     ])
   }
 
@@ -143,13 +151,19 @@ pub fn bid(input: BidInput) -> Result<BidPayload, Error> {
 #[test]
 fn test_bid() {
   let state = State {
-    auction: Auction {
+    auction: Some(Auction {
       id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
       show_id: bits_data::ShowId::new(),
       ready_at: Some("2023-10-15T22:46:58.012577Z".parse().unwrap()),
       started_at: Some("2023-10-15T22:46:58.012577Z".parse().unwrap()),
       expired_at: Some("2023-10-15T23:01:58.012577Z".parse().unwrap()),
-    },
+    }),
+    product: Some(bits_data::AuctionProduct {
+      id: "6bc8e88e-fc47-41c6-8dae-b180d1efae98".parse().unwrap(),
+      auction_id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
+      product_id: bits_data::ProductId::new(),
+      best_bid_id: None,
+    }),
     best_bid: None,
   };
 

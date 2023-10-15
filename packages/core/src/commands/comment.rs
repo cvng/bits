@@ -31,7 +31,7 @@ pub enum Error {
 
 #[derive(Serialize)]
 pub struct State {
-  show: Show,
+  show: Option<Show>,
 }
 
 struct CommentCommand;
@@ -44,11 +44,7 @@ impl Command for CommentCommand {
 
   fn state(&self, input: &Self::Input) -> Result<Self::State, Self::Error> {
     Ok(State {
-      show: database::db()
-        .shows
-        .get(&input.show_id)
-        .cloned()
-        .ok_or(Error::ShowNotFound(input.show_id))?,
+      show: database::db().shows.get(&input.show_id).cloned(),
     })
   }
 
@@ -57,10 +53,12 @@ impl Command for CommentCommand {
     state: &Self::State,
     input: &Self::Input,
   ) -> Result<Vec<Event>, Self::Error> {
+    state.show.ok_or(Error::ShowNotFound(input.show_id))?;
+
     let comment = Comment {
       id: CommentId::new(),
       user_id: input.user_id,
-      show_id: state.show.id,
+      show_id: input.show_id,
       text: input.text,
     };
 
@@ -84,17 +82,17 @@ pub fn comment(input: CommentInput) -> Result<CommentPayload, Error> {
 #[test]
 fn test_comment() {
   let state = State {
-    show: bits_data::Show {
+    show: Some(bits_data::Show {
       id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
       creator_id: UserId::new(),
       name: Text::new("name"),
       started_at: None,
-    },
+    }),
   };
 
   let input = CommentInput {
     user_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
-    show_id: state.show.id,
+    show_id: state.show.unwrap().id,
     text: Text::new("text"),
   };
 
