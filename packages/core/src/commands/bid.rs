@@ -112,18 +112,13 @@ impl Command for BidCommand {
       .then_some(())
       .ok_or(Error::AuctionExpired(state.auction.id))?;
 
-    /* TODO
     state
       .best_bid
-      .map_or(None, |best_bid| Some(bid.amount > best_bid.amount))
+      .map_or_else(
+        || Some(()),
+        |best_bid| (bid.amount < best_bid.amount).then_some(()),
+      )
       .ok_or(Error::InvalidAmount(bid.amount))?;
-     */
-
-    if let Some(best_bid) = state.best_bid {
-      if bid.amount < best_bid.amount {
-        return Err(Error::InvalidAmount(bid.amount));
-      }
-    }
 
     expired_at += Duration::seconds(AUCTION_REFRESH_SECS);
 
