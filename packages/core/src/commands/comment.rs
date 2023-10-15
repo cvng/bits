@@ -54,13 +54,13 @@ impl Command for CommentCommand {
 
   fn events(
     &self,
-    _state: &Self::State,
+    state: &Self::State,
     input: &Self::Input,
   ) -> Result<Vec<Event>, Self::Error> {
     let comment = Comment {
       id: CommentId::new(),
       user_id: input.user_id,
-      show_id: input.show_id,
+      show_id: state.show.id,
       text: input.text,
     };
 
@@ -83,50 +83,36 @@ pub fn comment(input: CommentInput) -> Result<CommentPayload, Error> {
 
 #[test]
 fn test_comment() {
-  #[derive(Serialize)]
-  struct Info {
-    state: State,
-    input: CommentInput,
-  }
-
-  let info = Info {
-    state: State {
-      show: bits_data::Show {
-        id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
-        creator_id: UserId::new(),
-        name: Text::new("name"),
-        started_at: None,
-      },
-    },
-    input: CommentInput {
-      user_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
-      show_id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
-      text: Text::new("text"),
+  let state = State {
+    show: bits_data::Show {
+      id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
+      creator_id: UserId::new(),
+      name: Text::new("name"),
+      started_at: None,
     },
   };
 
-  database::db()
-    .shows
-    .insert(info.state.show.id, info.state.show);
+  let input = CommentInput {
+    user_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
+    show_id: state.show.id,
+    text: Text::new("text"),
+  };
 
-  let events = CommentCommand.events(&info.state, &info.input).unwrap();
+  let events = CommentCommand.events(&state, &input).unwrap();
 
-  with_settings!(
-    { info => &info },
-    { assert_json_snapshot!(events, {"[0].payload.comment.id" => "[uuid]"}, @r###"
-      [
-        {
-          "type": "comment_created",
-          "payload": {
-            "comment": {
-              "id": "[uuid]",
-              "user_id": "9ad4e977-8156-450e-ad00-944f9fc730ab",
-              "show_id": "f5e84179-7f8d-461b-a1d9-497974de10a6",
-              "text": "text"
-            }
-          }
+  assert_json_snapshot!(events, {"[0].payload.comment.id" => "[uuid]"}, @r###"
+  [
+    {
+      "type": "comment_created",
+      "payload": {
+        "comment": {
+          "id": "[uuid]",
+          "user_id": "9ad4e977-8156-450e-ad00-944f9fc730ab",
+          "show_id": "f5e84179-7f8d-461b-a1d9-497974de10a6",
+          "text": "text"
         }
-      ]
-      "###) }
-  );
+      }
+    }
+  ]
+  "###);
 }

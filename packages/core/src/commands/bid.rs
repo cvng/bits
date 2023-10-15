@@ -12,10 +12,8 @@ use bits_data::Duration;
 use bits_data::Event;
 use bits_data::UserId;
 use bits_data::Utc;
+use bits_data::AUCTION_REFRESH_SECS;
 use thiserror::Error;
-
-const AUCTION_TIMEOUT_SECS: i64 = 60;
-const AUCTION_REFRESH_SECS: i64 = 15;
 
 #[derive(InputObject)]
 pub struct BidInput {
@@ -37,12 +35,12 @@ pub enum Error {
   AuctionNotFound(AuctionId),
   #[error("auction not ready: {0}")]
   AuctionNotReady(AuctionId),
+  #[error("auction not started: {0}")]
+  AuctionNotStarted(AuctionId),
   #[error("auction expired: {0}")]
   AuctionExpired(AuctionId),
-  #[error("auction not expired: {0}")]
-  AuctionNotExpired(AuctionId),
-  #[error("invalid bid")]
-  InvalidBid,
+  #[error("invalid bid amount: {0}")]
+  InvalidAmount(Amount),
   #[error("product not found: {0}")]
   ProductNotFound(AuctionProductId),
   #[error("user not found: {0}")]
@@ -95,27 +93,39 @@ impl Command for BidCommand {
       created_at: Utc::now(),
     };
 
-    if state.auction.ready_at.is_none() {
-      return Err(Error::AuctionNotReady(state.auction.id));
-    }
+    state
+      .auction
+      .ready_at
+      .ok_or(Error::AuctionNotReady(state.auction.id))?;
 
-    if let Some(started_at) = state.auction.started_at {
-      if started_at - Utc::now() < Duration::seconds(AUCTION_TIMEOUT_SECS) {
-        return Err(Error::AuctionExpired(state.auction.id));
-      }
-    }
+    state
+      .auction
+      .started_at
+      .ok_or(Error::AuctionNotStarted(state.auction.id))?;
 
-    if let Some(best_bid) = state.best_bid {
-      if bid.amount <= best_bid.amount {
-        return Err(Error::InvalidBid);
-      }
-    }
-
-    let expired_at = state
+    let mut expired_at = state
       .auction
       .expired_at
-      .map(|expired_at| expired_at + Duration::seconds(AUCTION_REFRESH_SECS))
-      .unwrap_or_else(|| Utc::now() + Duration::seconds(AUCTION_REFRESH_SECS));
+      .ok_or(Error::AuctionNotStarted(state.auction.id))?;
+
+    (bid.created_at < expired_at)
+      .then_some(())
+      .ok_or(Error::AuctionExpired(state.auction.id))?;
+
+    /* TODO
+    state
+      .best_bid
+      .map_or(None, |best_bid| Some(bid.amount > best_bid.amount))
+      .ok_or(Error::InvalidAmount(bid.amount))?;
+     */
+
+    if let Some(best_bid) = state.best_bid {
+      if bid.amount < best_bid.amount {
+        return Err(Error::InvalidAmount(bid.amount));
+      }
+    }
+
+    expired_at += Duration::seconds(AUCTION_REFRESH_SECS);
 
     Ok(vec![
       Event::bid_created(bid),
@@ -133,4 +143,56 @@ impl Command for BidCommand {
 
 pub fn bid(input: BidInput) -> Result<BidPayload, Error> {
   BidCommand.run(input)
+}
+
+#[test]
+fn test_bid() {
+  let state = State {
+    auction: Auction {
+      id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
+      show_id: bits_data::ShowId::new(),
+      ready_at: Some(Utc::now()),
+      started_at: Some(Utc::now()),
+      expired_at: Some(
+        Utc::now() + Duration::seconds(bits_data::AUCTION_TIMEOUT_SECS),
+      ),
+    },
+    best_bid: None,
+  };
+
+  let input = BidInput {
+    user_id: "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68".parse().unwrap(),
+    product_id: "6bc8e88e-fc47-41c6-8dae-b180d1efae98".parse().unwrap(),
+    amount: 100,
+  };
+
+  let events = BidCommand.events(&state, &input).unwrap();
+
+  assert_json_snapshot!(events, {
+    "[0].payload.bid.id" => "[uuid]",
+    "[0].payload.bid.created_at" => "[datetime]",
+    "[1].payload.expired_at" => "[datetime]"
+  }, @r###"
+  [
+    {
+      "type": "bid_created",
+      "payload": {
+        "bid": {
+          "id": "[uuid]",
+          "user_id": "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68",
+          "product_id": "6bc8e88e-fc47-41c6-8dae-b180d1efae98",
+          "amount": 100,
+          "created_at": "[datetime]"
+        }
+      }
+    },
+    {
+      "type": "auction_revived",
+      "payload": {
+        "id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
+        "expired_at": "[datetime]"
+      }
+    }
+  ]
+  "###);
 }

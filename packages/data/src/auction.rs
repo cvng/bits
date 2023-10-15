@@ -5,6 +5,9 @@ use crate::ProductId;
 use crate::ShowId;
 use async_graphql::SimpleObject;
 
+pub const AUCTION_TIMEOUT_SECS: i64 = 60;
+pub const AUCTION_REFRESH_SECS: i64 = 15;
+
 id!(AuctionId);
 id!(AuctionProductId);
 
