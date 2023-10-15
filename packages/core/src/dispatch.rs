@@ -10,26 +10,33 @@ use crate::handlers::show_created;
 use crate::handlers::show_started;
 use bits_data::Event;
 
-pub trait Command {
+pub(crate) trait Command {
   type Error;
+  type State;
   type Input;
   type Payload;
 
-  fn new(input: Self::Input) -> Result<Self, Self::Error>
-  where
-    Self: Sized;
+  fn run(&self, input: Self::Input) -> Result<Self::Payload, Self::Error> {
+    let state = self.state(&input)?;
 
-  fn events(&mut self) -> Result<Vec<Event>, Self::Error>;
+    let events = self.events(&state, &input)?;
 
-  fn payload(&self) -> Result<Self::Payload, Self::Error>;
+    crate::dispatch::dispatch(events.clone()).ok();
 
-  fn run(&mut self) -> Result<Self::Payload, Self::Error> {
-    let events = self.events()?;
+    let payload = self.payload(events).unwrap(); // TODO
 
-    dispatch(events).ok();
-
-    self.payload()
+    Ok(payload)
   }
+
+  fn state(&self, input: &Self::Input) -> Result<Self::State, Self::Error>;
+
+  fn events(
+    &self,
+    state: &Self::State,
+    input: &Self::Input,
+  ) -> Result<Vec<Event>, Self::Error>;
+
+  fn payload(&self, events: Vec<Event>) -> Option<Self::Payload>;
 }
 
 pub(crate) fn dispatch(events: Vec<Event>) -> error::Result<()> {
@@ -40,9 +47,11 @@ pub(crate) fn dispatch(events: Vec<Event>) -> error::Result<()> {
     Event::AuctionProductCreated(evt) => {
       auction_product_created::auction_product_created(evt)
     }
-    Event::AuctionRevived(evt) => auction_revived::auction_revived(evt),
+    Event::AuctionRevived { payload } => {
+      auction_revived::auction_revived(payload)
+    }
     Event::AuctionStarted(evt) => auction_started::auction_started(evt),
-    Event::BidCreated(evt) => bid_created::bid_created(evt),
+    Event::BidCreated { payload } => bid_created::bid_created(payload),
     Event::CommentCreated { payload } => {
       comment_created::comment_created(payload)
     }

@@ -7,64 +7,64 @@ use crate::Product;
 use crate::Show;
 use crate::ShowId;
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Event {
   AuctionMarkedReady(AuctionMarkedReady),
   AuctionProductCreated(AuctionProductCreated),
-  AuctionRevived(AuctionRevived),
+  AuctionRevived { payload: AuctionRevived },
   AuctionStarted(AuctionStarted),
-  BidCreated(BidCreated),
+  BidCreated { payload: BidCreated },
   CommentCreated { payload: CommentCreated },
   ProductCreated(ProductCreated),
   ShowCreated(ShowCreated),
   ShowStarted(ShowStarted),
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 pub struct AuctionMarkedReady {
   pub id: AuctionId,
   pub ready_at: DateTime,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 pub struct AuctionProductCreated {
   pub auction_product: AuctionProduct,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 pub struct AuctionRevived {
   pub id: AuctionId,
   pub expired_at: DateTime,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 pub struct AuctionStarted {
   pub id: AuctionId,
   pub started_at: DateTime,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 pub struct BidCreated {
   pub bid: Bid,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 pub struct CommentCreated {
   pub comment: Comment,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 pub struct ProductCreated {
   pub product: Product,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 pub struct ShowCreated {
   pub show: Show,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 pub struct ShowStarted {
   pub id: ShowId,
   pub started_at: DateTime,

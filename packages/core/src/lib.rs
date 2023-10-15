@@ -14,5 +14,4 @@ mod handlers;
 pub use bits_data::*;
 pub use commands::*;
 pub use database::db;
-pub use dispatch::Command;
 pub use error::*;

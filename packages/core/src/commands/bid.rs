@@ -1,5 +1,5 @@
 use crate::database;
-use crate::Command;
+use crate::dispatch::Command;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Amount;
@@ -13,7 +13,6 @@ use bits_data::BidCreated;
 use bits_data::BidId;
 use bits_data::Duration;
 use bits_data::Event;
-use bits_data::User;
 use bits_data::UserId;
 use bits_data::Utc;
 use thiserror::Error;
@@ -53,18 +52,20 @@ pub enum Error {
   UserNotFound(UserId),
 }
 
-pub struct BidCommand {
-  pub bid: Bid,
+struct State {
   pub auction: Auction,
   pub product: AuctionProduct,
 }
 
+struct BidCommand;
+
 impl Command for BidCommand {
   type Error = Error;
+  type State = State;
   type Input = BidInput;
   type Payload = BidPayload;
 
-  fn new(input: Self::Input) -> Result<Self, Error> {
+  fn state(&self, input: &Self::Input) -> Result<Self::State, Self::Error> {
     let product = database::db()
       .auction_products
       .get(&input.product_id)
@@ -77,6 +78,14 @@ impl Command for BidCommand {
       .cloned()
       .ok_or(Error::AuctionNotFound(product.auction_id))?;
 
+    Ok(State { product, auction })
+  }
+
+  fn events(
+    &self,
+    state: &Self::State,
+    input: &Self::Input,
+  ) -> Result<Vec<Event>, Self::Error> {
     let bid = Bid {
       id: BidId::new(),
       user_id: input.user_id,
@@ -85,68 +94,55 @@ impl Command for BidCommand {
       created_at: Utc::now(),
     };
 
-    Ok(Self {
-      bid,
-      auction,
-      product,
-    })
-  }
-
-  fn payload(&self) -> Result<Self::Payload, Self::Error> {
-    Ok(BidPayload { bid: self.bid })
-  }
-
-  fn events(&mut self) -> Result<Vec<Event>, Self::Error> {
-    if self.auction.ready_at.is_none() {
-      return Err(Error::AuctionNotReady(self.auction.id));
+    if state.auction.ready_at.is_none() {
+      return Err(Error::AuctionNotReady(state.auction.id));
     }
 
-    if let Some(started_at) = self.auction.started_at {
+    if let Some(started_at) = state.auction.started_at {
       if started_at - Utc::now() < Duration::seconds(AUCTION_TIMEOUT_SECS) {
-        return Err(Error::AuctionExpired(self.auction.id));
+        return Err(Error::AuctionExpired(state.auction.id));
       }
     }
 
-    if let Some(best_bid_id) = self.product.best_bid_id {
+    if let Some(best_bid_id) = state.product.best_bid_id {
       let best_bid = database::db()
         .bids
         .get(&best_bid_id)
         .cloned()
         .ok_or(Error::BidNotFound(best_bid_id))?;
 
-      if self.bid.amount <= best_bid.amount {
+      if bid.amount <= best_bid.amount {
         return Err(Error::InvalidBid);
       }
     }
 
-    let Some(expired_at) = self.auction.expired_at else {
-      return Err(Error::AuctionNotExpired(self.auction.id));
+    let Some(expired_at) = state.auction.expired_at else {
+      return Err(Error::AuctionNotExpired(state.auction.id));
     };
 
     let expired_at = expired_at + Duration::seconds(AUCTION_REFRESH_SECS);
 
-    self.auction.expired_at = Some(expired_at);
-
     Ok(vec![
-      Event::BidCreated(BidCreated { bid: self.bid }),
-      Event::AuctionRevived(AuctionRevived {
-        id: self.auction.id,
-        expired_at,
-      }),
+      Event::BidCreated {
+        payload: BidCreated { bid },
+      },
+      Event::AuctionRevived {
+        payload: AuctionRevived {
+          id: state.auction.id,
+          expired_at,
+        },
+      },
     ])
+  }
+
+  fn payload(&self, events: Vec<Event>) -> Option<Self::Payload> {
+    events.iter().fold(None, |_, event| match event {
+      Event::BidCreated { payload } => Some(BidPayload { bid: payload.bid }),
+      _ => None,
+    })
   }
 }
 
-fn _auction_product_winner(auction_product: &AuctionProduct) -> Option<User> {
-  let Some(best_bid_id) = auction_product.best_bid_id else {
-    return None;
-  };
-
-  let best_bid = database::db().bids.get(&best_bid_id).cloned();
-
-  let Some(best_bid) = best_bid else {
-    return None;
-  };
-
-  database::db().users.get(&best_bid.user_id).cloned()
+pub fn bid(input: BidInput) -> Result<BidPayload, Error> {
+  BidCommand.run(input)
 }

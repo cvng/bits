@@ -2,7 +2,6 @@ use async_graphql::Context;
 use async_graphql::Object;
 use async_graphql::Result;
 use bits_core::commands;
-use bits_core::Command;
 
 pub struct MutationRoot;
 
@@ -13,7 +12,7 @@ impl MutationRoot {
     _ctx: &Context<'_>,
     input: commands::bid::BidInput,
   ) -> Result<commands::bid::BidPayload> {
-    Ok(commands::bid::BidCommand::new(input)?.run()?)
+    Ok(commands::bid::bid(input)?)
   }
 
   async fn comment(
@@ -21,7 +20,7 @@ impl MutationRoot {
     _ctx: &Context<'_>,
     input: commands::comment::CommentInput,
   ) -> Result<commands::comment::CommentPayload> {
-    Ok(commands::comment::CommentCommand::new(input)?.run()?)
+    Ok(commands::comment::comment(input)?)
   }
 
   async fn create_product(
