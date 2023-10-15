@@ -146,11 +146,9 @@ fn test_bid() {
     auction: Auction {
       id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
       show_id: bits_data::ShowId::new(),
-      ready_at: Some(Utc::now()),
-      started_at: Some(Utc::now()),
-      expired_at: Some(
-        Utc::now() + Duration::seconds(bits_data::AUCTION_TIMEOUT_SECS),
-      ),
+      ready_at: Some("2023-10-15T22:46:58.012577Z".parse().unwrap()),
+      started_at: Some("2023-10-15T22:46:58.012577Z".parse().unwrap()),
+      expired_at: Some("2023-10-15T23:01:58.012577Z".parse().unwrap()),
     },
     best_bid: None,
   };
@@ -166,7 +164,6 @@ fn test_bid() {
   assert_json_snapshot!(events, {
     "[0].payload.bid.id" => "[uuid]",
     "[0].payload.bid.created_at" => "[datetime]",
-    "[1].payload.expired_at" => "[datetime]"
   }, @r###"
   [
     {
@@ -185,7 +182,7 @@ fn test_bid() {
       "type": "auction_revived",
       "payload": {
         "id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
-        "expired_at": "[datetime]"
+        "expired_at": "2023-10-15T23:02:13.012577Z"
       }
     }
   ]

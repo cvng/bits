@@ -100,7 +100,9 @@ fn test_comment() {
 
   let events = CommentCommand.events(&state, &input).unwrap();
 
-  assert_json_snapshot!(events, {"[0].payload.comment.id" => "[uuid]"}, @r###"
+  assert_json_snapshot!(events, {
+    "[0].payload.comment.id" => "[uuid]",
+  }, @r###"
   [
     {
       "type": "comment_created",
