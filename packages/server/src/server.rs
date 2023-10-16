@@ -31,7 +31,7 @@ pub fn app() -> Router {
   Router::new()
     .route(
       "/graphql",
-      get(graphiql).post_service(GraphQL::new(schema.clone())),
+      get(graphiql).post_service(GraphQL::new(schema.to_owned())),
     )
     .route_service("/graphql/ws", GraphQLSubscription::new(schema))
     .layer(cors)
