@@ -5,7 +5,6 @@ use crate::Comment;
 use crate::DateTime;
 use crate::Product;
 use crate::Show;
-use crate::ShowId;
 
 #[derive(Clone, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -70,9 +69,9 @@ impl Event {
     }
   }
 
-  pub fn show_started(id: ShowId, started_at: DateTime) -> Self {
+  pub fn show_started(show: Show, started_at: DateTime) -> Self {
     Self::ShowStarted {
-      payload: ShowStarted { id, started_at },
+      payload: ShowStarted { show, started_at },
     }
   }
 }
@@ -122,6 +121,6 @@ pub struct ShowCreated {
 
 #[derive(Clone, Serialize)]
 pub struct ShowStarted {
-  pub id: ShowId,
+  pub show: Show,
   pub started_at: DateTime,
 }

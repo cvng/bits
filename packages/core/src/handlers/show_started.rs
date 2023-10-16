@@ -6,9 +6,9 @@ use bits_data::ShowStarted;
 pub fn show_started(event: ShowStarted) -> Result<()> {
   let mut show = database::db()
     .shows
-    .get(&event.id)
+    .get(&event.show.id)
     .cloned()
-    .ok_or(Error::NotFound(event.id.into()))?;
+    .ok_or(Error::NotFound(event.show.id.into()))?;
 
   show.started_at = Some(event.started_at);
 
