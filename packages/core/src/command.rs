@@ -1,5 +1,5 @@
 /// Generic command trait.
-pub(crate) trait Command {
+pub trait Command {
   type Error;
   type Event;
   type Input;
