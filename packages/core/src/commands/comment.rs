@@ -97,7 +97,7 @@ fn test_comment() {
   };
 
   let comment = Some(Comment {
-    id: CommentId::new(),
+    id: "7cc32b32-c5c6-4034-89f9-8363d856ebb4".parse().unwrap(),
     user_id: input.user_id,
     show_id: input.show_id,
     text: input.text,
@@ -105,15 +105,13 @@ fn test_comment() {
 
   let events = CommentCommand { show, comment }.handle(input).unwrap();
 
-  assert_json_snapshot!(events, {
-    "[0].payload.comment.id" => "[uuid]",
-  }, @r###"
+  assert_json_snapshot!(events, @r###"
   [
     {
       "type": "comment_created",
       "payload": {
         "comment": {
-          "id": "[uuid]",
+          "id": "7cc32b32-c5c6-4034-89f9-8363d856ebb4",
           "user_id": "9ad4e977-8156-450e-ad00-944f9fc730ab",
           "show_id": "f5e84179-7f8d-461b-a1d9-497974de10a6",
           "text": "text"

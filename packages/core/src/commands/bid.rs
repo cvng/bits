@@ -176,11 +176,11 @@ fn test_bid() {
   };
 
   let bid = Some(Bid {
-    id: BidId::new(),
+    id: "bcd0ab01-96f0-4469-a3e6-254afe70b74f".parse().unwrap(),
     user_id: input.user_id,
     product_id: input.product_id,
     amount: input.amount,
-    created_at: Utc::now(),
+    created_at: "2023-10-16T04:41:02.676340Z".parse().unwrap(),
   });
 
   let events = BidCommand {
@@ -192,21 +192,17 @@ fn test_bid() {
   .handle(input)
   .unwrap();
 
-  assert_json_snapshot!(events, {
-    "[0].payload.bid.id" => "[uuid]",
-    "[0].payload.bid.created_at" => "[datetime]",
-    "[1].payload.expired_at" => "[datetime]",
-  }, @r###"
+  assert_json_snapshot!(events, @r###"
   [
     {
       "type": "bid_created",
       "payload": {
         "bid": {
-          "id": "[uuid]",
+          "id": "bcd0ab01-96f0-4469-a3e6-254afe70b74f",
           "user_id": "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68",
           "product_id": "6bc8e88e-fc47-41c6-8dae-b180d1efae98",
           "amount": 100,
-          "created_at": "[datetime]"
+          "created_at": "2023-10-16T04:41:02.676340Z"
         }
       }
     },
@@ -214,7 +210,7 @@ fn test_bid() {
       "type": "auction_revived",
       "payload": {
         "id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
-        "expired_at": "[datetime]"
+        "expired_at": "2023-10-16T04:41:17.676340Z"
       }
     }
   ]
