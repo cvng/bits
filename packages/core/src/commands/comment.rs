@@ -51,6 +51,13 @@ impl CommentCommand {
 
     Self { show, comment }
   }
+
+  fn run(&self, input: CommentInput) -> Result<CommentPayload, Error> {
+    self
+      .handle(input)
+      .map(|events| dispatcher::dispatch(events).unwrap())
+      .map(|events| CommentCommand::apply(events).unwrap())
+  }
 }
 
 impl Command for CommentCommand {
@@ -81,10 +88,7 @@ impl Command for CommentCommand {
 }
 
 pub fn comment(input: CommentInput) -> Result<CommentPayload, Error> {
-  CommentCommand::new(&input)
-    .handle(input)
-    .map(|events| dispatcher::dispatch(events).unwrap())
-    .map(|events| CommentCommand::apply(events).unwrap())
+  CommentCommand::new(&input).run(input)
 }
 
 #[test]

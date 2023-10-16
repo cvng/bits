@@ -87,6 +87,13 @@ impl BidCommand {
       bid,
     }
   }
+
+  fn run(&self, input: BidInput) -> Result<BidPayload, Error> {
+    self
+      .handle(input)
+      .map(|events| dispatcher::dispatch(events).unwrap())
+      .map(|events| BidCommand::apply(events).unwrap())
+  }
 }
 
 impl Command for BidCommand {
@@ -148,10 +155,7 @@ impl Command for BidCommand {
 }
 
 pub fn bid(input: BidInput) -> Result<BidPayload, Error> {
-  BidCommand::new(&input)
-    .handle(input)
-    .map(|events| dispatcher::dispatch(events).unwrap())
-    .map(|events| BidCommand::apply(events).unwrap())
+  BidCommand::new(&input).run(input)
 }
 
 #[test]
