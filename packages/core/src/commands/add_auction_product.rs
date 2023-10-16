@@ -21,7 +21,7 @@ pub struct AddAuctionProductInput {
 }
 
 #[derive(SimpleObject)]
-pub struct AddAuctionProductPayload {
+pub struct AddAuctionProductResult {
   pub auction: Auction,
   pub product: Product,
 }
@@ -36,7 +36,7 @@ pub enum Error {
 
 pub async fn add_auction_product(
   input: AddAuctionProductInput,
-) -> Result<AddAuctionProductPayload, Error> {
+) -> Result<AddAuctionProductResult, Error> {
   let mut auction = database::db()
     .auctions
     .get(&input.auction_id)
@@ -73,5 +73,5 @@ pub async fn add_auction_product(
 
   dispatcher::dispatch(events).ok();
 
-  Ok(AddAuctionProductPayload { auction, product })
+  Ok(AddAuctionProductResult { auction, product })
 }

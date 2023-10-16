@@ -10,15 +10,15 @@ use crate::ShowId;
 #[derive(Clone, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Event {
-  AuctionMarkedReady(AuctionMarkedReady),
-  AuctionProductCreated(AuctionProductCreated),
+  AuctionMarkedReady { payload: AuctionMarkedReady },
+  AuctionProductCreated { payload: AuctionProductCreated },
   AuctionRevived { payload: AuctionRevived },
-  AuctionStarted(AuctionStarted),
+  AuctionStarted { payload: AuctionStarted },
   BidCreated { payload: BidCreated },
   CommentCreated { payload: CommentCreated },
-  ProductCreated(ProductCreated),
-  ShowCreated(ShowCreated),
-  ShowStarted(ShowStarted),
+  ProductCreated { payload: ProductCreated },
+  ShowCreated { payload: ShowCreated },
+  ShowStarted { payload: ShowStarted },
 }
 
 impl Event {

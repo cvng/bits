@@ -25,7 +25,7 @@ pub struct BidInput {
 }
 
 #[derive(SimpleObject)]
-pub struct BidPayload {
+pub struct BidResult {
   pub bid: Bid,
 }
 
@@ -75,7 +75,7 @@ impl Command for BidCommand {
   type Error = Error;
   type Event = Event;
   type Input = BidInput;
-  type Payload = BidPayload;
+  type Result = BidResult;
 
   fn handle(
     &self,
@@ -121,15 +121,15 @@ impl Command for BidCommand {
     ])
   }
 
-  fn apply(events: Vec<Self::Event>) -> Option<Self::Payload> {
+  fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::BidCreated { payload } => Some(BidPayload { bid: payload.bid }),
+      Event::BidCreated { payload } => Some(BidResult { bid: payload.bid }),
       _ => None,
     })
   }
 }
 
-pub fn bid(input: BidInput) -> Result<BidPayload, Error> {
+pub fn bid(input: BidInput) -> Result<BidResult, Error> {
   let product = database::db()
     .auction_products
     .get(&input.product_id)

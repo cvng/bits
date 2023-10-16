@@ -17,7 +17,7 @@ pub struct StartShowInput {
 }
 
 #[derive(SimpleObject)]
-pub struct StartShowPayload {
+pub struct StartShowResult {
   pub show: Show,
 }
 
@@ -35,7 +35,7 @@ pub enum Error {
 
 pub async fn start_show(
   input: StartShowInput,
-) -> Result<StartShowPayload, Error> {
+) -> Result<StartShowResult, Error> {
   let show = database::db()
     .shows
     .get(&input.id)
@@ -73,5 +73,5 @@ pub async fn start_show(
   ])
   .ok();
 
-  Ok(StartShowPayload { show })
+  Ok(StartShowResult { show })
 }

@@ -14,7 +14,7 @@ pub struct CreateProductInput {
 }
 
 #[derive(SimpleObject)]
-pub struct CreateProductPayload {
+pub struct CreateProductResult {
   pub product: Product,
 }
 
@@ -26,7 +26,7 @@ pub enum Error {
 
 pub async fn create_product(
   input: CreateProductInput,
-) -> Result<CreateProductPayload, Error> {
+) -> Result<CreateProductResult, Error> {
   let product = Product {
     id: ProductId::new(),
     name: input.name,
@@ -35,5 +35,5 @@ pub async fn create_product(
   dispatcher::dispatch(vec![Event::ProductCreated(ProductCreated { product })])
     .ok();
 
-  Ok(CreateProductPayload { product })
+  Ok(CreateProductResult { product })
 }
