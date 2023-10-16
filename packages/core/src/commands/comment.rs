@@ -26,6 +26,8 @@ pub struct CommentPayload {
 
 #[derive(Debug, Error)]
 pub enum Error {
+  #[error("comment not created")]
+  NotCreated,
   #[error("show not found: {0}")]
   ShowNotFound(ShowId),
 }
@@ -33,6 +35,7 @@ pub enum Error {
 #[derive(Default)]
 struct CommentCommand {
   show: Option<Show>,
+  comment: Option<Comment>,
 }
 
 impl Command for CommentCommand {
@@ -47,12 +50,7 @@ impl Command for CommentCommand {
   ) -> Result<Vec<Self::Event>, Self::Error> {
     self.show.ok_or(Error::ShowNotFound(input.show_id))?;
 
-    let comment = Comment {
-      id: CommentId::new(),
-      user_id: input.user_id,
-      show_id: input.show_id,
-      text: input.text,
-    };
+    let comment = self.comment.ok_or(Error::NotCreated)?;
 
     Ok(vec![Event::comment_created(comment)])
   }
@@ -70,7 +68,14 @@ impl Command for CommentCommand {
 pub fn comment(input: CommentInput) -> Result<CommentPayload, Error> {
   let show = database::db().shows.get(&input.show_id).cloned();
 
-  CommentCommand { show }
+  let comment = Some(Comment {
+    id: CommentId::new(),
+    user_id: input.user_id,
+    show_id: input.show_id,
+    text: input.text,
+  });
+
+  CommentCommand { show, comment }
     .handle(input)
     .map(|events| dispatcher::dispatch(events).unwrap())
     .map(|events| CommentCommand::apply(events).unwrap())
@@ -91,7 +96,14 @@ fn test_comment() {
     text: Text::new("text"),
   };
 
-  let events = CommentCommand { show }.handle(input).unwrap();
+  let comment = Some(Comment {
+    id: CommentId::new(),
+    user_id: input.user_id,
+    show_id: input.show_id,
+    text: input.text,
+  });
+
+  let events = CommentCommand { show, comment }.handle(input).unwrap();
 
   assert_json_snapshot!(events, {
     "[0].payload.comment.id" => "[uuid]",

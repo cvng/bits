@@ -31,8 +31,6 @@ pub struct BidPayload {
 
 #[derive(Debug, Error)]
 pub enum Error {
-  #[error("bid not found: {0}")]
-  BidNotFound(BidId),
   #[error("auction not found: {0}")]
   AuctionNotFound(AuctionId),
   #[error("auction not ready: {0}")]
@@ -43,10 +41,10 @@ pub enum Error {
   AuctionExpired(AuctionId),
   #[error("invalid bid amount: {0}")]
   InvalidAmount(Amount),
+  #[error("bid not created")]
+  NotCreated,
   #[error("product not found: {0}")]
   ProductNotFound(AuctionProductId),
-  #[error("user not found: {0}")]
-  UserNotFound(UserId),
 }
 
 #[derive(Default)]
@@ -54,6 +52,7 @@ struct BidCommand {
   auction: Option<Auction>,
   product: Option<AuctionProduct>,
   best_bid: Option<Bid>,
+  bid: Option<Bid>,
 }
 
 impl Command for BidCommand {
@@ -74,13 +73,7 @@ impl Command for BidCommand {
       .auction
       .ok_or(Error::AuctionNotFound(product.auction_id))?;
 
-    let bid = Bid {
-      id: BidId::new(),
-      user_id: input.user_id,
-      product_id: input.product_id,
-      amount: input.amount,
-      created_at: Utc::now(),
-    };
+    let bid = self.bid.ok_or(Error::NotCreated)?;
 
     auction.ready_at.ok_or(Error::AuctionNotReady(auction.id))?;
 
@@ -136,10 +129,19 @@ pub fn bid(input: BidInput) -> Result<BidPayload, Error> {
       .and_then(|best_bid_id| database::db().bids.get(&best_bid_id).cloned())
   });
 
+  let bid = Some(Bid {
+    id: BidId::new(),
+    user_id: input.user_id,
+    product_id: input.product_id,
+    amount: input.amount,
+    created_at: Utc::now(),
+  });
+
   BidCommand {
     auction,
     product,
     best_bid,
+    bid,
   }
   .handle(input)
   .map(|events| dispatcher::dispatch(events).unwrap())
@@ -173,10 +175,19 @@ fn test_bid() {
     amount: 100,
   };
 
+  let bid = Some(Bid {
+    id: BidId::new(),
+    user_id: input.user_id,
+    product_id: input.product_id,
+    amount: input.amount,
+    created_at: Utc::now(),
+  });
+
   let events = BidCommand {
     auction,
     product,
     best_bid,
+    bid,
   }
   .handle(input)
   .unwrap();
