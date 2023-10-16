@@ -89,27 +89,32 @@ pub fn comment(input: CommentInput) -> Result<CommentPayload, Error> {
 
 #[test]
 fn test_comment() {
-  let show = Some(bits_data::Show {
+  let show = bits_data::Show {
     id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
     creator_id: UserId::new(),
     name: Text::new("name"),
     started_at: None,
-  });
+  };
 
   let input = CommentInput {
     user_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
-    show_id: show.as_ref().unwrap().id,
+    show_id: show.id,
     text: Text::new("text"),
   };
 
-  let comment = Some(Comment {
+  let comment = Comment {
     id: "7cc32b32-c5c6-4034-89f9-8363d856ebb4".parse().unwrap(),
     user_id: input.user_id,
     show_id: input.show_id,
     text: input.text,
-  });
+  };
 
-  let events = CommentCommand { show, comment }.handle(input).unwrap();
+  let events = CommentCommand {
+    show: Some(show),
+    comment: Some(comment),
+  }
+  .handle(input)
+  .unwrap();
 
   assert_json_snapshot!(events, @r###"
   [
