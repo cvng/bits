@@ -1,7 +1,5 @@
 use crate::command::Command;
 use crate::database;
-use crate::database::Database;
-use crate::dispatcher;
 use crate::dispatcher::Dispatcher;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
@@ -55,43 +53,6 @@ struct BidCommand {
   product: Option<AuctionProduct>,
   best_bid: Option<Bid>,
   bid: Option<Bid>,
-}
-
-impl BidCommand {
-  pub fn new(db: &Database, input: &BidInput) -> Self {
-    let product = db.auction_products.get(&input.product_id).cloned();
-
-    let auction =
-      product.and_then(|product| db.auctions.get(&product.auction_id).cloned());
-
-    let best_bid = product.and_then(|product| {
-      product
-        .best_bid_id
-        .and_then(|best_bid_id| db.bids.get(&best_bid_id).cloned())
-    });
-
-    let bid = Some(Bid {
-      id: BidId::new(),
-      user_id: input.user_id,
-      product_id: input.product_id,
-      amount: input.amount,
-      created_at: Utc::now(),
-    });
-
-    Self {
-      auction,
-      product,
-      best_bid,
-      bid,
-    }
-  }
-
-  fn run(&self, dx: &Dispatcher, input: BidInput) -> Result<BidPayload, Error> {
-    self
-      .handle(input)
-      .map(|events| dx.dispatch(events).unwrap())
-      .map(|events| Self::apply(events).unwrap())
-  }
 }
 
 impl Command for BidCommand {
@@ -153,8 +114,40 @@ impl Command for BidCommand {
 }
 
 pub fn bid(input: BidInput) -> Result<BidPayload, Error> {
-  // NOTE: new() = read-only / run() = write-only
-  BidCommand::new(&database::db(), &input).run(&dispatcher::dx(), input)
+  let product = database::db()
+    .auction_products
+    .get(&input.product_id)
+    .cloned();
+
+  let auction = product.and_then(|product| {
+    database::db().auctions.get(&product.auction_id).cloned()
+  });
+
+  let best_bid = product.and_then(|product| {
+    product
+      .best_bid_id
+      .and_then(|best_bid_id| database::db().bids.get(&best_bid_id).cloned())
+  });
+
+  let bid = Some(Bid {
+    id: BidId::new(),
+    user_id: input.user_id,
+    product_id: input.product_id,
+    amount: input.amount,
+    created_at: Utc::now(),
+  });
+
+  BidCommand {
+    auction,
+    product,
+    best_bid,
+    bid,
+  }
+  .handle(input)
+  .map(Dispatcher::dispatch)?
+  .map_err(|_| Error::NotCreated)
+  .map(BidCommand::apply)?
+  .ok_or(Error::NotCreated)
 }
 
 #[test]
@@ -176,8 +169,6 @@ fn test_bid() {
     best_bid_id: None,
   };
 
-  let best_bid = None;
-
   let input = BidInput {
     user_id: "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68".parse().unwrap(),
     product_id: product.id,
@@ -196,7 +187,7 @@ fn test_bid() {
     auction: Some(auction),
     product: Some(product),
     bid: Some(bid),
-    best_bid,
+    best_bid: None,
   }
   .handle(input)
   .unwrap();

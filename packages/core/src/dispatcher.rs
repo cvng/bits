@@ -13,7 +13,7 @@ use bits_data::Event;
 pub(crate) struct Dispatcher;
 
 impl Dispatcher {
-  pub fn dispatch(&self, events: Vec<Event>) -> error::Result<Vec<Event>> {
+  pub fn dispatch(events: Vec<Event>) -> error::Result<Vec<Event>> {
     events
       .clone()
       .into_iter()
@@ -41,9 +41,5 @@ impl Dispatcher {
 }
 
 pub(crate) fn dispatch(events: Vec<Event>) -> error::Result<Vec<Event>> {
-  Dispatcher.dispatch(events)
-}
-
-pub(crate) fn dx() -> Dispatcher {
-  Dispatcher
+  Dispatcher::dispatch(events)
 }

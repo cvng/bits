@@ -1,7 +1,5 @@
 use crate::command::Command;
 use crate::database;
-use crate::database::Database;
-use crate::dispatcher;
 use crate::dispatcher::Dispatcher;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
@@ -40,32 +38,6 @@ struct CommentCommand {
   comment: Option<Comment>,
 }
 
-impl CommentCommand {
-  fn new(db: &Database, input: &CommentInput) -> Self {
-    let show = db.shows.get(&input.show_id).cloned();
-
-    let comment = Some(Comment {
-      id: CommentId::new(),
-      user_id: input.user_id,
-      show_id: input.show_id,
-      text: input.text,
-    });
-
-    Self { show, comment }
-  }
-
-  fn run(
-    &self,
-    dx: &Dispatcher,
-    input: CommentInput,
-  ) -> Result<CommentPayload, Error> {
-    self
-      .handle(input)
-      .map(|events| dx.dispatch(events).unwrap())
-      .map(|events| Self::apply(events).unwrap())
-  }
-}
-
 impl Command for CommentCommand {
   type Error = Error;
   type Event = Event;
@@ -94,7 +66,24 @@ impl Command for CommentCommand {
 }
 
 pub fn comment(input: CommentInput) -> Result<CommentPayload, Error> {
-  CommentCommand::new(&database::db(), &input).run(&dispatcher::dx(), input)
+  let show = database::db().shows.get(&input.show_id).cloned();
+
+  let comment = Comment {
+    id: CommentId::new(),
+    user_id: input.user_id,
+    show_id: input.show_id,
+    text: input.text,
+  };
+
+  CommentCommand {
+    show,
+    comment: Some(comment),
+  }
+  .handle(input)
+  .map(Dispatcher::dispatch)?
+  .map_err(|_| Error::NotCreated)
+  .map(CommentCommand::apply)?
+  .ok_or(Error::NotCreated)
 }
 
 #[test]
