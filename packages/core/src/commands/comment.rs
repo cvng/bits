@@ -35,24 +35,17 @@ struct CommentCommand {
   show: Option<Show>,
 }
 
-impl CommentCommand {
-  pub fn new(show: Option<Show>) -> Self {
-    Self { show }
-  }
-}
-
 impl Command for CommentCommand {
   type Error = Error;
   type Event = Event;
   type Input = CommentInput;
-  type State = CommentCommand;
   type Payload = CommentPayload;
 
   fn handle(
-    state: &Self::State,
+    &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    state.show.ok_or(Error::ShowNotFound(input.show_id))?;
+    self.show.ok_or(Error::ShowNotFound(input.show_id))?;
 
     let comment = Comment {
       id: CommentId::new(),
@@ -77,31 +70,28 @@ impl Command for CommentCommand {
 pub fn comment(input: CommentInput) -> Result<CommentPayload, Error> {
   let show = database::db().shows.get(&input.show_id).cloned();
 
-  let state = CommentCommand::new(show);
-
-  CommentCommand::handle(&state, input)
+  CommentCommand { show }
+    .handle(input)
     .map(|events| dispatcher::dispatch(events).unwrap())
     .map(|events| CommentCommand::apply(events).unwrap())
 }
 
 #[test]
 fn test_comment() {
-  let state = CommentCommand {
-    show: Some(bits_data::Show {
-      id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
-      creator_id: UserId::new(),
-      name: Text::new("name"),
-      started_at: None,
-    }),
-  };
+  let show = Some(bits_data::Show {
+    id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
+    creator_id: UserId::new(),
+    name: Text::new("name"),
+    started_at: None,
+  });
 
   let input = CommentInput {
     user_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
-    show_id: state.show.unwrap().id,
+    show_id: show.as_ref().unwrap().id,
     text: Text::new("text"),
   };
 
-  let events = CommentCommand::handle(&state, input).unwrap();
+  let events = CommentCommand { show }.handle(input).unwrap();
 
   assert_json_snapshot!(events, {
     "[0].payload.comment.id" => "[uuid]",
