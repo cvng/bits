@@ -1,3 +1,4 @@
+use crate::command::Command;
 use crate::database;
 use crate::dispatcher;
 use async_graphql::InputObject;
@@ -20,8 +21,7 @@ pub struct AddAuctionProductInput {
 
 #[derive(SimpleObject)]
 pub struct AddAuctionProductResult {
-  pub auction: Auction,
-  pub product: Product,
+  pub auction_product: AuctionProduct,
 }
 
 #[derive(Debug, Error)]
@@ -30,41 +30,82 @@ pub enum Error {
   AuctionNotFound(AuctionId),
   #[error("product not found: {0}")]
   ProductNotFound(ProductId),
+  #[error("auction product not created")]
+  NotCreated,
+}
+
+pub struct AddAuctionProductCommand {
+  pub auction: Option<Auction>,
+  pub product: Option<Product>,
+  pub auction_product: Option<AuctionProduct>,
+}
+
+impl Command for AddAuctionProductCommand {
+  type Error = Error;
+  type Event = Event;
+  type Input = AddAuctionProductInput;
+  type Result = AddAuctionProductResult;
+
+  fn handle(
+    &self,
+    input: Self::Input,
+  ) -> Result<Vec<Self::Event>, Self::Error> {
+    let mut events = vec![];
+
+    let auction = self
+      .auction
+      .ok_or(Error::AuctionNotFound(input.auction_id))?;
+
+    self
+      .product
+      .ok_or(Error::ProductNotFound(input.product_id))?;
+
+    let auction_product = self.auction_product.ok_or(Error::NotCreated)?;
+
+    events.push(Event::auction_product_created(auction_product));
+
+    if auction.ready_at.is_none() {
+      let ready_at = Utc::now();
+      events.push(Event::auction_marked_ready(auction.id, ready_at));
+    }
+
+    Ok(events)
+  }
+
+  fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
+    events.iter().fold(None, |_, event| match event {
+      Event::AuctionProductCreated { payload } => {
+        Some(AddAuctionProductResult {
+          auction_product: payload.auction_product,
+        })
+      }
+      _ => None,
+    })
+  }
 }
 
 pub async fn add_auction_product(
   input: AddAuctionProductInput,
 ) -> Result<AddAuctionProductResult, Error> {
-  let mut auction = database::db()
-    .auctions
-    .get(&input.auction_id)
-    .cloned()
-    .ok_or(Error::AuctionNotFound(input.auction_id))?;
+  let auction = database::db().auctions.get(&input.auction_id).cloned();
 
-  let product = database::db()
-    .products
-    .get(&input.product_id)
-    .cloned()
-    .ok_or(Error::ProductNotFound(input.product_id))?;
+  let product = database::db().products.get(&input.product_id).cloned();
 
-  let auction_product = AuctionProduct {
+  let auction_product = Some(AuctionProduct {
     id: AuctionProductId::new(),
-    auction_id: auction.id,
-    product_id: product.id,
+    auction_id: input.auction_id,
+    product_id: input.product_id,
     best_bid_id: None,
-  };
+  });
 
-  let mut events = vec![Event::auction_product_created(auction_product)];
-
-  if auction.ready_at.is_none() {
-    let ready_at = Utc::now();
-
-    auction.ready_at = Some(ready_at);
-
-    events.push(Event::auction_marked_ready(auction.id, ready_at));
+  AddAuctionProductCommand {
+    auction,
+    product,
+    auction_product,
   }
-
-  dispatcher::dispatch(events).ok();
-
-  Ok(AddAuctionProductResult { auction, product })
+  .handle(input)
+  .map(dispatcher::dispatch)?
+  .map(AddAuctionProductCommand::apply)
+  .map_err(|_| Error::NotCreated)?
+  .ok_or(Error::NotCreated)
 }

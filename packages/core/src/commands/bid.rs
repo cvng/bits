@@ -48,27 +48,11 @@ pub enum Error {
 }
 
 #[derive(Default)]
-struct BidCommand {
-  auction: Option<Auction>,
-  product: Option<AuctionProduct>,
-  best_bid: Option<Bid>,
-  bid: Option<Bid>,
-}
-
-impl BidCommand {
-  fn new(
-    auction: Option<Auction>,
-    product: Option<AuctionProduct>,
-    best_bid: Option<Bid>,
-    bid: Option<Bid>,
-  ) -> Self {
-    Self {
-      auction,
-      product,
-      best_bid,
-      bid,
-    }
-  }
+pub struct BidCommand {
+  pub auction: Option<Auction>,
+  pub product: Option<AuctionProduct>,
+  pub best_bid: Option<Bid>,
+  pub bid: Option<Bid>,
 }
 
 impl Command for BidCommand {
@@ -153,12 +137,17 @@ pub fn bid(input: BidInput) -> Result<BidResult, Error> {
     created_at: Utc::now(),
   });
 
-  BidCommand::new(auction, product, best_bid, bid)
-    .handle(input)
-    .map(dispatcher::dispatch)?
-    .map(BidCommand::apply)
-    .map_err(|_| Error::NotCreated)?
-    .ok_or(Error::NotCreated)
+  BidCommand {
+    auction,
+    product,
+    best_bid,
+    bid,
+  }
+  .handle(input)
+  .map(dispatcher::dispatch)?
+  .map(BidCommand::apply)
+  .map_err(|_| Error::NotCreated)?
+  .ok_or(Error::NotCreated)
 }
 
 #[test]
@@ -196,9 +185,14 @@ fn test_bid() {
     created_at: "2023-10-16T04:41:02.676340Z".parse().unwrap(),
   });
 
-  let events = BidCommand::new(auction, product, best_bid, bid)
-    .handle(input)
-    .unwrap();
+  let events = BidCommand {
+    auction,
+    product,
+    best_bid,
+    bid,
+  }
+  .handle(input)
+  .unwrap();
 
   assert_json_snapshot!(events, @r###"
   [

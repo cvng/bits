@@ -33,15 +33,9 @@ pub enum Error {
 }
 
 #[derive(Default)]
-struct CommentCommand {
-  show: Option<Show>,
-  comment: Option<Comment>,
-}
-
-impl CommentCommand {
-  fn new(show: Option<Show>, comment: Option<Comment>) -> Self {
-    Self { show, comment }
-  }
+pub struct CommentCommand {
+  pub show: Option<Show>,
+  pub comment: Option<Comment>,
 }
 
 impl Command for CommentCommand {
@@ -81,7 +75,7 @@ pub fn comment(input: CommentInput) -> Result<CommentResult, Error> {
     text: input.text,
   });
 
-  CommentCommand::new(show, comment)
+  CommentCommand { show, comment }
     .handle(input)
     .map(dispatcher::dispatch)?
     .map(CommentCommand::apply)
@@ -111,7 +105,7 @@ fn test_comment() {
     text: input.text,
   });
 
-  let events = CommentCommand::new(show, comment).handle(input).unwrap();
+  let events = CommentCommand { show, comment }.handle(input).unwrap();
 
   assert_json_snapshot!(events, @r###"
   [
