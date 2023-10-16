@@ -10,21 +10,39 @@ use crate::ShowId;
 #[derive(Clone, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Event {
-  AuctionMarkedReady(AuctionMarkedReady),
-  AuctionProductCreated(AuctionProductCreated),
+  AuctionMarkedReady { payload: AuctionMarkedReady },
+  AuctionProductCreated { payload: AuctionProductCreated },
   AuctionRevived { payload: AuctionRevived },
-  AuctionStarted(AuctionStarted),
+  AuctionStarted { payload: AuctionStarted },
   BidCreated { payload: BidCreated },
   CommentCreated { payload: CommentCreated },
-  ProductCreated(ProductCreated),
-  ShowCreated(ShowCreated),
-  ShowStarted(ShowStarted),
+  ProductCreated { payload: ProductCreated },
+  ShowCreated { payload: ShowCreated },
+  ShowStarted { payload: ShowStarted },
 }
 
 impl Event {
+  pub fn auction_marked_ready(id: AuctionId, ready_at: DateTime) -> Self {
+    Self::AuctionMarkedReady {
+      payload: AuctionMarkedReady { id, ready_at },
+    }
+  }
+
+  pub fn auction_product_created(auction_product: AuctionProduct) -> Self {
+    Self::AuctionProductCreated {
+      payload: AuctionProductCreated { auction_product },
+    }
+  }
+
   pub fn auction_revived(id: AuctionId, expired_at: DateTime) -> Self {
     Self::AuctionRevived {
       payload: AuctionRevived { id, expired_at },
+    }
+  }
+
+  pub fn auction_started(id: AuctionId, started_at: DateTime) -> Self {
+    Self::AuctionStarted {
+      payload: AuctionStarted { id, started_at },
     }
   }
 
@@ -37,6 +55,24 @@ impl Event {
   pub fn comment_created(comment: Comment) -> Self {
     Self::CommentCreated {
       payload: CommentCreated { comment },
+    }
+  }
+
+  pub fn product_created(product: Product) -> Self {
+    Self::ProductCreated {
+      payload: ProductCreated { product },
+    }
+  }
+
+  pub fn show_created(show: Show) -> Self {
+    Self::ShowCreated {
+      payload: ShowCreated { show },
+    }
+  }
+
+  pub fn show_started(id: ShowId, started_at: DateTime) -> Self {
+    Self::ShowStarted {
+      payload: ShowStarted { id, started_at },
     }
   }
 }

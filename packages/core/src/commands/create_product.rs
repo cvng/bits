@@ -3,7 +3,6 @@ use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Event;
 use bits_data::Product;
-use bits_data::ProductCreated;
 use bits_data::ProductId;
 use bits_data::Text;
 use thiserror::Error;
@@ -14,7 +13,7 @@ pub struct CreateProductInput {
 }
 
 #[derive(SimpleObject)]
-pub struct CreateProductPayload {
+pub struct CreateProductResult {
   pub product: Product,
 }
 
@@ -26,14 +25,13 @@ pub enum Error {
 
 pub async fn create_product(
   input: CreateProductInput,
-) -> Result<CreateProductPayload, Error> {
+) -> Result<CreateProductResult, Error> {
   let product = Product {
     id: ProductId::new(),
     name: input.name,
   };
 
-  dispatcher::dispatch(vec![Event::ProductCreated(ProductCreated { product })])
-    .ok();
+  dispatcher::dispatch(vec![Event::product_created(product)]).ok();
 
-  Ok(CreateProductPayload { product })
+  Ok(CreateProductResult { product })
 }

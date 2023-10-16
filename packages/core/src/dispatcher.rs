@@ -15,23 +15,27 @@ pub fn dispatch(events: Vec<Event>) -> Result<Vec<Event>> {
     .iter()
     .cloned()
     .try_for_each(|event| match event {
-      Event::AuctionMarkedReady(evt) => {
-        auction_marked_ready::auction_marked_ready(evt)
+      Event::AuctionMarkedReady { payload } => {
+        auction_marked_ready::auction_marked_ready(payload)
       }
-      Event::AuctionProductCreated(evt) => {
-        auction_product_created::auction_product_created(evt)
+      Event::AuctionProductCreated { payload } => {
+        auction_product_created::auction_product_created(payload)
       }
       Event::AuctionRevived { payload } => {
         auction_revived::auction_revived(payload)
       }
-      Event::AuctionStarted(evt) => auction_started::auction_started(evt),
+      Event::AuctionStarted { payload } => {
+        auction_started::auction_started(payload)
+      }
       Event::BidCreated { payload } => bid_created::bid_created(payload),
       Event::CommentCreated { payload } => {
         comment_created::comment_created(payload)
       }
-      Event::ProductCreated(evt) => product_created::product_created(evt),
-      Event::ShowCreated(evt) => show_created::show_created(evt),
-      Event::ShowStarted(evt) => show_started::show_started(evt),
+      Event::ProductCreated { payload } => {
+        product_created::product_created(payload)
+      }
+      Event::ShowCreated { payload } => show_created::show_created(payload),
+      Event::ShowStarted { payload } => show_started::show_started(payload),
     })
     .map(|_| events)
 }

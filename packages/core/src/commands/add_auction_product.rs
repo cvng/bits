@@ -4,9 +4,7 @@ use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Auction;
 use bits_data::AuctionId;
-use bits_data::AuctionMarkedReady;
 use bits_data::AuctionProduct;
-use bits_data::AuctionProductCreated;
 use bits_data::AuctionProductId;
 use bits_data::Event;
 use bits_data::Product;
@@ -21,7 +19,7 @@ pub struct AddAuctionProductInput {
 }
 
 #[derive(SimpleObject)]
-pub struct AddAuctionProductPayload {
+pub struct AddAuctionProductResult {
   pub auction: Auction,
   pub product: Product,
 }
@@ -36,7 +34,7 @@ pub enum Error {
 
 pub async fn add_auction_product(
   input: AddAuctionProductInput,
-) -> Result<AddAuctionProductPayload, Error> {
+) -> Result<AddAuctionProductResult, Error> {
   let mut auction = database::db()
     .auctions
     .get(&input.auction_id)
@@ -56,22 +54,17 @@ pub async fn add_auction_product(
     best_bid_id: None,
   };
 
-  let mut events = vec![Event::AuctionProductCreated(AuctionProductCreated {
-    auction_product,
-  })];
+  let mut events = vec![Event::auction_product_created(auction_product)];
 
   if auction.ready_at.is_none() {
     let ready_at = Utc::now();
 
     auction.ready_at = Some(ready_at);
 
-    events.push(Event::AuctionMarkedReady(AuctionMarkedReady {
-      id: auction.id,
-      ready_at,
-    }));
+    events.push(Event::auction_marked_ready(auction.id, ready_at));
   }
 
   dispatcher::dispatch(events).ok();
 
-  Ok(AddAuctionProductPayload { auction, product })
+  Ok(AddAuctionProductResult { auction, product })
 }

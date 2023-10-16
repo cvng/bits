@@ -11,7 +11,7 @@ impl MutationRoot {
     &self,
     _ctx: &Context<'_>,
     input: commands::bid::BidInput,
-  ) -> Result<commands::bid::BidPayload> {
+  ) -> Result<commands::bid::BidResult> {
     Ok(commands::bid::bid(input)?)
   }
 
@@ -19,7 +19,7 @@ impl MutationRoot {
     &self,
     _ctx: &Context<'_>,
     input: commands::comment::CommentInput,
-  ) -> Result<commands::comment::CommentPayload> {
+  ) -> Result<commands::comment::CommentResult> {
     Ok(commands::comment::comment(input)?)
   }
 
@@ -27,7 +27,7 @@ impl MutationRoot {
     &self,
     _ctx: &Context<'_>,
     input: commands::create_product::CreateProductInput,
-  ) -> Result<commands::create_product::CreateProductPayload> {
+  ) -> Result<commands::create_product::CreateProductResult> {
     Ok(commands::create_product::create_product(input).await?)
   }
 
@@ -35,7 +35,7 @@ impl MutationRoot {
     &self,
     _ctx: &Context<'_>,
     input: commands::create_show::CreateShowInput,
-  ) -> Result<commands::create_show::CreateShowPayload> {
+  ) -> Result<commands::create_show::CreateShowResult> {
     Ok(commands::create_show::create_show(input).await?)
   }
 
@@ -43,7 +43,7 @@ impl MutationRoot {
     &self,
     _ctx: &Context<'_>,
     input: commands::start_show::StartShowInput,
-  ) -> Result<commands::start_show::StartShowPayload> {
+  ) -> Result<commands::start_show::StartShowResult> {
     Ok(commands::start_show::start_show(input).await?)
   }
 
@@ -51,7 +51,7 @@ impl MutationRoot {
     &self,
     _ctx: &Context<'_>,
     input: commands::add_auction_product::AddAuctionProductInput,
-  ) -> Result<commands::add_auction_product::AddAuctionProductPayload> {
+  ) -> Result<commands::add_auction_product::AddAuctionProductResult> {
     Ok(commands::add_auction_product::add_auction_product(input).await?)
   }
 }

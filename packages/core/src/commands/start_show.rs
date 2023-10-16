@@ -3,11 +3,9 @@ use crate::dispatcher;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::AuctionId;
-use bits_data::AuctionStarted;
 use bits_data::Event;
 use bits_data::Show;
 use bits_data::ShowId;
-use bits_data::ShowStarted;
 use bits_data::Utc;
 use thiserror::Error;
 
@@ -17,7 +15,7 @@ pub struct StartShowInput {
 }
 
 #[derive(SimpleObject)]
-pub struct StartShowPayload {
+pub struct StartShowResult {
   pub show: Show,
 }
 
@@ -35,7 +33,7 @@ pub enum Error {
 
 pub async fn start_show(
   input: StartShowInput,
-) -> Result<StartShowPayload, Error> {
+) -> Result<StartShowResult, Error> {
   let show = database::db()
     .shows
     .get(&input.id)
@@ -62,16 +60,10 @@ pub async fn start_show(
   let now = Utc::now();
 
   dispatcher::dispatch(vec![
-    Event::ShowStarted(ShowStarted {
-      id: show.id,
-      started_at: now,
-    }),
-    Event::AuctionStarted(AuctionStarted {
-      id: auction.id,
-      started_at: now,
-    }),
+    Event::show_started(show.id, now),
+    Event::auction_started(auction.id, now),
   ])
   .ok();
 
-  Ok(StartShowPayload { show })
+  Ok(StartShowResult { show })
 }

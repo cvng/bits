@@ -20,7 +20,7 @@ pub struct CommentInput {
 }
 
 #[derive(Serialize, SimpleObject)]
-pub struct CommentPayload {
+pub struct CommentResult {
   pub comment: Comment,
 }
 
@@ -48,7 +48,7 @@ impl Command for CommentCommand {
   type Error = Error;
   type Event = Event;
   type Input = CommentInput;
-  type Payload = CommentPayload;
+  type Result = CommentResult;
 
   fn handle(
     &self,
@@ -61,9 +61,9 @@ impl Command for CommentCommand {
     Ok(vec![Event::comment_created(comment)])
   }
 
-  fn apply(events: Vec<Self::Event>) -> Option<Self::Payload> {
+  fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::CommentCreated { payload } => Some(CommentPayload {
+      Event::CommentCreated { payload } => Some(CommentResult {
         comment: payload.comment,
       }),
       _ => None,
@@ -71,7 +71,7 @@ impl Command for CommentCommand {
   }
 }
 
-pub fn comment(input: CommentInput) -> Result<CommentPayload, Error> {
+pub fn comment(input: CommentInput) -> Result<CommentResult, Error> {
   let show = database::db().shows.get(&input.show_id).cloned();
 
   let comment = Some(Comment {
