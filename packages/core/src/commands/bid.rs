@@ -1,6 +1,8 @@
 use crate::command::Command;
 use crate::database;
+use crate::database::Database;
 use crate::dispatcher;
+use crate::dispatcher::Dispatcher;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Amount;
@@ -56,20 +58,16 @@ struct BidCommand {
 }
 
 impl BidCommand {
-  pub fn new(input: &BidInput) -> Self {
-    let product = database::db()
-      .auction_products
-      .get(&input.product_id)
-      .cloned();
+  pub fn new(db: &Database, input: &BidInput) -> Self {
+    let product = db.auction_products.get(&input.product_id).cloned();
 
-    let auction = product.and_then(|product| {
-      database::db().auctions.get(&product.auction_id).cloned()
-    });
+    let auction =
+      product.and_then(|product| db.auctions.get(&product.auction_id).cloned());
 
     let best_bid = product.and_then(|product| {
       product
         .best_bid_id
-        .and_then(|best_bid_id| database::db().bids.get(&best_bid_id).cloned())
+        .and_then(|best_bid_id| db.bids.get(&best_bid_id).cloned())
     });
 
     let bid = Some(Bid {
@@ -88,11 +86,11 @@ impl BidCommand {
     }
   }
 
-  fn run(&self, input: BidInput) -> Result<BidPayload, Error> {
+  fn run(&self, dx: &Dispatcher, input: BidInput) -> Result<BidPayload, Error> {
     self
       .handle(input)
-      .map(|events| dispatcher::dispatch(events).unwrap())
-      .map(|events| BidCommand::apply(events).unwrap())
+      .map(|events| dx.dispatch(events).unwrap())
+      .map(|events| Self::apply(events).unwrap())
   }
 }
 
@@ -155,7 +153,8 @@ impl Command for BidCommand {
 }
 
 pub fn bid(input: BidInput) -> Result<BidPayload, Error> {
-  BidCommand::new(&input).run(input)
+  // NOTE: new() = read-only / run() = write-only
+  BidCommand::new(&database::db(), &input).run(&dispatcher::dx(), input)
 }
 
 #[test]

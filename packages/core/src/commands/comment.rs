@@ -1,6 +1,8 @@
 use crate::command::Command;
 use crate::database;
+use crate::database::Database;
 use crate::dispatcher;
+use crate::dispatcher::Dispatcher;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Comment;
@@ -39,8 +41,8 @@ struct CommentCommand {
 }
 
 impl CommentCommand {
-  fn new(input: &CommentInput) -> Self {
-    let show = database::db().shows.get(&input.show_id).cloned();
+  fn new(db: &Database, input: &CommentInput) -> Self {
+    let show = db.shows.get(&input.show_id).cloned();
 
     let comment = Some(Comment {
       id: CommentId::new(),
@@ -52,11 +54,15 @@ impl CommentCommand {
     Self { show, comment }
   }
 
-  fn run(&self, input: CommentInput) -> Result<CommentPayload, Error> {
+  fn run(
+    &self,
+    dx: &Dispatcher,
+    input: CommentInput,
+  ) -> Result<CommentPayload, Error> {
     self
       .handle(input)
-      .map(|events| dispatcher::dispatch(events).unwrap())
-      .map(|events| CommentCommand::apply(events).unwrap())
+      .map(|events| dx.dispatch(events).unwrap())
+      .map(|events| Self::apply(events).unwrap())
   }
 }
 
@@ -88,7 +94,7 @@ impl Command for CommentCommand {
 }
 
 pub fn comment(input: CommentInput) -> Result<CommentPayload, Error> {
-  CommentCommand::new(&input).run(input)
+  CommentCommand::new(&database::db(), &input).run(&dispatcher::dx(), input)
 }
 
 #[test]
