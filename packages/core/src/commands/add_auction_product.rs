@@ -52,7 +52,7 @@ impl Command for AddAuctionProductCommand {
   ) -> Result<Vec<Self::Event>, Self::Error> {
     let mut events = vec![];
 
-    let auction = self
+    let mut auction = self
       .auction
       .ok_or(Error::AuctionNotFound(input.auction_id))?;
 
@@ -65,8 +65,8 @@ impl Command for AddAuctionProductCommand {
     events.push(Event::auction_product_created(auction_product));
 
     if auction.ready_at.is_none() {
-      let ready_at = Utc::now();
-      events.push(Event::auction_marked_ready(auction.id, ready_at));
+      auction.ready_at = Some(Utc::now());
+      events.push(Event::auction_marked_ready(auction));
     }
 
     Ok(events)

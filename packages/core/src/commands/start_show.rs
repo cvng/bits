@@ -50,9 +50,9 @@ impl Command for StartShowCommand {
     &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let show = self.show.ok_or(Error::NotFound(input.id))?;
+    let mut show = self.show.ok_or(Error::NotFound(input.id))?;
 
-    let auction = self.auction.ok_or(Error::AuctionNotFound(show.id))?;
+    let mut auction = self.auction.ok_or(Error::AuctionNotFound(show.id))?;
 
     // Check that the show hasn't already started.
     if show.started_at.is_some() {
@@ -66,9 +66,12 @@ impl Command for StartShowCommand {
 
     let now = Utc::now();
 
+    show.started_at = Some(now);
+    auction.started_at = Some(now);
+
     Ok(vec![
-      Event::show_started(show, now),
-      Event::auction_started(auction.id, now),
+      Event::show_started(show),
+      Event::auction_started(auction),
     ])
   }
 

@@ -69,7 +69,7 @@ impl Command for BidCommand {
       .product
       .ok_or(Error::ProductNotFound(input.product_id))?;
 
-    let auction = self
+    let mut auction = self
       .auction
       .ok_or(Error::AuctionNotFound(product.auction_id))?;
 
@@ -97,11 +97,12 @@ impl Command for BidCommand {
       )
       .ok_or(Error::InvalidAmount(bid.amount))?;
 
-    let expired_at = bid.created_at + Duration::seconds(AUCTION_REFRESH_SECS);
+    auction.expired_at =
+      Some(bid.created_at + Duration::seconds(AUCTION_REFRESH_SECS));
 
     Ok(vec![
       Event::bid_created(bid),
-      Event::auction_revived(auction.id, expired_at),
+      Event::auction_revived(auction),
     ])
   }
 
