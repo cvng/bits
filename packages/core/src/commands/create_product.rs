@@ -3,7 +3,6 @@ use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Event;
 use bits_data::Product;
-use bits_data::ProductCreated;
 use bits_data::ProductId;
 use bits_data::Text;
 use thiserror::Error;
@@ -32,8 +31,7 @@ pub async fn create_product(
     name: input.name,
   };
 
-  dispatcher::dispatch(vec![Event::ProductCreated(ProductCreated { product })])
-    .ok();
+  dispatcher::dispatch(vec![Event::product_created(product)]).ok();
 
   Ok(CreateProductResult { product })
 }

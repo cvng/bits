@@ -3,7 +3,6 @@ use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Event;
 use bits_data::Show;
-use bits_data::ShowCreated;
 use bits_data::ShowId;
 use bits_data::Text;
 use bits_data::UserId;
@@ -36,7 +35,7 @@ pub async fn create_show(
     started_at: None,
   };
 
-  dispatcher::dispatch(vec![Event::ShowCreated(ShowCreated { show })]).ok();
+  dispatcher::dispatch(vec![Event::show_created(show)]).ok();
 
   Ok(CreateShowResult { show })
 }
