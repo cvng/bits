@@ -38,6 +38,12 @@ struct CommentCommand {
   comment: Option<Comment>,
 }
 
+impl CommentCommand {
+  fn new(show: Option<Show>, comment: Option<Comment>) -> Self {
+    Self { show, comment }
+  }
+}
+
 impl Command for CommentCommand {
   type Error = Error;
   type Event = Event;
@@ -68,52 +74,44 @@ impl Command for CommentCommand {
 pub fn comment(input: CommentInput) -> Result<CommentPayload, Error> {
   let show = database::db().shows.get(&input.show_id).cloned();
 
-  let comment = Comment {
+  let comment = Some(Comment {
     id: CommentId::new(),
     user_id: input.user_id,
     show_id: input.show_id,
     text: input.text,
-  };
+  });
 
-  CommentCommand {
-    show,
-    comment: Some(comment),
-  }
-  .handle(input)
-  .map(Dispatcher::dispatch)?
-  .map_err(|_| Error::NotCreated)
-  .map(CommentCommand::apply)?
-  .ok_or(Error::NotCreated)
+  CommentCommand::new(show, comment)
+    .handle(input)
+    .map(Dispatcher::dispatch)?
+    .map_err(|_| Error::NotCreated)
+    .map(CommentCommand::apply)?
+    .ok_or(Error::NotCreated)
 }
 
 #[test]
 fn test_comment() {
-  let show = bits_data::Show {
+  let show = Some(bits_data::Show {
     id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
     creator_id: UserId::new(),
     name: Text::new("name"),
     started_at: None,
-  };
+  });
 
   let input = CommentInput {
     user_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
-    show_id: show.id,
+    show_id: show.as_ref().unwrap().id,
     text: Text::new("text"),
   };
 
-  let comment = Comment {
+  let comment = Some(Comment {
     id: "7cc32b32-c5c6-4034-89f9-8363d856ebb4".parse().unwrap(),
     user_id: input.user_id,
     show_id: input.show_id,
     text: input.text,
-  };
+  });
 
-  let events = CommentCommand {
-    show: Some(show),
-    comment: Some(comment),
-  }
-  .handle(input)
-  .unwrap();
+  let events = CommentCommand::new(show, comment).handle(input).unwrap();
 
   assert_json_snapshot!(events, @r###"
   [

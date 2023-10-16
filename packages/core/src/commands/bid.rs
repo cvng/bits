@@ -55,6 +55,22 @@ struct BidCommand {
   bid: Option<Bid>,
 }
 
+impl BidCommand {
+  fn new(
+    auction: Option<Auction>,
+    product: Option<AuctionProduct>,
+    best_bid: Option<Bid>,
+    bid: Option<Bid>,
+  ) -> Self {
+    Self {
+      auction,
+      product,
+      best_bid,
+      bid,
+    }
+  }
+}
+
 impl Command for BidCommand {
   type Error = Error;
   type Event = Event;
@@ -137,60 +153,52 @@ pub fn bid(input: BidInput) -> Result<BidPayload, Error> {
     created_at: Utc::now(),
   });
 
-  BidCommand {
-    auction,
-    product,
-    best_bid,
-    bid,
-  }
-  .handle(input)
-  .map(Dispatcher::dispatch)?
-  .map_err(|_| Error::NotCreated)
-  .map(BidCommand::apply)?
-  .ok_or(Error::NotCreated)
+  BidCommand::new(auction, product, best_bid, bid)
+    .handle(input)
+    .map(Dispatcher::dispatch)?
+    .map_err(|_| Error::NotCreated)
+    .map(BidCommand::apply)?
+    .ok_or(Error::NotCreated)
 }
 
 #[test]
 fn test_bid() {
   let now = Utc::now();
 
-  let auction = Auction {
+  let auction = Some(Auction {
     id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
     show_id: bits_data::ShowId::new(),
     ready_at: Some(now),
     started_at: Some(now),
     expired_at: Some(now + Duration::seconds(bits_data::AUCTION_TIMEOUT_SECS)),
-  };
+  });
 
-  let product = bits_data::AuctionProduct {
+  let product = Some(bits_data::AuctionProduct {
     id: "6bc8e88e-fc47-41c6-8dae-b180d1efae98".parse().unwrap(),
-    auction_id: auction.id,
+    auction_id: auction.as_ref().unwrap().id,
     product_id: bits_data::ProductId::new(),
     best_bid_id: None,
-  };
+  });
+
+  let best_bid = None;
 
   let input = BidInput {
     user_id: "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68".parse().unwrap(),
-    product_id: product.id,
+    product_id: product.as_ref().unwrap().id,
     amount: 100,
   };
 
-  let bid = Bid {
+  let bid = Some(Bid {
     id: "bcd0ab01-96f0-4469-a3e6-254afe70b74f".parse().unwrap(),
     user_id: input.user_id,
     product_id: input.product_id,
     amount: input.amount,
     created_at: "2023-10-16T04:41:02.676340Z".parse().unwrap(),
-  };
+  });
 
-  let events = BidCommand {
-    auction: Some(auction),
-    product: Some(product),
-    bid: Some(bid),
-    best_bid: None,
-  }
-  .handle(input)
-  .unwrap();
+  let events = BidCommand::new(auction, product, best_bid, bid)
+    .handle(input)
+    .unwrap();
 
   assert_json_snapshot!(events, @r###"
   [
