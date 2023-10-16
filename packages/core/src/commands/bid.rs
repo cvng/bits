@@ -153,7 +153,7 @@ fn test_bid() {
   let auction = Some(Auction {
     id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
     show_id: bits_data::ShowId::new(),
-    ready_at: Some("2023-10-15T22:46:58.012577Z".parse().unwrap()),
+    ready_at: Some(now),
     started_at: Some(now),
     expired_at: Some(now + Duration::seconds(bits_data::AUCTION_TIMEOUT_SECS)),
   });
