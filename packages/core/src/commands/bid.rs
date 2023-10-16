@@ -73,8 +73,8 @@ impl BidCommand {
 impl Command for BidCommand {
   type Error = Error;
   type Event = Event;
-  type State = BidCommand;
   type Input = BidInput;
+  type State = BidCommand;
   type Payload = BidPayload;
 
   fn handle(
