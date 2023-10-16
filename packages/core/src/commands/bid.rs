@@ -156,8 +156,8 @@ pub fn bid(input: BidInput) -> Result<BidPayload, Error> {
   BidCommand::new(auction, product, best_bid, bid)
     .handle(input)
     .map(Dispatcher::dispatch)?
-    .map_err(|_| Error::NotCreated)
-    .map(BidCommand::apply)?
+    .map(BidCommand::apply)
+    .map_err(|_| Error::NotCreated)?
     .ok_or(Error::NotCreated)
 }
 

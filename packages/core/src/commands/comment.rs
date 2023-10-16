@@ -84,8 +84,8 @@ pub fn comment(input: CommentInput) -> Result<CommentPayload, Error> {
   CommentCommand::new(show, comment)
     .handle(input)
     .map(Dispatcher::dispatch)?
-    .map_err(|_| Error::NotCreated)
-    .map(CommentCommand::apply)?
+    .map(CommentCommand::apply)
+    .map_err(|_| Error::NotCreated)?
     .ok_or(Error::NotCreated)
 }
 
