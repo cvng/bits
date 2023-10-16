@@ -5,9 +5,10 @@ extern crate serde;
 #[cfg(test)]
 extern crate insta;
 
+mod command;
 pub mod commands;
 mod database;
-mod dispatch;
+mod dispatcher;
 mod error;
 mod handlers;
 

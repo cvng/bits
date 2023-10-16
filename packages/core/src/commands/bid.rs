@@ -1,5 +1,6 @@
+use crate::command::Command;
 use crate::database;
-use crate::dispatch::Command;
+use crate::dispatcher;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Amount;
@@ -48,48 +49,38 @@ pub enum Error {
   UserNotFound(UserId),
 }
 
-struct State {
-  pub auction: Option<Auction>,
-  pub product: Option<AuctionProduct>,
-  pub best_bid: Option<Bid>,
+#[derive(Default)]
+struct BidCommand {
+  auction: Option<Auction>,
+  product: Option<AuctionProduct>,
+  best_bid: Option<Bid>,
 }
 
-struct BidCommand;
-
-impl Command for BidCommand {
-  type Error = Error;
-  type State = State;
-  type Input = BidInput;
-  type Payload = BidPayload;
-
-  fn state(&self, input: &Self::Input) -> Result<Self::State, Self::Error> {
-    let product = database::db()
-      .auction_products
-      .get(&input.product_id)
-      .cloned();
-
-    let auction = product.and_then(|product| {
-      database::db().auctions.get(&product.auction_id).cloned()
-    });
-
-    let best_bid = product.and_then(|product| {
-      product
-        .best_bid_id
-        .and_then(|best_bid_id| database::db().bids.get(&best_bid_id).cloned())
-    });
-
-    Ok(State {
+impl BidCommand {
+  pub fn new(
+    auction: Option<Auction>,
+    product: Option<AuctionProduct>,
+    best_bid: Option<Bid>,
+  ) -> Self {
+    Self {
       auction,
       product,
       best_bid,
-    })
+    }
   }
+}
 
-  fn events(
-    &self,
+impl Command for BidCommand {
+  type Error = Error;
+  type Event = Event;
+  type State = BidCommand;
+  type Input = BidInput;
+  type Payload = BidPayload;
+
+  fn handle(
     state: &Self::State,
-    input: &Self::Input,
-  ) -> Result<Vec<Event>, Self::Error> {
+    input: Self::Input,
+  ) -> Result<Vec<Self::Event>, Self::Error> {
     let product = state
       .product
       .ok_or(Error::ProductNotFound(input.product_id))?;
@@ -136,7 +127,7 @@ impl Command for BidCommand {
     ])
   }
 
-  fn payload(&self, events: Vec<Event>) -> Option<Self::Payload> {
+  fn apply(events: Vec<Self::Event>) -> Option<Self::Payload> {
     events.iter().fold(None, |_, event| match event {
       Event::BidCreated { payload } => Some(BidPayload { bid: payload.bid }),
       _ => None,
@@ -145,14 +136,33 @@ impl Command for BidCommand {
 }
 
 pub fn bid(input: BidInput) -> Result<BidPayload, Error> {
-  BidCommand.run(input)
+  let product = database::db()
+    .auction_products
+    .get(&input.product_id)
+    .cloned();
+
+  let auction = product.and_then(|product| {
+    database::db().auctions.get(&product.auction_id).cloned()
+  });
+
+  let best_bid = product.and_then(|product| {
+    product
+      .best_bid_id
+      .and_then(|best_bid_id| database::db().bids.get(&best_bid_id).cloned())
+  });
+
+  let state = BidCommand::new(auction, product, best_bid);
+
+  BidCommand::handle(&state, input)
+    .map(|events| dispatcher::dispatch(events).unwrap())
+    .map(|events| BidCommand::apply(events).unwrap())
 }
 
 #[test]
 fn test_bid() {
   let now = Utc::now();
 
-  let state = State {
+  let state = BidCommand {
     auction: Some(Auction {
       id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
       show_id: bits_data::ShowId::new(),
@@ -177,7 +187,7 @@ fn test_bid() {
     amount: 100,
   };
 
-  let events = BidCommand.events(&state, &input).unwrap();
+  let events = BidCommand::handle(&state, input).unwrap();
 
   assert_json_snapshot!(events, {
     "[0].payload.bid.id" => "[uuid]",

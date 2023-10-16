@@ -6,18 +6,18 @@ use std::sync::OnceLock;
 use std::sync::PoisonError;
 use thiserror::Error;
 
-static DATABASE: OnceLock<Mutex<Database>> = OnceLock::new();
+static DATABASE: OnceLock<Mutex<DatabaseInner>> = OnceLock::new();
 
-pub type DatabaseGuard = MutexGuard<'static, Database>;
+pub type Database = MutexGuard<'static, DatabaseInner>;
 
 #[derive(Debug, Error)]
 pub enum DatabaseError {
   #[error("database lock poisoned")]
-  Lock(#[from] PoisonError<DatabaseGuard>),
+  Lock(#[from] PoisonError<Database>),
 }
 
 #[derive(Default)]
-pub struct Database {
+pub struct DatabaseInner {
   pub auctions: HashMap<data::AuctionId, data::Auction>,
   pub auction_products: HashMap<data::AuctionProductId, data::AuctionProduct>,
   pub bids: HashMap<data::BidId, data::Bid>,
@@ -27,9 +27,9 @@ pub struct Database {
   pub users: HashMap<data::UserId, data::User>,
 }
 
-pub fn db() -> DatabaseGuard {
+pub fn db() -> Database {
   DATABASE
-    .get_or_init(|| Mutex::new(Database::default()))
+    .get_or_init(|| Mutex::new(DatabaseInner::default()))
     .lock()
     .map_err(DatabaseError::Lock)
     .unwrap()
