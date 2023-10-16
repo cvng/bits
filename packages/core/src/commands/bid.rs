@@ -1,6 +1,6 @@
 use crate::command::Command;
 use crate::database;
-use crate::dispatcher::Dispatcher;
+use crate::dispatcher;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Amount;
@@ -155,7 +155,7 @@ pub fn bid(input: BidInput) -> Result<BidPayload, Error> {
 
   BidCommand::new(auction, product, best_bid, bid)
     .handle(input)
-    .map(Dispatcher::dispatch)?
+    .map(dispatcher::dispatch)?
     .map(BidCommand::apply)
     .map_err(|_| Error::NotCreated)?
     .ok_or(Error::NotCreated)

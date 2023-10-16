@@ -1,6 +1,6 @@
 use crate::command::Command;
 use crate::database;
-use crate::dispatcher::Dispatcher;
+use crate::dispatcher;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Comment;
@@ -83,7 +83,7 @@ pub fn comment(input: CommentInput) -> Result<CommentPayload, Error> {
 
   CommentCommand::new(show, comment)
     .handle(input)
-    .map(Dispatcher::dispatch)?
+    .map(dispatcher::dispatch)?
     .map(CommentCommand::apply)
     .map_err(|_| Error::NotCreated)?
     .ok_or(Error::NotCreated)
