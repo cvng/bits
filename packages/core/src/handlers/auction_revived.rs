@@ -1,6 +1,6 @@
 use crate::database;
+use crate::error::Error;
 use crate::error::Result;
-use crate::Error;
 use bits_data::AuctionRevived;
 
 pub fn auction_revived(event: AuctionRevived) -> Result<()> {

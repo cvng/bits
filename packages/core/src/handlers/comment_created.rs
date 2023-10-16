@@ -1,11 +1,12 @@
 use crate::database;
+use crate::error::Error;
 use crate::error::Result;
 use bits_data::CommentCreated;
 
 pub fn comment_created(event: CommentCreated) -> Result<()> {
-  let comment = event.comment;
-
-  database::db().comments.insert(comment.id, comment);
-
-  Ok(())
+  database::db()
+    .comments
+    .insert(event.comment.id, event.comment)
+    .map(|_| ())
+    .ok_or(Error::NotFound(event.comment.id.into()))
 }

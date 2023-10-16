@@ -1,6 +1,6 @@
 use crate::database;
+use crate::error::Error;
 use crate::error::Result;
-use crate::Error;
 use bits_data::BidCreated;
 
 pub fn bid_created(event: BidCreated) -> Result<()> {
@@ -23,3 +23,5 @@ pub fn bid_created(event: BidCreated) -> Result<()> {
 
   Ok(())
 }
+
+// TODO
