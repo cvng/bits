@@ -389,6 +389,7 @@ dependencies = [
  "iana-time-zone",
  "js-sys",
  "num-traits",
+ "serde",
  "wasm-bindgen",
  "windows-targets 0.48.5",
 ]
@@ -819,8 +820,6 @@ dependencies = [
  "console",
  "lazy_static",
  "linked-hash-map",
- "pest",
- "pest_derive",
  "serde",
  "similar",
  "yaml-rust",

@@ -12,7 +12,7 @@ impl MutationRoot {
     _ctx: &Context<'_>,
     input: commands::bid::BidInput,
   ) -> Result<commands::bid::BidPayload> {
-    Ok(commands::bid::bid(input).await?)
+    Ok(commands::bid::bid(input)?)
   }
 
   async fn comment(

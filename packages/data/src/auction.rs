@@ -5,10 +5,13 @@ use crate::ProductId;
 use crate::ShowId;
 use async_graphql::SimpleObject;
 
+pub const AUCTION_TIMEOUT_SECS: i64 = 60;
+pub const AUCTION_REFRESH_SECS: i64 = 15;
+
 id!(AuctionId);
 id!(AuctionProductId);
 
-#[derive(Clone, Copy, SimpleObject)]
+#[derive(Copy, Clone, SimpleObject)]
 #[graphql(name = "BaseAuction")]
 pub struct Auction {
   pub id: AuctionId,
@@ -18,7 +21,7 @@ pub struct Auction {
   pub expired_at: Option<DateTime>,
 }
 
-#[derive(Clone, SimpleObject)]
+#[derive(Copy, Clone, Serialize, SimpleObject)]
 pub struct AuctionProduct {
   pub id: AuctionProductId,
   pub auction_id: AuctionId,

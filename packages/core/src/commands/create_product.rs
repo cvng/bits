@@ -1,4 +1,4 @@
-use crate::dispatch;
+use crate::dispatcher;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Event;
@@ -18,7 +18,7 @@ pub struct CreateProductPayload {
   pub product: Product,
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
   #[error("not found: {0}")]
   NotFound(ProductId),
@@ -32,7 +32,7 @@ pub async fn create_product(
     name: input.name,
   };
 
-  dispatch::dispatch(vec![Event::ProductCreated(ProductCreated { product })])
+  dispatcher::dispatch(vec![Event::ProductCreated(ProductCreated { product })])
     .ok();
 
   Ok(CreateProductPayload { product })

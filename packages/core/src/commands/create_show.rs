@@ -1,4 +1,4 @@
-use crate::dispatch;
+use crate::dispatcher;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Event;
@@ -20,7 +20,7 @@ pub struct CreateShowPayload {
   pub show: Show,
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
   #[error("not found: {0}")]
   NotFound(ShowId),
@@ -36,7 +36,7 @@ pub async fn create_show(
     started_at: None,
   };
 
-  dispatch::dispatch(vec![Event::ShowCreated(ShowCreated { show })]).ok();
+  dispatcher::dispatch(vec![Event::ShowCreated(ShowCreated { show })]).ok();
 
   Ok(CreateShowPayload { show })
 }

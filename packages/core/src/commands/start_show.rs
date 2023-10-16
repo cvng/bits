@@ -1,5 +1,5 @@
 use crate::database;
-use crate::dispatch;
+use crate::dispatcher;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::AuctionId;
@@ -21,7 +21,7 @@ pub struct StartShowPayload {
   pub show: Show,
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
   #[error("not found: {0}")]
   NotFound(ShowId),
@@ -61,7 +61,7 @@ pub async fn start_show(
 
   let now = Utc::now();
 
-  dispatch::dispatch(vec![
+  dispatcher::dispatch(vec![
     Event::ShowStarted(ShowStarted {
       id: show.id,
       started_at: now,

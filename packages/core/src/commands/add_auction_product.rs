@@ -1,5 +1,5 @@
 use crate::database;
-use crate::dispatch;
+use crate::dispatcher;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Auction;
@@ -26,7 +26,7 @@ pub struct AddAuctionProductPayload {
   pub product: Product,
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
   #[error("auction not found: {0}")]
   AuctionNotFound(AuctionId),
@@ -71,7 +71,7 @@ pub async fn add_auction_product(
     }));
   }
 
-  dispatch::dispatch(events).ok();
+  dispatcher::dispatch(events).ok();
 
   Ok(AddAuctionProductPayload { auction, product })
 }

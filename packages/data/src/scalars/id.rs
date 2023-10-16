@@ -16,7 +16,7 @@ macro_rules! id {
       serde::Serialize,
       serde::Deserialize,
     )]
-    pub struct $t(pub(crate) uuid::Uuid);
+    pub struct $t(uuid::Uuid);
 
     impl $t {
       pub fn new() -> Self {

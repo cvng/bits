@@ -1,86 +1,131 @@
+use crate::command::Command;
 use crate::database;
-use crate::dispatch;
+use crate::dispatcher;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use bits_data::Comment;
-use bits_data::CommentCreated;
 use bits_data::CommentId;
 use bits_data::Event;
-#[cfg(test)]
 use bits_data::Show;
 use bits_data::ShowId;
 use bits_data::Text;
 use bits_data::UserId;
-#[cfg(test)]
-use insta::assert_json_snapshot;
-use serde::Serialize;
 use thiserror::Error;
 
-#[derive(InputObject)]
+#[derive(Copy, Clone, Serialize, InputObject)]
 pub struct CommentInput {
   pub user_id: UserId,
   pub show_id: ShowId,
   pub text: Text,
 }
 
-#[derive(SimpleObject, Serialize)]
+#[derive(Serialize, SimpleObject)]
 pub struct CommentPayload {
   pub comment: Comment,
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
+  #[error("comment not created")]
+  NotCreated,
   #[error("show not found: {0}")]
   ShowNotFound(ShowId),
 }
 
-pub fn comment(input: CommentInput) -> Result<CommentPayload, Error> {
-  database::db()
-    .shows
-    .get(&input.show_id)
-    .cloned()
-    .ok_or(Error::ShowNotFound(input.show_id))?;
+#[derive(Default)]
+struct CommentCommand {
+  show: Option<Show>,
+  comment: Option<Comment>,
+}
 
-  let comment = Comment {
+impl CommentCommand {
+  fn new(show: Option<Show>, comment: Option<Comment>) -> Self {
+    Self { show, comment }
+  }
+}
+
+impl Command for CommentCommand {
+  type Error = Error;
+  type Event = Event;
+  type Input = CommentInput;
+  type Payload = CommentPayload;
+
+  fn handle(
+    &self,
+    input: Self::Input,
+  ) -> Result<Vec<Self::Event>, Self::Error> {
+    self.show.ok_or(Error::ShowNotFound(input.show_id))?;
+
+    let comment = self.comment.ok_or(Error::NotCreated)?;
+
+    Ok(vec![Event::comment_created(comment)])
+  }
+
+  fn apply(events: Vec<Self::Event>) -> Option<Self::Payload> {
+    events.iter().fold(None, |_, event| match event {
+      Event::CommentCreated { payload } => Some(CommentPayload {
+        comment: payload.comment,
+      }),
+      _ => None,
+    })
+  }
+}
+
+pub fn comment(input: CommentInput) -> Result<CommentPayload, Error> {
+  let show = database::db().shows.get(&input.show_id).cloned();
+
+  let comment = Some(Comment {
     id: CommentId::new(),
     user_id: input.user_id,
     show_id: input.show_id,
     text: input.text,
-  };
+  });
 
-  dispatch::dispatch(vec![Event::CommentCreated(CommentCreated { comment })])
-    .ok();
-
-  Ok(CommentPayload { comment })
+  CommentCommand::new(show, comment)
+    .handle(input)
+    .map(dispatcher::dispatch)?
+    .map(CommentCommand::apply)
+    .map_err(|_| Error::NotCreated)?
+    .ok_or(Error::NotCreated)
 }
 
 #[test]
 fn test_comment() {
-  database::db().shows.insert(
-    "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
-    Show {
-      id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
-      creator_id: UserId::new(),
-      name: Text::new("name"),
-      started_at: None,
-    },
-  );
+  let show = Some(bits_data::Show {
+    id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
+    creator_id: UserId::new(),
+    name: Text::new("name"),
+    started_at: None,
+  });
 
-  let payload = comment(CommentInput {
+  let input = CommentInput {
     user_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
-    show_id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
+    show_id: show.as_ref().unwrap().id,
     text: Text::new("text"),
-  })
-  .unwrap();
+  };
 
-  assert_json_snapshot!(payload, {".comment.id" => "[uuid]"}, @r###"
-  {
-    "comment": {
-      "id": "[uuid]",
-      "user_id": "9ad4e977-8156-450e-ad00-944f9fc730ab",
-      "show_id": "f5e84179-7f8d-461b-a1d9-497974de10a6",
-      "text": "text"
+  let comment = Some(Comment {
+    id: "7cc32b32-c5c6-4034-89f9-8363d856ebb4".parse().unwrap(),
+    user_id: input.user_id,
+    show_id: input.show_id,
+    text: input.text,
+  });
+
+  let events = CommentCommand::new(show, comment).handle(input).unwrap();
+
+  assert_json_snapshot!(events, @r###"
+  [
+    {
+      "type": "comment_created",
+      "payload": {
+        "comment": {
+          "id": "7cc32b32-c5c6-4034-89f9-8363d856ebb4",
+          "user_id": "9ad4e977-8156-450e-ad00-944f9fc730ab",
+          "show_id": "f5e84179-7f8d-461b-a1d9-497974de10a6",
+          "text": "text"
+        }
+      }
     }
-  }
+  ]
   "###);
 }

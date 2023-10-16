@@ -3,11 +3,10 @@ use crate::ShowId;
 use crate::Text;
 use crate::UserId;
 use async_graphql::SimpleObject;
-use serde::Serialize;
 
 id!(CommentId);
 
-#[derive(Clone, Copy, Serialize, SimpleObject)]
+#[derive(Copy, Clone, Serialize, SimpleObject)]
 #[graphql(name = "BaseComment")]
 pub struct Comment {
   pub id: CommentId,
