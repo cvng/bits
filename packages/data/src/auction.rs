@@ -11,7 +11,7 @@ pub const AUCTION_REFRESH_SECS: i64 = 15;
 id!(AuctionId);
 id!(AuctionProductId);
 
-#[derive(Serialize, Copy, Clone, SimpleObject)]
+#[derive(Copy, Clone, Serialize, SimpleObject)]
 #[graphql(name = "BaseAuction")]
 pub struct Auction {
   pub id: AuctionId,
