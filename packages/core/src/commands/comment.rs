@@ -38,6 +38,21 @@ struct CommentCommand {
   comment: Option<Comment>,
 }
 
+impl CommentCommand {
+  fn new(input: &CommentInput) -> Self {
+    let show = database::db().shows.get(&input.show_id).cloned();
+
+    let comment = Some(Comment {
+      id: CommentId::new(),
+      user_id: input.user_id,
+      show_id: input.show_id,
+      text: input.text,
+    });
+
+    Self { show, comment }
+  }
+}
+
 impl Command for CommentCommand {
   type Error = Error;
   type Event = Event;
@@ -66,16 +81,7 @@ impl Command for CommentCommand {
 }
 
 pub fn comment(input: CommentInput) -> Result<CommentPayload, Error> {
-  let show = database::db().shows.get(&input.show_id).cloned();
-
-  let comment = Some(Comment {
-    id: CommentId::new(),
-    user_id: input.user_id,
-    show_id: input.show_id,
-    text: input.text,
-  });
-
-  CommentCommand { show, comment }
+  CommentCommand::new(&input)
     .handle(input)
     .map(|events| dispatcher::dispatch(events).unwrap())
     .map(|events| CommentCommand::apply(events).unwrap())

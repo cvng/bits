@@ -55,6 +55,40 @@ struct BidCommand {
   bid: Option<Bid>,
 }
 
+impl BidCommand {
+  pub fn new(input: &BidInput) -> Self {
+    let product = database::db()
+      .auction_products
+      .get(&input.product_id)
+      .cloned();
+
+    let auction = product.and_then(|product| {
+      database::db().auctions.get(&product.auction_id).cloned()
+    });
+
+    let best_bid = product.and_then(|product| {
+      product
+        .best_bid_id
+        .and_then(|best_bid_id| database::db().bids.get(&best_bid_id).cloned())
+    });
+
+    let bid = Some(Bid {
+      id: BidId::new(),
+      user_id: input.user_id,
+      product_id: input.product_id,
+      amount: input.amount,
+      created_at: Utc::now(),
+    });
+
+    Self {
+      auction,
+      product,
+      best_bid,
+      bid,
+    }
+  }
+}
+
 impl Command for BidCommand {
   type Error = Error;
   type Event = Event;
@@ -114,38 +148,10 @@ impl Command for BidCommand {
 }
 
 pub fn bid(input: BidInput) -> Result<BidPayload, Error> {
-  let product = database::db()
-    .auction_products
-    .get(&input.product_id)
-    .cloned();
-
-  let auction = product.and_then(|product| {
-    database::db().auctions.get(&product.auction_id).cloned()
-  });
-
-  let best_bid = product.and_then(|product| {
-    product
-      .best_bid_id
-      .and_then(|best_bid_id| database::db().bids.get(&best_bid_id).cloned())
-  });
-
-  let bid = Some(Bid {
-    id: BidId::new(),
-    user_id: input.user_id,
-    product_id: input.product_id,
-    amount: input.amount,
-    created_at: Utc::now(),
-  });
-
-  BidCommand {
-    auction,
-    product,
-    best_bid,
-    bid,
-  }
-  .handle(input)
-  .map(|events| dispatcher::dispatch(events).unwrap())
-  .map(|events| BidCommand::apply(events).unwrap())
+  BidCommand::new(&input)
+    .handle(input)
+    .map(|events| dispatcher::dispatch(events).unwrap())
+    .map(|events| BidCommand::apply(events).unwrap())
 }
 
 #[test]
