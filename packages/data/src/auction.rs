@@ -27,4 +27,5 @@ pub struct AuctionProduct {
   pub auction_id: AuctionId,
   pub product_id: ProductId,
   pub best_bid_id: Option<BidId>,
+  pub created_at: DateTime,
 }

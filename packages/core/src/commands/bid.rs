@@ -168,6 +168,7 @@ fn test_bid() {
     auction_id: auction.as_ref().unwrap().id,
     product_id: bits_data::ProductId::new(),
     best_bid_id: None,
+    created_at: now,
   });
 
   let best_bid = None;

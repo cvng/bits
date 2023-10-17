@@ -109,17 +109,17 @@ pub async fn start_show(
 #[test]
 fn test_start_show() {
   let show = Some(Show {
-    id: ShowId::new(),
-    creator_id: bits_data::UserId::new(),
+    id: "441fdcfb-1613-4ed8-8d31-9fe8708680b0".parse().unwrap(),
+    creator_id: "ba7220d5-af00-4815-89d3-5f852b733591".parse().unwrap(),
     name: bits_data::Text::new("name"),
-    started_at: None,
+    started_at: Some("2023-10-17T02:55:11.788274Z".parse().unwrap()),
   });
 
   let auction = Some(Auction {
-    id: AuctionId::new(),
+    id: "a4d74d78-a628-4a0e-8e42-db3b4dca5f5c".parse().unwrap(),
     show_id: show.as_ref().unwrap().id,
-    ready_at: Some(bits_data::Utc::now()),
-    started_at: None,
+    ready_at: Some("2023-10-17T02:55:11.787768Z".parse().unwrap()),
+    started_at: Some("2023-10-17T02:55:11.788274Z".parse().unwrap()),
     expired_at: None,
   });
 

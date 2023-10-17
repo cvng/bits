@@ -78,12 +78,12 @@ pub async fn create_show(
 #[test]
 fn test_show() {
   let input = CreateShowInput {
-    creator_id: UserId::new(),
+    creator_id: "d9bd7c14-d793-47f3-a644-f97921c862ed".parse().unwrap(),
     name: Text::new("name"),
   };
 
   let show = Some(Show {
-    id: ShowId::new(),
+    id: "15f4491c-c0ab-437e-bdfd-60a62ad8c857".parse().unwrap(),
     creator_id: input.creator_id,
     name: input.name,
     started_at: None,
