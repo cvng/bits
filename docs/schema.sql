@@ -110,3 +110,20 @@ using (bidder_id = current_setting('auth.person_id')::id);
 create policy shop_bid_read
 on shop.bid for select to reader
 using (true);
+
+-- Functions
+
+create or replace function check_bid_amount() returns trigger as $$
+declare max_amount amount;
+begin
+	select max(amount) into max_amount
+  from bid
+  where bid.auction_id = new.auction_id;
+
+	if new.amount <= max_amount then
+		raise using errcode = 'lower_bid_amount';
+	end if;
+
+	return new;
+end;
+$$ language plpgsql;
