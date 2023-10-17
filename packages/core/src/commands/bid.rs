@@ -153,7 +153,7 @@ pub fn bid(input: BidInput) -> Result<BidResult, Error> {
 
 #[test]
 fn test_bid() {
-  let now = Utc::now();
+  let now = "2023-10-17T03:16:49.225067Z".parse().unwrap();
 
   let auction = Some(Auction {
     id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
