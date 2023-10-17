@@ -74,3 +74,22 @@ pub async fn create_show(
     .map_err(|_| Error::NotCreated)?
     .ok_or(Error::NotCreated)
 }
+
+#[test]
+fn test_show() {
+  let input = CreateShowInput {
+    creator_id: todo!(),
+    name: todo!(),
+  };
+
+  let show = Some(Show {
+    id: todo!(),
+    creator_id: todo!(),
+    name: todo!(),
+    started_at: todo!(),
+  });
+
+  let events = CreateShowCommand { show }.handle(input).unwrap();
+
+  assert_json_snapshot!(events, @"");
+}

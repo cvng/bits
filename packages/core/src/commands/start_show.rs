@@ -105,3 +105,27 @@ pub async fn start_show(
     .map_err(|_| Error::NotCreated)?
     .ok_or(Error::NotCreated)
 }
+
+#[test]
+fn test_start_show() {
+  let show = Some(Show {
+    id: todo!(),
+    creator_id: todo!(),
+    name: todo!(),
+    started_at: todo!(),
+  });
+
+  let auction = Some(Auction {
+    id: todo!(),
+    show_id: todo!(),
+    ready_at: todo!(),
+    started_at: todo!(),
+    expired_at: todo!(),
+  });
+
+  let input = StartShowInput { id: todo!() };
+
+  let events = StartShowCommand { show, auction }.handle(input).unwrap();
+
+  assert_json_snapshot!(events, @"");
+}

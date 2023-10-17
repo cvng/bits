@@ -109,3 +109,41 @@ pub async fn add_auction_product(
   .map_err(|_| Error::NotCreated)?
   .ok_or(Error::NotCreated)
 }
+
+#[test]
+fn test_add_auction_product() {
+  let auction = Some(Auction {
+    id: todo!(),
+    show_id: todo!(),
+    ready_at: todo!(),
+    started_at: todo!(),
+    expired_at: todo!(),
+  });
+
+  let product = Some(Product {
+    id: todo!(),
+    name: todo!(),
+  });
+
+  let input = AddAuctionProductInput {
+    auction_id: todo!(),
+    product_id: todo!(),
+  };
+
+  let auction_product = Some(AuctionProduct {
+    id: todo!(),
+    auction_id: todo!(),
+    product_id: todo!(),
+    best_bid_id: todo!(),
+  });
+
+  let events = AddAuctionProductCommand {
+    auction,
+    product,
+    auction_product,
+  }
+  .handle(input)
+  .unwrap();
+
+  assert_json_snapshot!(events, @"");
+}

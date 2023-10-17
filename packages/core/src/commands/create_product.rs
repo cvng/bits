@@ -70,3 +70,17 @@ pub async fn create_product(
     .map_err(|_| Error::NotCreated)?
     .ok_or(Error::NotCreated)
 }
+
+#[test]
+fn test_create_product() {
+  let input = CreateProductInput { name: todo!() };
+
+  let product = Some(Product {
+    id: todo!(),
+    name: todo!(),
+  });
+
+  let events = CreateProductCommand { product }.handle(input).unwrap();
+
+  assert_json_snapshot!(events, @"");
+}
