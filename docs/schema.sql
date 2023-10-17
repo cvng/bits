@@ -6,12 +6,15 @@ create domain id as uuid;
 
 -- Roles
 
-create role reader noinherit;
-
 create role bidder;
+create role reader;
 create role seller;
 
 -- Tables
+
+create schema auth;
+create schema live;
+create schema shop;
 
 -- -- Schema: auth
 
@@ -26,31 +29,52 @@ alter table auth.person enable row level security;
 
 -- -- Schema: live
 
-create table live.auction (
+create table live.comment (
   id id not null default gen_random_uuid() primary key,
   created timestamp not null default now(),
   updated timestamp,
-  show_id id not null references show.show (id),
-  product_id id not null references shop.product (id),
-  started timestamp,
-  expired timestamp,
-  winning_bid_id id references live.bid (id)
+  author_id id not null references auth.person (id),
+  show_id id not null references live.show (id),
+  text text not null
 );
 
-alter table live.auction enable row level security;
+alter table live.comment enable row level security;
 
-create table live.bid (
+create table live.show (
   id id not null default gen_random_uuid() primary key,
   created timestamp not null default now(),
   updated timestamp,
-  auction_id id not null references live.auction (id),
+  creator_id id not null references auth.person (id),
+  name text not null,
+  started timestamp
+);
+
+alter table live.show enable row level security;
+
+-- -- Schema: shop
+
+create table shop.auction (
+  id id not null default gen_random_uuid() primary key,
+  created timestamp not null default now(),
+  updated timestamp,
+  show_id id not null references live.show (id),
+  product_id id not null references shop.product (id),
+  started timestamp,
+  expired timestamp
+);
+
+alter table shop.auction enable row level security;
+
+create table shop.bid (
+  id id not null default gen_random_uuid() primary key,
+  created timestamp not null default now(),
+  updated timestamp,
+  auction_id id not null references shop.auction (id),
   bidder_id id not null references auth.person (id),
   amount amount not null
 );
 
-alter table live.bid enable row level security;
-
--- -- Schema: shop
+alter table shop.bid enable row level security;
 
 create table shop.product (
   id id not null default gen_random_uuid() primary key,
@@ -61,52 +85,28 @@ create table shop.product (
 
 alter table shop.product enable row level security;
 
--- -- Schema: show
-
-create table show.comment (
-  id id not null default gen_random_uuid() primary key,
-  created timestamp not null default now(),
-  updated timestamp,
-  author_id id not null references auth.person (id),
-  show_id id not null references show.show (id),
-  text text not null
-);
-
-alter table show.comment enable row level security;
-
-create table show.show (
-  id id not null default gen_random_uuid() primary key,
-  created timestamp not null default now(),
-  updated timestamp,
-  creator_id id not null references auth.person (id),
-  name text not null,
-  started timestamp
-);
-
-alter table show.show enable row level security;
-
 -- Policies
 
-create policy create_bid
-on live.bid for insert to bidder
-using (bidder_id = current_setting('auth.person_id')::id);
-
-create policy read_bid
-on live.bid for select to reader
-using (true);
-
-create policy create_comment
-on show.comment for insert to bidder
+create policy live_comment_create
+on live.comment for insert to bidder
 using (author_id = current_setting('auth.person_id')::id);
 
-create policy read_comment
-on show.comment for select to reader
+create policy live_comment_read
+on live.comment for select to reader
 using (true);
 
-create policy create_show
-on show.show for insert to seller
+create policy live_show_create
+on live.show for insert to seller
 using (creator_id = current_setting('auth.person_id')::id);
 
-create policy read_show
-on show.show for select to reader
+create policy live_show_read
+on live.show for select to reader
+using (true);
+
+create policy shop_bid_create
+on shop.bid for insert to bidder
+using (bidder_id = current_setting('auth.person_id')::id);
+
+create policy shop_bid_read
+on shop.bid for select to reader
 using (true);
