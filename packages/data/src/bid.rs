@@ -8,7 +8,6 @@ use async_graphql::SimpleObject;
 id!(BidId);
 
 #[derive(Copy, Clone, Serialize, SimpleObject)]
-#[graphql(name = "BaseBid")]
 pub struct Bid {
   pub id: BidId,
   pub user_id: UserId,
