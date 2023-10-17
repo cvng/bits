@@ -116,14 +116,14 @@ using (true);
 create or replace function check_bid_amount() returns trigger as $$
 declare max_amount amount;
 begin
-select max(amount) into max_amount
-from bid
-where bid.auction_id = new.auction_id;
+  select max(amount) into max_amount
+  from bid
+  where bid.auction_id = new.auction_id;
 
-if new.amount <= max_amount then
-raise using errcode = 'lower_bid_amount';
-end if;
+  if new.amount <= max_amount then
+    raise using errcode = 'lower_bid_amount';
+  end if;
 
-return new;
+  return new;
 end;
 $$ language plpgsql;
