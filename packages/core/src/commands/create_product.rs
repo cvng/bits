@@ -84,5 +84,17 @@ fn test_create_product() {
 
   let events = CreateProductCommand { product }.handle(input).unwrap();
 
-  assert_json_snapshot!(events, @"");
+  assert_json_snapshot!(events, @r###"
+  [
+    {
+      "type": "product_created",
+      "payload": {
+        "product": {
+          "id": "f9f1436d-6ed5-4644-8e9e-7e14deffa2ec",
+          "name": "name"
+        }
+      }
+    }
+  ]
+  "###);
 }

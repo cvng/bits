@@ -110,15 +110,15 @@ pub async fn start_show(
 fn test_start_show() {
   let show = Some(Show {
     id: ShowId::new(),
-    creator_id: UserId::new(),
-    name: Text::new("name"),
+    creator_id: bits_data::UserId::new(),
+    name: bits_data::Text::new("name"),
     started_at: None,
   });
 
   let auction = Some(Auction {
     id: AuctionId::new(),
     show_id: show.as_ref().unwrap().id,
-    ready_at: None,
+    ready_at: Some(bits_data::Utc::now()),
     started_at: None,
     expired_at: None,
   });
@@ -129,5 +129,31 @@ fn test_start_show() {
 
   let events = StartShowCommand { show, auction }.handle(input).unwrap();
 
-  assert_json_snapshot!(events, @"");
+  assert_json_snapshot!(events, @r###"
+  [
+    {
+      "type": "show_started",
+      "payload": {
+        "show": {
+          "id": "441fdcfb-1613-4ed8-8d31-9fe8708680b0",
+          "creator_id": "ba7220d5-af00-4815-89d3-5f852b733591",
+          "name": "name",
+          "started_at": "2023-10-17T02:55:11.788274Z"
+        }
+      }
+    },
+    {
+      "type": "auction_started",
+      "payload": {
+        "auction": {
+          "id": "a4d74d78-a628-4a0e-8e42-db3b4dca5f5c",
+          "show_id": "441fdcfb-1613-4ed8-8d31-9fe8708680b0",
+          "ready_at": "2023-10-17T02:55:11.787768Z",
+          "started_at": "2023-10-17T02:55:11.788274Z",
+          "expired_at": null
+        }
+      }
+    }
+  ]
+  "###);
 }

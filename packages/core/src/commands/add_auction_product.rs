@@ -114,7 +114,7 @@ pub async fn add_auction_product(
 fn test_add_auction_product() {
   let auction = Some(Auction {
     id: AuctionId::new(),
-    show_id: ShowId::new(),
+    show_id: bits_data::ShowId::new(),
     ready_at: None,
     started_at: None,
     expired_at: None,
@@ -122,7 +122,7 @@ fn test_add_auction_product() {
 
   let product = Some(Product {
     id: ProductId::new(),
-    name: Text::new("name"),
+    name: bits_data::Text::new("name"),
   });
 
   let input = AddAuctionProductInput {
@@ -145,5 +145,31 @@ fn test_add_auction_product() {
   .handle(input)
   .unwrap();
 
-  assert_json_snapshot!(events, @"");
+  assert_json_snapshot!(events, @r###"
+  [
+    {
+      "type": "auction_product_created",
+      "payload": {
+        "auction_product": {
+          "id": "177d1966-d688-486e-9b13-8709c0a434a0",
+          "auction_id": "bbee6e9a-7985-461c-8ed6-6aa05084e335",
+          "product_id": "2b1af787-2d94-4224-a2fc-1d8d155537c0",
+          "best_bid_id": null
+        }
+      }
+    },
+    {
+      "type": "auction_marked_ready",
+      "payload": {
+        "auction": {
+          "id": "bbee6e9a-7985-461c-8ed6-6aa05084e335",
+          "show_id": "048b47f4-3010-43ae-84c1-8088ab8488a8",
+          "ready_at": "2023-10-17T02:55:11.787907Z",
+          "started_at": null,
+          "expired_at": null
+        }
+      }
+    }
+  ]
+  "###);
 }

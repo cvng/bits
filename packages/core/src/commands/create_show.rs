@@ -91,5 +91,19 @@ fn test_show() {
 
   let events = CreateShowCommand { show }.handle(input).unwrap();
 
-  assert_json_snapshot!(events, @"");
+  assert_json_snapshot!(events, @r###"
+  [
+    {
+      "type": "show_created",
+      "payload": {
+        "show": {
+          "id": "15f4491c-c0ab-437e-bdfd-60a62ad8c857",
+          "creator_id": "d9bd7c14-d793-47f3-a644-f97921c862ed",
+          "name": "name",
+          "started_at": null
+        }
+      }
+    }
+  ]
+  "###);
 }
