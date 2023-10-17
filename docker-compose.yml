@@ -1,4 +1,4 @@
-# https://github.com/hasura/graphql-engine/tree/stable/install-manifests/docker-compose
+# https://github.com/docker/compose
 
  version: "3.6"
 
@@ -6,10 +6,8 @@
    # https://github.com/docker-library/docs/blob/master/postgres
    postgres:
      image: postgres:15
+     restart: always
      ports:
      - "5432:5432"
-     restart: always
-     volumes:
-     - db_data:/var/lib/postgresql/data
      environment:
-       POSTGRES_PASSWORD: postgrespassword
+       POSTGRES_PASSWORD: password
