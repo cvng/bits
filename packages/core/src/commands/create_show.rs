@@ -74,3 +74,36 @@ pub async fn create_show(
     .map_err(|_| Error::NotCreated)?
     .ok_or(Error::NotCreated)
 }
+
+#[test]
+fn test_show() {
+  let input = CreateShowInput {
+    creator_id: "d9bd7c14-d793-47f3-a644-f97921c862ed".parse().unwrap(),
+    name: Text::new("name"),
+  };
+
+  let show = Some(Show {
+    id: "15f4491c-c0ab-437e-bdfd-60a62ad8c857".parse().unwrap(),
+    creator_id: input.creator_id,
+    name: input.name,
+    started_at: None,
+  });
+
+  let events = CreateShowCommand { show }.handle(input).unwrap();
+
+  assert_json_snapshot!(events, @r###"
+  [
+    {
+      "type": "show_created",
+      "payload": {
+        "show": {
+          "id": "15f4491c-c0ab-437e-bdfd-60a62ad8c857",
+          "creator_id": "d9bd7c14-d793-47f3-a644-f97921c862ed",
+          "name": "name",
+          "started_at": null
+        }
+      }
+    }
+  ]
+  "###);
+}

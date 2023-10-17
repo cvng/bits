@@ -70,3 +70,31 @@ pub async fn create_product(
     .map_err(|_| Error::NotCreated)?
     .ok_or(Error::NotCreated)
 }
+
+#[test]
+fn test_create_product() {
+  let input = CreateProductInput {
+    name: Text::new("name"),
+  };
+
+  let product = Some(Product {
+    id: "f9f1436d-6ed5-4644-8e9e-7e14deffa2ec".parse().unwrap(),
+    name: input.name,
+  });
+
+  let events = CreateProductCommand { product }.handle(input).unwrap();
+
+  assert_json_snapshot!(events, @r###"
+  [
+    {
+      "type": "product_created",
+      "payload": {
+        "product": {
+          "id": "f9f1436d-6ed5-4644-8e9e-7e14deffa2ec",
+          "name": "name"
+        }
+      }
+    }
+  ]
+  "###);
+}

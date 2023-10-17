@@ -65,7 +65,8 @@ impl Command for AddAuctionProductCommand {
     events.push(Event::auction_product_created(auction_product));
 
     if auction.ready_at.is_none() {
-      auction.ready_at = Some(Utc::now());
+      auction.ready_at = Some(auction_product.created_at);
+
       events.push(Event::auction_marked_ready(auction));
     }
 
@@ -96,6 +97,7 @@ pub async fn add_auction_product(
     auction_id: input.auction_id,
     product_id: input.product_id,
     best_bid_id: None,
+    created_at: Utc::now(),
   });
 
   AddAuctionProductCommand {
@@ -108,4 +110,70 @@ pub async fn add_auction_product(
   .map(AddAuctionProductCommand::apply)
   .map_err(|_| Error::NotCreated)?
   .ok_or(Error::NotCreated)
+}
+
+#[test]
+fn test_add_auction_product() {
+  let auction = Some(Auction {
+    id: "bbee6e9a-7985-461c-8ed6-6aa05084e335".parse().unwrap(),
+    show_id: "048b47f4-3010-43ae-84c1-8088ab8488a8".parse().unwrap(),
+    ready_at: None,
+    started_at: None,
+    expired_at: None,
+  });
+
+  let product = Some(Product {
+    id: "2b1af787-2d94-4224-a2fc-1d8d155537c0".parse().unwrap(),
+    name: bits_data::Text::new("name"),
+  });
+
+  let input = AddAuctionProductInput {
+    auction_id: auction.as_ref().unwrap().id,
+    product_id: product.as_ref().unwrap().id,
+  };
+
+  let auction_product = Some(AuctionProduct {
+    id: "177d1966-d688-486e-9b13-8709c0a434a0".parse().unwrap(),
+    auction_id: input.auction_id,
+    product_id: input.product_id,
+    best_bid_id: None,
+    created_at: "2023-10-17T02:55:11.787907Z".parse().unwrap(),
+  });
+
+  let events = AddAuctionProductCommand {
+    auction,
+    product,
+    auction_product,
+  }
+  .handle(input)
+  .unwrap();
+
+  assert_json_snapshot!(events, @r###"
+  [
+    {
+      "type": "auction_product_created",
+      "payload": {
+        "auction_product": {
+          "id": "177d1966-d688-486e-9b13-8709c0a434a0",
+          "auction_id": "bbee6e9a-7985-461c-8ed6-6aa05084e335",
+          "product_id": "2b1af787-2d94-4224-a2fc-1d8d155537c0",
+          "best_bid_id": null,
+          "created_at": "2023-10-17T02:55:11.787907Z"
+        }
+      }
+    },
+    {
+      "type": "auction_marked_ready",
+      "payload": {
+        "auction": {
+          "id": "bbee6e9a-7985-461c-8ed6-6aa05084e335",
+          "show_id": "048b47f4-3010-43ae-84c1-8088ab8488a8",
+          "ready_at": "2023-10-17T02:55:11.787907Z",
+          "started_at": null,
+          "expired_at": null
+        }
+      }
+    }
+  ]
+  "###);
 }
