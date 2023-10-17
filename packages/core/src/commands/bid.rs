@@ -157,9 +157,9 @@ fn test_bid() {
 
   let auction = Some(Auction {
     id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
-    show_id: bits_data::ShowId::new(),
-    ready_at: Some(now),
-    started_at: Some(now),
+    show_id: "28e9d842-0918-460f-9cd9-7245dbba1966".parse().unwrap(),
+    ready_at: Some("2023-10-16T23:56:27.365540Z".parse().unwrap()),
+    started_at: Some("2023-10-16T23:56:27.365540Z".parse().unwrap()),
     expired_at: Some(now + Duration::seconds(bits_data::AUCTION_TIMEOUT_SECS)),
   });
 
@@ -212,8 +212,13 @@ fn test_bid() {
     {
       "type": "auction_revived",
       "payload": {
-        "id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
-        "expired_at": "2023-10-16T04:41:17.676340Z"
+        "auction": {
+          "id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
+          "show_id": "28e9d842-0918-460f-9cd9-7245dbba1966",
+          "ready_at": "2023-10-16T23:56:27.365540Z",
+          "started_at": "2023-10-16T23:56:27.365540Z",
+          "expired_at": "2023-10-16T04:41:17.676340Z"
+        }
       }
     }
   ]
