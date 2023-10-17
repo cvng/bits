@@ -135,10 +135,10 @@ fn test_start_show() {
       "type": "show_started",
       "payload": {
         "show": {
-          "id": "441fdcfb-1613-4ed8-8d31-9fe8708680b0",
-          "creator_id": "ba7220d5-af00-4815-89d3-5f852b733591",
+          "id": "62e107a1-3192-4599-8084-d96c8adaf19c",
+          "creator_id": "9a23b867-21d2-4bad-bce7-31bc6d405fa4",
           "name": "name",
-          "started_at": "2023-10-17T02:55:11.788274Z"
+          "started_at": "2023-10-17T03:00:15.068256Z"
         }
       }
     },
@@ -146,10 +146,10 @@ fn test_start_show() {
       "type": "auction_started",
       "payload": {
         "auction": {
-          "id": "a4d74d78-a628-4a0e-8e42-db3b4dca5f5c",
-          "show_id": "441fdcfb-1613-4ed8-8d31-9fe8708680b0",
-          "ready_at": "2023-10-17T02:55:11.787768Z",
-          "started_at": "2023-10-17T02:55:11.788274Z",
+          "id": "83cb3f21-7a8c-4aa4-adf6-c708842dc4d2",
+          "show_id": "62e107a1-3192-4599-8084-d96c8adaf19c",
+          "ready_at": "2023-10-17T03:00:15.068093Z",
+          "started_at": "2023-10-17T03:00:15.068256Z",
           "expired_at": null
         }
       }

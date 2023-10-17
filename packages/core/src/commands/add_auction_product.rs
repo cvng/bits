@@ -157,7 +157,8 @@ fn test_add_auction_product() {
           "id": "177d1966-d688-486e-9b13-8709c0a434a0",
           "auction_id": "bbee6e9a-7985-461c-8ed6-6aa05084e335",
           "product_id": "2b1af787-2d94-4224-a2fc-1d8d155537c0",
-          "best_bid_id": null
+          "best_bid_id": null,
+          "created_at": "2023-10-17T02:55:11.787907Z"
         }
       }
     },
