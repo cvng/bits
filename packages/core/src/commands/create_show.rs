@@ -78,15 +78,15 @@ pub async fn create_show(
 #[test]
 fn test_show() {
   let input = CreateShowInput {
-    creator_id: todo!(),
-    name: todo!(),
+    creator_id: UserId::new(),
+    name: Text::new("name"),
   };
 
   let show = Some(Show {
-    id: todo!(),
-    creator_id: todo!(),
-    name: todo!(),
-    started_at: todo!(),
+    id: ShowId::new(),
+    creator_id: input.creator_id,
+    name: input.name,
+    started_at: None,
   });
 
   let events = CreateShowCommand { show }.handle(input).unwrap();

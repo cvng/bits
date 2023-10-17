@@ -113,28 +113,28 @@ pub async fn add_auction_product(
 #[test]
 fn test_add_auction_product() {
   let auction = Some(Auction {
-    id: todo!(),
-    show_id: todo!(),
-    ready_at: todo!(),
-    started_at: todo!(),
-    expired_at: todo!(),
+    id: AuctionId::new(),
+    show_id: ShowId::new(),
+    ready_at: None,
+    started_at: None,
+    expired_at: None,
   });
 
   let product = Some(Product {
-    id: todo!(),
-    name: todo!(),
+    id: ProductId::new(),
+    name: Text::new("name"),
   });
 
   let input = AddAuctionProductInput {
-    auction_id: todo!(),
-    product_id: todo!(),
+    auction_id: auction.as_ref().unwrap().id,
+    product_id: product.as_ref().unwrap().id,
   };
 
   let auction_product = Some(AuctionProduct {
-    id: todo!(),
-    auction_id: todo!(),
-    product_id: todo!(),
-    best_bid_id: todo!(),
+    id: AuctionProductId::new(),
+    auction_id: input.auction_id,
+    product_id: input.product_id,
+    best_bid_id: None,
   });
 
   let events = AddAuctionProductCommand {

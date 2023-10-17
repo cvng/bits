@@ -73,11 +73,13 @@ pub async fn create_product(
 
 #[test]
 fn test_create_product() {
-  let input = CreateProductInput { name: todo!() };
+  let input = CreateProductInput {
+    name: Text::new("name"),
+  };
 
   let product = Some(Product {
-    id: todo!(),
-    name: todo!(),
+    id: ProductId::new(),
+    name: input.name,
   });
 
   let events = CreateProductCommand { product }.handle(input).unwrap();

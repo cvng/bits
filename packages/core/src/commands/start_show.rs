@@ -109,21 +109,23 @@ pub async fn start_show(
 #[test]
 fn test_start_show() {
   let show = Some(Show {
-    id: todo!(),
-    creator_id: todo!(),
-    name: todo!(),
-    started_at: todo!(),
+    id: ShowId::new(),
+    creator_id: UserId::new(),
+    name: Text::new("name"),
+    started_at: None,
   });
 
   let auction = Some(Auction {
-    id: todo!(),
-    show_id: todo!(),
-    ready_at: todo!(),
-    started_at: todo!(),
-    expired_at: todo!(),
+    id: AuctionId::new(),
+    show_id: show.as_ref().unwrap().id,
+    ready_at: None,
+    started_at: None,
+    expired_at: None,
   });
 
-  let input = StartShowInput { id: todo!() };
+  let input = StartShowInput {
+    id: show.as_ref().unwrap().id,
+  };
 
   let events = StartShowCommand { show, auction }.handle(input).unwrap();
 
