@@ -48,27 +48,11 @@ pub enum Error {
 }
 
 #[derive(Default)]
-struct BidCommand {
-  auction: Option<Auction>,
-  product: Option<AuctionProduct>,
-  best_bid: Option<Bid>,
-  bid: Option<Bid>,
-}
-
-impl BidCommand {
-  fn new(
-    auction: Option<Auction>,
-    product: Option<AuctionProduct>,
-    best_bid: Option<Bid>,
-    bid: Option<Bid>,
-  ) -> Self {
-    Self {
-      auction,
-      product,
-      best_bid,
-      bid,
-    }
-  }
+pub struct BidCommand {
+  pub auction: Option<Auction>,
+  pub product: Option<AuctionProduct>,
+  pub best_bid: Option<Bid>,
+  pub bid: Option<Bid>,
 }
 
 impl Command for BidCommand {
@@ -85,7 +69,7 @@ impl Command for BidCommand {
       .product
       .ok_or(Error::ProductNotFound(input.product_id))?;
 
-    let auction = self
+    let mut auction = self
       .auction
       .ok_or(Error::AuctionNotFound(product.auction_id))?;
 
@@ -113,11 +97,12 @@ impl Command for BidCommand {
       )
       .ok_or(Error::InvalidAmount(bid.amount))?;
 
-    let expired_at = bid.created_at + Duration::seconds(AUCTION_REFRESH_SECS);
+    auction.expired_at =
+      Some(bid.created_at + Duration::seconds(AUCTION_REFRESH_SECS));
 
     Ok(vec![
       Event::bid_created(bid),
-      Event::auction_revived(auction.id, expired_at),
+      Event::auction_revived(auction),
     ])
   }
 
@@ -153,12 +138,17 @@ pub fn bid(input: BidInput) -> Result<BidResult, Error> {
     created_at: Utc::now(),
   });
 
-  BidCommand::new(auction, product, best_bid, bid)
-    .handle(input)
-    .map(dispatcher::dispatch)?
-    .map(BidCommand::apply)
-    .map_err(|_| Error::NotCreated)?
-    .ok_or(Error::NotCreated)
+  BidCommand {
+    auction,
+    product,
+    best_bid,
+    bid,
+  }
+  .handle(input)
+  .map(dispatcher::dispatch)?
+  .map(BidCommand::apply)
+  .map_err(|_| Error::NotCreated)?
+  .ok_or(Error::NotCreated)
 }
 
 #[test]
@@ -167,9 +157,9 @@ fn test_bid() {
 
   let auction = Some(Auction {
     id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
-    show_id: bits_data::ShowId::new(),
-    ready_at: Some(now),
-    started_at: Some(now),
+    show_id: "28e9d842-0918-460f-9cd9-7245dbba1966".parse().unwrap(),
+    ready_at: Some("2023-10-16T23:56:27.365540Z".parse().unwrap()),
+    started_at: Some("2023-10-16T23:56:27.365540Z".parse().unwrap()),
     expired_at: Some(now + Duration::seconds(bits_data::AUCTION_TIMEOUT_SECS)),
   });
 
@@ -196,9 +186,14 @@ fn test_bid() {
     created_at: "2023-10-16T04:41:02.676340Z".parse().unwrap(),
   });
 
-  let events = BidCommand::new(auction, product, best_bid, bid)
-    .handle(input)
-    .unwrap();
+  let events = BidCommand {
+    auction,
+    product,
+    best_bid,
+    bid,
+  }
+  .handle(input)
+  .unwrap();
 
   assert_json_snapshot!(events, @r###"
   [
@@ -217,8 +212,13 @@ fn test_bid() {
     {
       "type": "auction_revived",
       "payload": {
-        "id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
-        "expired_at": "2023-10-16T04:41:17.676340Z"
+        "auction": {
+          "id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
+          "show_id": "28e9d842-0918-460f-9cd9-7245dbba1966",
+          "ready_at": "2023-10-16T23:56:27.365540Z",
+          "started_at": "2023-10-16T23:56:27.365540Z",
+          "expired_at": "2023-10-16T04:41:17.676340Z"
+        }
       }
     }
   ]

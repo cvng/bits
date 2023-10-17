@@ -1,3 +1,4 @@
+use crate::command::Command;
 use crate::dispatcher;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
@@ -19,19 +20,53 @@ pub struct CreateProductResult {
 
 #[derive(Debug, Error)]
 pub enum Error {
+  #[error("product not created")]
+  NotCreated,
   #[error("not found: {0}")]
   NotFound(ProductId),
+}
+
+pub struct CreateProductCommand {
+  pub product: Option<Product>,
+}
+
+impl Command for CreateProductCommand {
+  type Error = Error;
+  type Event = Event;
+  type Input = CreateProductInput;
+  type Result = CreateProductResult;
+
+  fn handle(
+    &self,
+    _input: Self::Input,
+  ) -> Result<Vec<Self::Event>, Self::Error> {
+    let product = self.product.ok_or(Error::NotCreated)?;
+
+    Ok(vec![Event::product_created(product)])
+  }
+
+  fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
+    events.iter().fold(None, |_, event| match event {
+      Event::ProductCreated { payload } => Some(CreateProductResult {
+        product: payload.product,
+      }),
+      _ => None,
+    })
+  }
 }
 
 pub async fn create_product(
   input: CreateProductInput,
 ) -> Result<CreateProductResult, Error> {
-  let product = Product {
+  let product = Some(Product {
     id: ProductId::new(),
     name: input.name,
-  };
+  });
 
-  dispatcher::dispatch(vec![Event::product_created(product)]).ok();
-
-  Ok(CreateProductResult { product })
+  CreateProductCommand { product }
+    .handle(input)
+    .map(dispatcher::dispatch)?
+    .map(CreateProductCommand::apply)
+    .map_err(|_| Error::NotCreated)?
+    .ok_or(Error::NotCreated)
 }
