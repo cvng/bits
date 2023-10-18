@@ -18,7 +18,7 @@ create role viewer;
 
 create domain amount as int;
 create domain id as uuid;
-create domain email as text check (value != '');
+create domain email as text check (value ~ '@');
 
 --
 -- Tables
@@ -34,7 +34,7 @@ create table auth.person (
   id id not null default gen_random_uuid() primary key,
   created timestamp not null default now(),
   updated timestamp,
-  username email not null
+  email email not null
 );
 
 alter table auth.person enable row level security;

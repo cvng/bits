@@ -5,7 +5,7 @@ truncate table shop.auction cascade;
 truncate table shop.bid cascade;
 truncate table shop.product cascade;
 
-insert into auth.person (id, username)
+insert into auth.person (id, email)
 values
 (
   '00000000-0000-0000-0000-000000000000',
