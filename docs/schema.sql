@@ -5,27 +5,26 @@
 --
 
 drop role if exists bidder;
-drop role if exists reader;
 drop role if exists seller;
+drop role if exists viewer;
 
 create role bidder;
-create role reader;
 create role seller;
+create role viewer;
 
 --
 -- Domains
 --
 
 create domain amount as int;
-create domain email as text check (value != '');
 create domain id as uuid;
+create domain email as text check (value != '');
 
 --
 -- Tables
 --
 
 create schema auth;
-create schema config;
 create schema live;
 create schema shop;
 
@@ -99,25 +98,11 @@ create table shop.bid (
   updated timestamp,
   auction_id id not null references shop.auction (id),
   bidder_id id not null references auth.person (id),
-  amount amount not null
+  concurrent_amount amount not null default 0,
+  amount amount not null check (amount > concurrent_amount)
 );
 
 alter table shop.bid enable row level security;
-
--- Table: config.error
-
-create table config.error (
-  code char(5) not null primary key,
-  message text not null unique,
-  detail text,
-  hint text
-);
-
-alter table config.error enable row level security;
-
-insert into config.error (code, message, detail)
-values
-('A0001', 'invalid_bid_amount', 'Bid amount must be greater than highest bid');
 
 --
 -- Policies
@@ -126,50 +111,34 @@ values
 create policy live_comment_create on live.comment for insert to bidder
 with check (author_id = current_setting('auth.person_id')::id);
 
-create policy live_comment_read on live.comment for select to reader
+create policy live_comment_read on live.comment for select to viewer
 using (true);
 
 create policy live_show_create on live.show for insert to seller
 with check (creator_id = current_setting('auth.person_id')::id);
 
-create policy live_show_read on live.show for select to reader
+create policy live_show_read on live.show for select to viewer
 using (true);
 
 create policy shop_bid_create on shop.bid for insert to bidder
 with check (bidder_id = current_setting('auth.person_id')::id);
 
-create policy shop_bid_read on shop.bid for select to reader
+create policy shop_bid_read on shop.bid for select to viewer
 using (true);
 
 --
 -- Functions
 --
 
-create function raise_error(message text) returns void as $$
-declare
-  error config.error;
-begin
-  select * into error
-  from config.error
-  where message = message;
-
-  raise exception using
-    errcode = error.code,
-    message = error.message,
-    detail = error.detail;
-end;
-$$ language plpgsql;
-
-create function check_bid_amount() returns trigger as $$
+create function shop.check_bid_amount() returns trigger as $$
 declare
   max_amount amount;
 begin
   select max(amount) into max_amount
-  from shop.bid
-  where bid.auction_id = new.auction_id;
+  from shop.bid where bid.auction_id = new.auction_id;
 
-  if new.amount <= max_amount then
-    perform raise_error('invalid_bid_amount');
+  if max_amount is not null then
+    new.concurrent_amount = max_amount;
   end if;
 
   return new;
@@ -181,4 +150,4 @@ $$ language plpgsql;
 --
 
 create trigger check_bid_amount_trigger before insert on shop.bid
-for each row execute function check_bid_amount();
+for each row execute function shop.check_bid_amount();
