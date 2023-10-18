@@ -108,29 +108,29 @@ alter table shop.bid enable row level security;
 -- Policies
 --
 
-create policy live_comment_create on live.comment for insert to bidder
+create policy comment_create_policy on live.comment for insert to bidder
 with check (author_id = current_setting('auth.person_id')::id);
 
-create policy live_comment_read on live.comment for select to viewer
+create policy comment_read_policy on live.comment for select to viewer
 using (true);
 
-create policy live_show_create on live.show for insert to seller
+create policy show_create_policy on live.show for insert to seller
 with check (creator_id = current_setting('auth.person_id')::id);
 
-create policy live_show_read on live.show for select to viewer
+create policy show_read_policy on live.show for select to viewer
 using (true);
 
-create policy shop_bid_create on shop.bid for insert to bidder
+create policy bid_create_policy on shop.bid for insert to bidder
 with check (bidder_id = current_setting('auth.person_id')::id);
 
-create policy shop_bid_read on shop.bid for select to viewer
+create policy bid_read_policy on shop.bid for select to viewer
 using (true);
 
 --
--- Functions
+-- Triggers
 --
 
-create function shop.set_bid_concurrent_amount() returns trigger as $$
+create function shop.bid_insert_trigger() returns trigger as $$
 declare
   current_max_amount amount;
 begin
@@ -145,9 +145,5 @@ begin
 end;
 $$ language plpgsql;
 
---
--- Triggers
---
-
-create trigger set_bid_concurrent_amount_trigger before insert on shop.bid
-for each row execute function shop.set_bid_concurrent_amount();
+create trigger bid_insert_trigger before insert on shop.bid
+for each row execute function shop.bid_insert_trigger();
