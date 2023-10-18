@@ -132,13 +132,13 @@ using (true);
 
 create function shop.set_bid_concurrent_amount() returns trigger as $$
 declare
-  max_amount amount;
+  current_max_amount amount;
 begin
-  select max(amount) into max_amount
+  select max(bid.amount) into current_max_amount
   from shop.bid where bid.auction_id = new.auction_id;
 
-  if max_amount is not null then
-    new.concurrent_amount = max_amount;
+  if current_max_amount is not null then
+    new.concurrent_amount = current_max_amount;
   end if;
 
   return new;
