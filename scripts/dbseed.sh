@@ -5,8 +5,9 @@ source .env
 
 host="$DB_HOST"
 name="$DB_NAME"
+file="docs/seed.sql"
 
-time psql "$host" \
+psql "$host" \
     --command="\connect $name" \
-    --file="docs/seed.sql" \
-    --set ON_ERROR_STOP=1
+    --variable=ON_ERROR_STOP=1 \
+    --file="$file"

@@ -125,7 +125,8 @@ begin
   where bid.auction_id = new.auction_id;
 
   if new.amount <= max_amount then
-    raise using errcode = 'lower_bid_amount';
+    raise 'invalid_bid_amount'
+    using detail = format('Bid amount should be greater (%s < %s)', new.amount, max_amount);
   end if;
 
   return new;
