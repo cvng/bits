@@ -7,8 +7,6 @@ host="$DB_HOST"
 name="$DB_NAME"
 
 time psql "$host" \
-    --command="drop database if exists $name with (force);" \
-    --command="create database $name;" \
     --command="\connect $name" \
-    --file="docs/schema.sql" \
+    --file="docs/seed.sql" \
     --set ON_ERROR_STOP=1

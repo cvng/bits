@@ -121,7 +121,7 @@ create function check_bid_amount() returns trigger as $$
 declare max_amount amount;
 begin
   select max(amount) into max_amount
-  from bid
+  from shop.bid
   where bid.auction_id = new.auction_id;
 
   if new.amount <= max_amount then
@@ -133,6 +133,7 @@ end;
 $$ language plpgsql;
 
 -- Triggers
+
 create trigger check_bid_amount_trigger
 before insert on shop.bid for each row
 execute function check_bid_amount();
