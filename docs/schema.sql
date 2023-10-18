@@ -130,7 +130,7 @@ using (true);
 -- Functions
 --
 
-create function shop.check_bid_amount() returns trigger as $$
+create function shop.set_bid_concurrent_amount() returns trigger as $$
 declare
   max_amount amount;
 begin
@@ -150,4 +150,4 @@ $$ language plpgsql;
 --
 
 create trigger check_bid_amount_trigger before insert on shop.bid
-for each row execute function shop.check_bid_amount();
+for each row execute function shop.set_bid_concurrent_amount();
