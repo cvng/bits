@@ -16,9 +16,9 @@ psql "$host/$name" \
     --no-psqlrc \
     --variable=ON_ERROR_STOP=1 \
     --single-transaction \
-    --file="docs/datamodel.sql" \
+    --file="docs/schema.sql" \
 
 PGOPTIONS='--client-min-messages=warning' psql "$host/$name" \
     --no-psqlrc \
     --variable=ON_ERROR_STOP=1 \
-    --file="docs/seed.sql" \
+    --file="scripts/seed.sql" \
