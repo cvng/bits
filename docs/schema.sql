@@ -134,8 +134,8 @@ create function shop.set_bid_concurrent_amount() returns trigger as $$
 declare
   current_max_amount amount;
 begin
-  select max(bid.amount) into current_max_amount
-  from shop.bid where bid.auction_id = new.auction_id;
+  select max(amount) into current_max_amount
+  from shop.bid where auction_id = new.auction_id;
 
   if current_max_amount is not null then
     new.concurrent_amount = current_max_amount;
@@ -149,5 +149,5 @@ $$ language plpgsql;
 -- Triggers
 --
 
-create trigger check_bid_amount_trigger before insert on shop.bid
+create trigger set_bid_concurrent_amount_trigger before insert on shop.bid
 for each row execute function shop.set_bid_concurrent_amount();
