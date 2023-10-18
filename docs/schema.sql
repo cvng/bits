@@ -17,6 +17,7 @@ create role seller;
 -- Tables
 
 create schema auth;
+create schema conf;
 create schema live;
 create schema shop;
 
@@ -89,6 +90,20 @@ create table shop.bid (
 
 alter table shop.bid enable row level security;
 
+-- -- Schema: conf
+
+create table conf.error (
+  code char(5) not null primary key,
+  name text not null unique,
+  message text not null,
+  detail text,
+  hint text
+);
+
+insert into conf.error (code, name, message)
+values
+('A0001', 'invalid_bid', 'Bid amount must be greater than highest bid: %s');
+
 -- Policies
 
 create policy live_comment_create
@@ -117,6 +132,23 @@ using (true);
 
 -- Functions
 
+create function raise_custom_error(error_name text) returns void as $$
+declare
+error_code text;
+error_message text;
+begin
+  -- Find error message in the error table.
+  select code, message
+  into error_code, error_message
+  from conf.error
+  where name = error_name;
+
+  -- Raise exception with the retrieved error message.
+  raise exception
+  using errcode = error_code, message = error_message;
+end;
+$$ language plpgsql;
+
 create function check_bid_amount() returns trigger as $$
 declare max_amount amount;
 begin
@@ -125,8 +157,7 @@ begin
   where bid.auction_id = new.auction_id;
 
   if new.amount <= max_amount then
-    raise 'invalid_bid_amount'
-    using detail = format('Bid amount should be greater (%s < %s)', new.amount, max_amount);
+    perform raise_custom_error('invalid_bid');
   end if;
 
   return new;
