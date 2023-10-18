@@ -101,7 +101,7 @@ create table conf.error (
 
 insert into conf.error (code, message, detail)
 values
-('A0001', 'invalid_bid', 'Bid amount must be greater than highest bid');
+('A0001', 'invalid_bid_amount', 'Bid amount must be greater than highest bid');
 
 -- Policies
 
@@ -153,7 +153,7 @@ begin
   where bid.auction_id = new.auction_id;
 
   if new.amount <= max_amount then
-    perform raise_custom_error('invalid_bid');
+    perform raise_custom_error('invalid_bid_amount');
   end if;
 
   return new;
