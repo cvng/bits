@@ -1,0 +1,1 @@
+git+https://github.com/sqlfluff/sqlfluff.git@main#egg=sqlfluff
