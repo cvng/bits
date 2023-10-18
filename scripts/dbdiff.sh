@@ -5,11 +5,20 @@ source .env
 
 host="$DB_HOST"
 name="$DB_NAME"
-file="docs/schema.sql"
 
 psql "$host" \
+    --no-psqlrc \
+    --variable=ON_ERROR_STOP=1 \
     --command="drop database if exists $name with (force);" \
     --command="create database $name;" \
-    --command="\connect $name" \
+
+psql "$host/$name" \
+    --no-psqlrc \
     --variable=ON_ERROR_STOP=1 \
-    --file="$file"
+    --single-transaction \
+    --file="docs/datamodel.sql" \
+
+PGOPTIONS='--client-min-messages=warning' psql "$host/$name" \
+    --no-psqlrc \
+    --variable=ON_ERROR_STOP=1 \
+    --file="docs/seed.sql" \
