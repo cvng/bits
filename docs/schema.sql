@@ -94,15 +94,14 @@ alter table shop.bid enable row level security;
 
 create table conf.error (
   code char(5) not null primary key,
-  name text not null unique,
-  message text not null,
+  message text not null unique,
   detail text,
   hint text
 );
 
-insert into conf.error (code, name, message)
+insert into conf.error (code, message, detail)
 values
-('A0001', 'invalid_bid', 'Bid amount must be greater than highest bid: %s');
+('A0001', 'invalid_bid', 'Bid amount must be greater than highest bid');
 
 -- Policies
 
@@ -132,20 +131,17 @@ using (true);
 
 -- Functions
 
-create function raise_custom_error(error_name text) returns void as $$
-declare
-error_code text;
-error_message text;
+create function raise_custom_error(error_message text) returns void as $$
+declare error conf.error;
 begin
-  -- Find error message in the error table.
-  select code, message
-  into error_code, error_message
+  select * into error
   from conf.error
-  where name = error_name;
+  where message = error_message;
 
-  -- Raise exception with the retrieved error message.
-  raise exception
-  using errcode = error_code, message = error_message;
+  raise exception using
+    errcode = error.code,
+    message = error.message,
+    detail = error.detail;
 end;
 $$ language plpgsql;
 
