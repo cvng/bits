@@ -16,9 +16,9 @@ create role viewer;
 -- Domains
 --
 
-create domain amount as int;
 create domain id as uuid;
-create domain email as text check (value ~ '@');
+create domain amount as numeric;
+create domain email as text check (value = lower(value) and value like '%@%');
 
 --
 -- Tables
