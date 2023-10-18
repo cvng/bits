@@ -1,8 +1,8 @@
 truncate table auth.person cascade;
 truncate table live.show cascade;
-truncate table shop.product cascade;
 truncate table shop.auction cascade;
 truncate table shop.bid cascade;
+truncate table shop.product cascade;
 
 insert into auth.person (id, username)
 values
