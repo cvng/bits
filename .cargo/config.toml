@@ -4,3 +4,4 @@
 dev = "watch --clear --exec check"
 lint = "clippy"
 snap = "insta review"
+task = "run --quiet --bin tasks --"
