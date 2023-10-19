@@ -1,5 +1,5 @@
 # https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [workspace]
-members = ["packages/*"]
+members = ["packages/*", "tasks"]
 resolver = "2"

@@ -22,4 +22,4 @@ psql "$host" \
 PGOPTIONS='--client-min-messages=warning' psql "$host" \
     --no-psqlrc \
     --variable=ON_ERROR_STOP=1 \
-    --file="scripts/seed.sql" \
+    --file="tasks/seed.sql" \
