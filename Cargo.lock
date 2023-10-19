@@ -137,6 +137,7 @@ dependencies = [
  "static_assertions",
  "tempfile",
  "thiserror",
+ "uuid",
 ]
 
 [[package]]
