@@ -17,13 +17,19 @@ lazy_static! {
 
 pub type Schema = async_graphql::dynamic::Schema;
 
-pub struct OrmDataloader {
+pub struct OrmDataLoader {
   pub db: DatabaseConnection,
+}
+
+impl OrmDataLoader {
+  pub fn new(db: DatabaseConnection) -> Self {
+    Self { db }
+  }
 }
 
 pub fn schema(
   connection: DatabaseConnection,
-  dataloader: DataLoader<OrmDataloader>,
+  dataloader: DataLoader<OrmDataLoader>,
 ) -> SchemaBuilder {
   let mut builder = Builder::new(&CONTEXT, connection.clone());
 

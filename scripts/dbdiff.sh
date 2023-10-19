@@ -3,22 +3,23 @@
 set -e
 source .env
 
-host="$DB_HOST"
-name="$DB_NAME"
+host="$DATABASE_URL"
+name="bits"
 
 psql "$host" \
     --no-psqlrc \
     --variable=ON_ERROR_STOP=1 \
+    --command="\connect postgres" \
     --command="drop database if exists $name with (force);" \
     --command="create database $name;" \
 
-psql "$host/$name" \
+psql "$host" \
     --no-psqlrc \
     --variable=ON_ERROR_STOP=1 \
     --single-transaction \
     --file="docs/schema.sql" \
 
-PGOPTIONS='--client-min-messages=warning' psql "$host/$name" \
+PGOPTIONS='--client-min-messages=warning' psql "$host" \
     --no-psqlrc \
     --variable=ON_ERROR_STOP=1 \
     --file="scripts/seed.sql" \
