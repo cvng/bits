@@ -21,16 +21,15 @@ pub struct OrmDataLoader {
   pub db: DatabaseConnection,
 }
 
-impl OrmDataLoader {
-  pub fn new(db: DatabaseConnection) -> Self {
-    Self { db }
-  }
-}
+/// Build the GraphQL schema.
+pub fn schema(connection: DatabaseConnection) -> SchemaBuilder {
+  let dataloader: DataLoader<OrmDataLoader> = DataLoader::new(
+    OrmDataLoader {
+      db: connection.clone(),
+    },
+    tokio::spawn,
+  );
 
-pub fn schema(
-  connection: DatabaseConnection,
-  dataloader: DataLoader<OrmDataLoader>,
-) -> SchemaBuilder {
   let mut builder = Builder::new(&CONTEXT, connection.clone());
 
   seaography::register_entities!(
@@ -38,5 +37,9 @@ pub fn schema(
     [auction, bid, comment, person, product, show,]
   );
 
-  builder.schema_builder().data(connection).data(dataloader)
+  builder
+    .schema_builder()
+    // TODO: .limit_depth(5).limit_complexity(5)
+    .data(connection)
+    .data(dataloader)
 }

@@ -368,7 +368,6 @@ dependencies = [
  "bits-graphql",
  "dotenv",
  "http",
- "sea-orm",
  "tokio",
  "tower-http",
 ]

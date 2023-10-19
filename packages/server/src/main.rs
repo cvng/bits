@@ -1,8 +1,6 @@
 mod server;
 
-use async_graphql::dataloader::DataLoader;
-use bits_graphql::OrmDataLoader;
-use sea_orm::Database;
+use bits_graphql::Database;
 use server::Server;
 use std::env;
 
@@ -19,11 +17,7 @@ async fn main() {
     .await
     .expect("Fail to initialize database connection");
 
-  let dataloader: DataLoader<OrmDataLoader> =
-    DataLoader::new(OrmDataLoader::new(connection.clone()), tokio::spawn);
-
-  let schema = bits_graphql::schema(connection, dataloader)
-    // TODO: .limit_depth(5).limit_complexity(5)
+  let schema = bits_graphql::schema(connection)
     .finish()
     .expect("Fail to initialize GraphQL schema");
 
