@@ -155,7 +155,7 @@ for each row execute function shop.bid_insert_trigger();
 -- Views
 --
 
-create view public.users with (security_invoker = true) as (
+create view public.person with (security_invoker = true) as (
   select
     id,
     created,
@@ -164,7 +164,7 @@ create view public.users with (security_invoker = true) as (
   from auth.person
 );
 
-create view public.shows with (security_invoker = true) as (
+create view public.show with (security_invoker = true) as (
   select
     id,
     created,
@@ -175,7 +175,7 @@ create view public.shows with (security_invoker = true) as (
   from live.show
 );
 
-create view public.comments with (security_invoker = true) as (
+create view public.comment with (security_invoker = true) as (
   select
     id,
     created,
@@ -186,7 +186,7 @@ create view public.comments with (security_invoker = true) as (
   from live.comment
 );
 
-create view public.products with (security_invoker = true) as (
+create view public.product with (security_invoker = true) as (
   select
     id,
     created,
@@ -195,7 +195,7 @@ create view public.products with (security_invoker = true) as (
   from shop.product
 );
 
-create view public.auctions with (security_invoker = true) as (
+create view public.auction with (security_invoker = true) as (
   select
     id,
     created,
@@ -207,7 +207,7 @@ create view public.auctions with (security_invoker = true) as (
   from shop.auction
 );
 
-create view public.bids with (security_invoker = true) as (
+create view public.bid with (security_invoker = true) as (
   select
     id,
     created,
