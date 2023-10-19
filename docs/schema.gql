@@ -1,1 +1,516 @@
-# TODO
+type Auction {
+  id: String!
+  created: String!
+  updated: String
+  showId: String!
+  productId: String!
+  started: String
+  expired: String
+  bid(filters: BidFilterInput, orderBy: BidOrderInput, pagination: PaginationInput): BidConnection!
+  product: Product
+  show: Show
+}
+
+type AuctionBasic {
+  id: String!
+  created: String!
+  updated: String
+  showId: String!
+  productId: String!
+  started: String
+  expired: String
+}
+
+type AuctionConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Auction!]!
+  edges: [AuctionEdge!]!
+}
+
+type AuctionEdge {
+  cursor: String!
+  node: Auction!
+}
+
+input AuctionFilterInput {
+  id: TextFilterInput
+  created: TextFilterInput
+  updated: TextFilterInput
+  showId: TextFilterInput
+  productId: TextFilterInput
+  started: TextFilterInput
+  expired: TextFilterInput
+  and: [AuctionFilterInput!]
+  or: [AuctionFilterInput!]
+}
+
+input AuctionInsertInput {
+  id: String!
+  created: String!
+  updated: String
+  showId: String!
+  productId: String!
+  started: String
+  expired: String
+}
+
+input AuctionOrderInput {
+  id: OrderByEnum
+  created: OrderByEnum
+  updated: OrderByEnum
+  showId: OrderByEnum
+  productId: OrderByEnum
+  started: OrderByEnum
+  expired: OrderByEnum
+}
+
+input AuctionUpdateInput {
+  id: String
+  created: String
+  updated: String
+  showId: String
+  productId: String
+  started: String
+  expired: String
+}
+
+type Bid {
+  id: String!
+  created: String!
+  updated: String
+  auctionId: String!
+  bidderId: String!
+  concurrentAmount: String!
+  amount: String!
+  auction: Auction
+  person: User
+}
+
+type BidBasic {
+  id: String!
+  created: String!
+  updated: String
+  auctionId: String!
+  bidderId: String!
+  concurrentAmount: String!
+  amount: String!
+}
+
+type BidConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Bid!]!
+  edges: [BidEdge!]!
+}
+
+type BidEdge {
+  cursor: String!
+  node: Bid!
+}
+
+input BidFilterInput {
+  id: TextFilterInput
+  created: TextFilterInput
+  updated: TextFilterInput
+  auctionId: TextFilterInput
+  bidderId: TextFilterInput
+  concurrentAmount: TextFilterInput
+  amount: TextFilterInput
+  and: [BidFilterInput!]
+  or: [BidFilterInput!]
+}
+
+input BidInsertInput {
+  id: String!
+  created: String!
+  updated: String
+  auctionId: String!
+  bidderId: String!
+  concurrentAmount: String!
+  amount: String!
+}
+
+input BidOrderInput {
+  id: OrderByEnum
+  created: OrderByEnum
+  updated: OrderByEnum
+  auctionId: OrderByEnum
+  bidderId: OrderByEnum
+  concurrentAmount: OrderByEnum
+  amount: OrderByEnum
+}
+
+input BidUpdateInput {
+  id: String
+  created: String
+  updated: String
+  auctionId: String
+  bidderId: String
+  concurrentAmount: String
+  amount: String
+}
+
+type Comment {
+  id: String!
+  created: String!
+  updated: String
+  authorId: String!
+  showId: String!
+  text: String!
+  person: User
+  show: Show
+}
+
+type CommentBasic {
+  id: String!
+  created: String!
+  updated: String
+  authorId: String!
+  showId: String!
+  text: String!
+}
+
+type CommentConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Comment!]!
+  edges: [CommentEdge!]!
+}
+
+type CommentEdge {
+  cursor: String!
+  node: Comment!
+}
+
+input CommentFilterInput {
+  id: TextFilterInput
+  created: TextFilterInput
+  updated: TextFilterInput
+  authorId: TextFilterInput
+  showId: TextFilterInput
+  text: StringFilterInput
+  and: [CommentFilterInput!]
+  or: [CommentFilterInput!]
+}
+
+input CommentInsertInput {
+  id: String!
+  created: String!
+  updated: String
+  authorId: String!
+  showId: String!
+  text: String!
+}
+
+input CommentOrderInput {
+  id: OrderByEnum
+  created: OrderByEnum
+  updated: OrderByEnum
+  authorId: OrderByEnum
+  showId: OrderByEnum
+  text: OrderByEnum
+}
+
+input CommentUpdateInput {
+  id: String
+  created: String
+  updated: String
+  authorId: String
+  showId: String
+  text: String
+}
+
+input CursorInput {
+  cursor: String
+  limit: Int!
+}
+
+type Mutation {
+  _ping: String
+  auctionCreateOne(data: AuctionInsertInput!): AuctionBasic!
+  auctionCreateBatch(data: [AuctionInsertInput!]!): [AuctionBasic!]!
+  auctionUpdate(data: AuctionUpdateInput!, filter: AuctionFilterInput): [AuctionBasic!]!
+  bidCreateOne(data: BidInsertInput!): BidBasic!
+  bidCreateBatch(data: [BidInsertInput!]!): [BidBasic!]!
+  bidUpdate(data: BidUpdateInput!, filter: BidFilterInput): [BidBasic!]!
+  commentCreateOne(data: CommentInsertInput!): CommentBasic!
+  commentCreateBatch(data: [CommentInsertInput!]!): [CommentBasic!]!
+  commentUpdate(data: CommentUpdateInput!, filter: CommentFilterInput): [CommentBasic!]!
+  userCreateOne(data: UserInsertInput!): UserBasic!
+  userCreateBatch(data: [UserInsertInput!]!): [UserBasic!]!
+  userUpdate(data: UserUpdateInput!, filter: UserFilterInput): [UserBasic!]!
+  productCreateOne(data: ProductInsertInput!): ProductBasic!
+  productCreateBatch(data: [ProductInsertInput!]!): [ProductBasic!]!
+  productUpdate(data: ProductUpdateInput!, filter: ProductFilterInput): [ProductBasic!]!
+  showCreateOne(data: ShowInsertInput!): ShowBasic!
+  showCreateBatch(data: [ShowInsertInput!]!): [ShowBasic!]!
+  showUpdate(data: ShowUpdateInput!, filter: ShowFilterInput): [ShowBasic!]!
+}
+
+input OffsetInput {
+  limit: Int!
+  offset: Int!
+}
+
+enum OrderByEnum {
+  ASC
+  DESC
+}
+
+type PageInfo {
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+input PageInput {
+  limit: Int!
+  page: Int!
+}
+
+type PaginationInfo {
+  pages: Int!
+  current: Int!
+  offset: Int!
+  total: Int!
+}
+
+input PaginationInput {
+  cursor: CursorInput
+  page: PageInput
+  offset: OffsetInput
+}
+
+type Product {
+  id: String!
+  created: String!
+  updated: String
+  name: String!
+  auction(filters: AuctionFilterInput, orderBy: AuctionOrderInput, pagination: PaginationInput): AuctionConnection!
+}
+
+type ProductBasic {
+  id: String!
+  created: String!
+  updated: String
+  name: String!
+}
+
+type ProductConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Product!]!
+  edges: [ProductEdge!]!
+}
+
+type ProductEdge {
+  cursor: String!
+  node: Product!
+}
+
+input ProductFilterInput {
+  id: TextFilterInput
+  created: TextFilterInput
+  updated: TextFilterInput
+  name: StringFilterInput
+  and: [ProductFilterInput!]
+  or: [ProductFilterInput!]
+}
+
+input ProductInsertInput {
+  id: String!
+  created: String!
+  updated: String
+  name: String!
+}
+
+input ProductOrderInput {
+  id: OrderByEnum
+  created: OrderByEnum
+  updated: OrderByEnum
+  name: OrderByEnum
+}
+
+input ProductUpdateInput {
+  id: String
+  created: String
+  updated: String
+  name: String
+}
+
+type Query {
+  auction(filters: AuctionFilterInput, orderBy: AuctionOrderInput, pagination: PaginationInput): AuctionConnection!
+  bid(filters: BidFilterInput, orderBy: BidOrderInput, pagination: PaginationInput): BidConnection!
+  comment(filters: CommentFilterInput, orderBy: CommentOrderInput, pagination: PaginationInput): CommentConnection!
+  user(filters: UserFilterInput, orderBy: UserOrderInput, pagination: PaginationInput): UserConnection!
+  product(filters: ProductFilterInput, orderBy: ProductOrderInput, pagination: PaginationInput): ProductConnection!
+  show(filters: ShowFilterInput, orderBy: ShowOrderInput, pagination: PaginationInput): ShowConnection!
+}
+
+type Show {
+  id: String!
+  created: String!
+  updated: String
+  creatorId: String!
+  name: String!
+  started: String
+  auction(filters: AuctionFilterInput, orderBy: AuctionOrderInput, pagination: PaginationInput): AuctionConnection!
+  comment(filters: CommentFilterInput, orderBy: CommentOrderInput, pagination: PaginationInput): CommentConnection!
+  person: User
+}
+
+type ShowBasic {
+  id: String!
+  created: String!
+  updated: String
+  creatorId: String!
+  name: String!
+  started: String
+}
+
+type ShowConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Show!]!
+  edges: [ShowEdge!]!
+}
+
+type ShowEdge {
+  cursor: String!
+  node: Show!
+}
+
+input ShowFilterInput {
+  id: TextFilterInput
+  created: TextFilterInput
+  updated: TextFilterInput
+  creatorId: TextFilterInput
+  name: StringFilterInput
+  started: TextFilterInput
+  and: [ShowFilterInput!]
+  or: [ShowFilterInput!]
+}
+
+input ShowInsertInput {
+  id: String!
+  created: String!
+  updated: String
+  creatorId: String!
+  name: String!
+  started: String
+}
+
+input ShowOrderInput {
+  id: OrderByEnum
+  created: OrderByEnum
+  updated: OrderByEnum
+  creatorId: OrderByEnum
+  name: OrderByEnum
+  started: OrderByEnum
+}
+
+input ShowUpdateInput {
+  id: String
+  created: String
+  updated: String
+  creatorId: String
+  name: String
+  started: String
+}
+
+input StringFilterInput {
+  eq: String
+  ne: String
+  gt: String
+  gte: String
+  lt: String
+  lte: String
+  is_in: [String!]
+  is_not_in: [String!]
+  is_null: String
+  is_not_null: String
+  contains: String
+  starts_with: String
+  ends_with: String
+  like: String
+  not_like: String
+  between: [String!]
+  not_between: [String!]
+}
+
+input TextFilterInput {
+  eq: String
+  ne: String
+  gt: String
+  gte: String
+  lt: String
+  lte: String
+  is_in: [String!]
+  is_not_in: [String!]
+  is_null: String
+  is_not_null: String
+  between: [String!]
+  not_between: [String!]
+}
+
+type User {
+  id: String!
+  created: String!
+  updated: String
+  email: String!
+  bid(filters: BidFilterInput, orderBy: BidOrderInput, pagination: PaginationInput): BidConnection!
+  comment(filters: CommentFilterInput, orderBy: CommentOrderInput, pagination: PaginationInput): CommentConnection!
+  show(filters: ShowFilterInput, orderBy: ShowOrderInput, pagination: PaginationInput): ShowConnection!
+}
+
+type UserBasic {
+  id: String!
+  created: String!
+  updated: String
+  email: String!
+}
+
+type UserConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [User!]!
+  edges: [UserEdge!]!
+}
+
+type UserEdge {
+  cursor: String!
+  node: User!
+}
+
+input UserFilterInput {
+  id: TextFilterInput
+  created: TextFilterInput
+  updated: TextFilterInput
+  email: StringFilterInput
+  and: [UserFilterInput!]
+  or: [UserFilterInput!]
+}
+
+input UserInsertInput {
+  id: String!
+  created: String!
+  updated: String
+  email: String!
+}
+
+input UserOrderInput {
+  id: OrderByEnum
+  created: OrderByEnum
+  updated: OrderByEnum
+  email: OrderByEnum
+}
+
+input UserUpdateInput {
+  id: String
+  created: String
+  updated: String
+  email: String
+}
+
