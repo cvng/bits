@@ -126,6 +126,9 @@ with check (bidder_id = current_setting('auth.person_id')::id);
 create policy bid_read_policy on shop.bid for select to viewer
 using (true);
 
+create policy person_policy on auth.person
+using (id = current_setting('auth.person_id')::id);
+
 --
 -- Triggers
 --
