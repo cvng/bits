@@ -1,10 +1,10 @@
 use async_graphql::Object;
 use bits_core::db;
 
-pub struct QueryRoot;
+pub struct Query;
 
 #[Object]
-impl QueryRoot {
+impl Query {
   async fn bids(&self) -> Vec<bits_core::Bid> {
     db().bids.values().cloned().map(Into::into).collect()
   }

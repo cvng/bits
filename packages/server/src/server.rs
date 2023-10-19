@@ -5,6 +5,7 @@ use axum::response;
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::Router;
+use bits_graphql::Schema;
 use http::Method;
 use tower_http::cors::Any;
 use tower_http::cors::CorsLayer;
@@ -20,9 +21,7 @@ async fn graphiql() -> impl IntoResponse {
   )
 }
 
-pub fn app() -> Router {
-  let schema = bits_graphql::schema().finish();
-
+pub fn app(schema: Schema) -> Router {
   let cors = CorsLayer::new()
     .allow_methods([Method::GET, Method::POST])
     .allow_headers(Any)
