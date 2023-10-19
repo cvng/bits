@@ -147,3 +147,18 @@ $$ language plpgsql;
 
 create trigger bid_insert_trigger before insert on shop.bid
 for each row execute function shop.bid_insert_trigger();
+
+--
+-- Views
+--
+
+create view public.shows with (security_invoker = true) as (
+  select
+    id,
+    created,
+    updated,
+    creator_id,
+    name,
+    started
+  from live.show
+);
