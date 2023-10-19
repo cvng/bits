@@ -126,6 +126,9 @@ with check (bidder_id = current_setting('auth.person_id')::id);
 create policy bid_read_policy on shop.bid for select to viewer
 using (true);
 
+create policy person_policy on auth.person
+using (id = current_setting('auth.person_id')::id);
+
 --
 -- Triggers
 --
@@ -147,3 +150,71 @@ $$ language plpgsql;
 
 create trigger bid_insert_trigger before insert on shop.bid
 for each row execute function shop.bid_insert_trigger();
+
+--
+-- Views
+--
+
+create view public.person with (security_invoker = true) as (
+  select
+    id,
+    created,
+    updated,
+    email
+  from auth.person
+);
+
+create view public.show with (security_invoker = true) as (
+  select
+    id,
+    created,
+    updated,
+    creator_id,
+    name,
+    started
+  from live.show
+);
+
+create view public.comment with (security_invoker = true) as (
+  select
+    id,
+    created,
+    updated,
+    author_id,
+    show_id,
+    text
+  from live.comment
+);
+
+create view public.product with (security_invoker = true) as (
+  select
+    id,
+    created,
+    updated,
+    name
+  from shop.product
+);
+
+create view public.auction with (security_invoker = true) as (
+  select
+    id,
+    created,
+    updated,
+    show_id,
+    product_id,
+    started,
+    expired
+  from shop.auction
+);
+
+create view public.bid with (security_invoker = true) as (
+  select
+    id,
+    created,
+    updated,
+    auction_id,
+    bidder_id,
+    concurrent_amount,
+    amount
+  from shop.bid
+);

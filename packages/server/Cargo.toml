@@ -7,7 +7,8 @@ edition = "2021"
 async-graphql = "6.0.7"
 async-graphql-axum = "6.0.7"
 axum = { version = "0.6.20", features = ["ws", "headers"] }
-http = "0.2.9"
 bits-graphql = { path = "../graphql" }
+dotenv = "0.15.0"
+http = "0.2.9"
 tokio = { version = "1.8", features = ["macros", "rt-multi-thread"] }
 tower-http = { version = "0.4.4", features = ["cors"] }

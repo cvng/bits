@@ -3,10 +3,10 @@ use async_graphql::Object;
 use async_graphql::Result;
 use bits_core::commands;
 
-pub struct MutationRoot;
+pub struct Mutation;
 
 #[Object]
-impl MutationRoot {
+impl Mutation {
   async fn bid(
     &self,
     _ctx: &Context<'_>,

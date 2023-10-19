@@ -7,6 +7,14 @@ edition = "2021"
 doctest = false
 
 [dependencies]
-async-graphql = "6.0.7"
+async-graphql = { version = "6.0.7", features = ["chrono", "uuid", "dataloader", "dynamic-schema"] }
 bits-core = { path = "../core" }
 futures-util = "0.3.0"
+lazy_static = { version = "1.4.0" }
+sea-orm = { version = "0.12.0", features = ["sqlx-postgres", "runtime-tokio-native-tls", "seaography"] }
+tokio = { version = "1.29.1", features = ["macros", "rt-multi-thread"] }
+
+[dependencies.seaography]
+git = "https://github.com/SeaQL/seaography"
+rev = "9c43f72"
+features = ["with-chrono", "with-uuid"]

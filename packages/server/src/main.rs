@@ -1,13 +1,32 @@
 mod server;
 
+use bits_graphql::Database;
+use server::Server;
+use std::env;
+
 #[tokio::main]
 async fn main() {
-  let addr = "127.0.0.1:8000";
+  dotenv::dotenv().ok();
+
+  let addr = "0.0.0.0:8000".parse().unwrap();
+
+  let database_url = env::var("DATABASE_URL")
+    .expect("DATABASE_URL environment variable not set");
+
+  let connection = Database::connect(database_url)
+    .await
+    .expect("Fail to initialize database connection");
+
+  let schema = bits_graphql::schema(connection)
+    .finish()
+    .expect("Fail to initialize GraphQL schema");
+
+  let router = server::app(schema);
 
   println!("GraphiQL IDE: http://{addr}/graphql");
 
-  server::Server::bind(&addr.parse().unwrap())
-    .serve(server::app().into_make_service())
+  Server::bind(&addr)
+    .serve(router.into_make_service())
     .await
-    .unwrap();
+    .expect("Fail to start web server");
 }

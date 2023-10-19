@@ -12,7 +12,6 @@ id!(AuctionId);
 id!(AuctionProductId);
 
 #[derive(Copy, Clone, Serialize, SimpleObject)]
-#[graphql(complex)]
 pub struct Auction {
   pub id: AuctionId,
   pub show_id: ShowId,
