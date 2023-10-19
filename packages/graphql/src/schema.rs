@@ -23,12 +23,12 @@ pub struct OrmDataLoader {
 
 /// Build the GraphQL schema.
 pub fn schema(connection: DatabaseConnection) -> SchemaBuilder {
-  let loader = OrmDataLoader {
-    db: connection.clone(),
-  };
-
-  let dataloader: DataLoader<OrmDataLoader> =
-    DataLoader::new(loader, tokio::spawn);
+  let dataloader = DataLoader::new(
+    OrmDataLoader {
+      db: connection.clone(),
+    },
+    tokio::spawn,
+  );
 
   let mut builder = Builder::new(&CONTEXT, connection.clone());
 
