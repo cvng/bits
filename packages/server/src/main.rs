@@ -21,10 +21,12 @@ async fn main() {
     .finish()
     .expect("Fail to initialize GraphQL schema");
 
+  let router = server::app(schema);
+
   println!("GraphiQL IDE: http://{addr}/graphql");
 
   Server::bind(&addr)
-    .serve(server::app(schema).into_make_service())
+    .serve(router.into_make_service())
     .await
     .expect("Fail to start web server");
 }
