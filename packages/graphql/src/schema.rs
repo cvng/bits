@@ -23,12 +23,12 @@ pub struct OrmDataLoader {
 
 /// Build the GraphQL schema.
 pub fn schema(connection: DatabaseConnection) -> SchemaBuilder {
-  let dataloader: DataLoader<OrmDataLoader> = DataLoader::new(
-    OrmDataLoader {
-      db: connection.clone(),
-    },
-    tokio::spawn,
-  );
+  let loader = OrmDataLoader {
+    db: connection.clone(),
+  };
+
+  let dataloader: DataLoader<OrmDataLoader> =
+    DataLoader::new(loader, tokio::spawn);
 
   let mut builder = Builder::new(&CONTEXT, connection.clone());
 
@@ -39,7 +39,7 @@ pub fn schema(connection: DatabaseConnection) -> SchemaBuilder {
 
   builder
     .schema_builder()
-    // TODO: .limit_depth(5).limit_complexity(5)
+    // TODO(security): .limit_depth(5).limit_complexity(5) @cvng
     .data(connection)
     .data(dataloader)
 }
