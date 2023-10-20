@@ -46,5 +46,6 @@ fn register_entities(mut builder: Builder) -> Builder {
 
 fn register_mutations(mut builder: Builder) -> Builder {
   builder.mutations = Mutation::fields();
+  builder.inputs.extend(Mutation::inputs());
   builder
 }

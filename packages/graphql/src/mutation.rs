@@ -1,6 +1,8 @@
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
 use async_graphql::dynamic::FieldValue;
+use async_graphql::dynamic::InputObject;
+use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::ResolverContext;
 use async_graphql::dynamic::TypeRef;
 use async_graphql::Result;
@@ -9,6 +11,30 @@ use bits_core::commands;
 pub struct Mutation;
 
 impl Mutation {
+  #[rustfmt::skip]
+  pub fn inputs() -> Vec<InputObject> {
+    vec![
+      InputObject::new("BidInput")
+        .field(InputValue::new("user_id", TypeRef::named_nn(TypeRef::ID)))
+        .field(InputValue::new("product_id", TypeRef::named_nn(TypeRef::ID)))
+        .field(InputValue::new("amount", TypeRef::named_nn(TypeRef::INT))),
+      InputObject::new("CommentInput")
+        .field(InputValue::new("user_id", TypeRef::named_nn(TypeRef::ID)))
+        .field(InputValue::new("show_id", TypeRef::named_nn(TypeRef::ID)))
+        .field(InputValue::new("text", TypeRef::named_nn(TypeRef::STRING))),
+      InputObject::new("CreateProductInput")
+        .field(InputValue::new("name", TypeRef::named_nn(TypeRef::STRING))),
+      InputObject::new("CreateShowInput")
+        .field(InputValue::new("creator_id", TypeRef::named_nn(TypeRef::ID)))
+        .field(InputValue::new("name", TypeRef::named_nn(TypeRef::STRING))),
+      InputObject::new("StartShowInput")
+        .field(InputValue::new("id", TypeRef::named_nn(TypeRef::ID))),
+      InputObject::new("AddAuctionProductInput")
+        .field(InputValue::new("auction_id", TypeRef::named_nn(TypeRef::ID)))
+        .field(InputValue::new("product_id", TypeRef::named_nn(TypeRef::ID))),
+    ]
+  }
+
   pub fn fields() -> Vec<Field> {
     vec![
       Field::new(
@@ -19,7 +45,11 @@ impl Mutation {
             Ok(Some(FieldValue::owned_any(bid(ctx).await?)))
           })
         },
-      ),
+      )
+      .argument(InputValue::new(
+        "input".to_string(),
+        TypeRef::named_nn("BidInput".to_string()),
+      )),
       Field::new(
         "comment".to_string(),
         TypeRef::named_nn("Boolean".to_string()),
@@ -28,7 +58,11 @@ impl Mutation {
             Ok(Some(FieldValue::owned_any(comment(ctx).await?)))
           })
         },
-      ),
+      )
+      .argument(InputValue::new(
+        "input".to_string(),
+        TypeRef::named_nn("CommentInput".to_string()),
+      )),
       Field::new(
         "createProduct".to_string(),
         TypeRef::named_nn("Boolean".to_string()),
@@ -37,7 +71,11 @@ impl Mutation {
             Ok(Some(FieldValue::owned_any(create_product(ctx).await?)))
           })
         },
-      ),
+      )
+      .argument(InputValue::new(
+        "input".to_string(),
+        TypeRef::named_nn("CreateProductInput".to_string()),
+      )),
       Field::new(
         "createShow".to_string(),
         TypeRef::named_nn("Boolean".to_string()),
@@ -46,7 +84,11 @@ impl Mutation {
             Ok(Some(FieldValue::owned_any(create_show(ctx).await?)))
           })
         },
-      ),
+      )
+      .argument(InputValue::new(
+        "input".to_string(),
+        TypeRef::named_nn("CreateShowInput".to_string()),
+      )),
       Field::new(
         "startShow".to_string(),
         TypeRef::named_nn("Boolean".to_string()),
@@ -55,7 +97,11 @@ impl Mutation {
             Ok(Some(FieldValue::owned_any(start_show(ctx).await?)))
           })
         },
-      ),
+      )
+      .argument(InputValue::new(
+        "input".to_string(),
+        TypeRef::named_nn("StartShowInput".to_string()),
+      )),
       Field::new(
         "addAuctionProduct".to_string(),
         TypeRef::named_nn("Boolean".to_string()),
@@ -64,7 +110,11 @@ impl Mutation {
             Ok(Some(FieldValue::owned_any(add_auction_product(ctx).await?)))
           })
         },
-      ),
+      )
+      .argument(InputValue::new(
+        "input".to_string(),
+        TypeRef::named_nn("AddAuctionProductInput".to_string()),
+      )),
     ]
   }
 }
