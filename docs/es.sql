@@ -72,7 +72,8 @@ alter table cqrs.event enable row level security;
 -- Triggers
 --
 
-create function cqrs.event_insert_trigger() returns trigger as $$
+create function cqrs.event_insert_trigger() returns trigger
+as $$
 begin
   case new.type
     when 'auction_created' then
@@ -105,48 +106,48 @@ for each row execute function cqrs.event_insert_trigger();
 -- Functions
 --
 
-create function cqrs.auction_created_handler(event cqrs.auction_created)
-returns void as $$
+create function cqrs.auction_created_handler(event cqrs.auction_created) returns void -- noqa: LT05
+as $$
 begin
   insert into shop.auction (id, show_id, product_id)
   values (event.id, event.show_id, event.product_id);
 end;
 $$ language plpgsql;
 
-create function cqrs.bid_created_handler(event cqrs.bid_created)
-returns void as $$
+create function cqrs.bid_created_handler(event cqrs.bid_created) returns void
+as $$
 begin
   insert into shop.bid (id, auction_id, bidder_id, amount)
   values (event.id, event.auction_id, event.bidder_id, event.amount);
 end;
 $$ language plpgsql;
 
-create function cqrs.comment_created_handler(event cqrs.comment_created)
-returns void as $$
+create function cqrs.comment_created_handler(event cqrs.comment_created) returns void -- noqa: LT05
+as $$
 begin
   insert into live.comment (id, author_id, show_id, text)
   values (event.id, event.author_id, event.show_id, event.text);
 end;
 $$ language plpgsql;
 
-create function cqrs.person_created_handler(event cqrs.person_created)
-returns void as $$
+create function cqrs.person_created_handler(event cqrs.person_created) returns void -- noqa: LT05
+as $$
 begin
   insert into auth.person (id, email)
   values (event.id, event.email);
 end;
 $$ language plpgsql;
 
-create function cqrs.product_created_handler(event cqrs.product_created)
-returns void as $$
+create function cqrs.product_created_handler(event cqrs.product_created) returns void -- noqa: LT05
+as $$
 begin
   insert into shop.product (id, name)
   values (event.id, event.name);
 end;
 $$ language plpgsql;
 
-create function cqrs.show_created_handler(event cqrs.show_created)
-returns void as $$
+create function cqrs.show_created_handler(event cqrs.show_created) returns void
+as $$
 begin
   insert into live.show (id, creator_id, name)
   values (event.id, event.creator_id, event.name);

@@ -133,7 +133,8 @@ using (id = current_setting('auth.person_id')::id);
 -- Triggers
 --
 
-create function shop.bid_insert_trigger() returns trigger as $$
+create function shop.bid_insert_trigger() returns trigger
+as $$
 declare
   current_max_amount amount;
 begin
