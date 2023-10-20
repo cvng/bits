@@ -29,4 +29,8 @@ psql "$host" \
 PGOPTIONS='--client-min-messages=warning' psql "$host" \
     --no-psqlrc \
     --variable=ON_ERROR_STOP=1 \
-    --file="tasks/seed.sql" \
+    --command="create table temp (row jsonb);" \
+    --command="\copy temp (row) from tasks/seed.ndjson;" \
+    --command="insert into cqrs.event (type, data) select (row->>'type')::cqrs.event_type, (row->'data')::jsonb from temp;" \
+
+# --file="tasks/seed.sql" \
