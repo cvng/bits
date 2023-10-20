@@ -198,26 +198,7 @@ using (id = current_setting('auth.person_id')::id);
 -- Triggers
 --
 
-create function shop.bid_insert_trigger() returns trigger as $$
-declare
-  current_max_amount amount;
-begin
-  select max(amount) into current_max_amount
-  from shop.bid where auction_id = new.auction_id;
-
-  if current_max_amount is not null then
-    new.concurrent_amount = current_max_amount;
-  end if;
-
-  return new;
-end;
-$$ language plpgsql;
-
-create trigger bid_insert_trigger before insert on shop.bid
-for each row execute function shop.bid_insert_trigger();
-
-create function cqrs.event_insert_trigger() returns trigger
-as $$
+create function cqrs.event_insert_trigger() returns trigger as $$
 begin
   case new.type
     when 'auction_created' then
@@ -247,7 +228,7 @@ create trigger event_insert_trigger after insert on cqrs.event
 for each row execute function cqrs.event_insert_trigger();
 
 --
--- Functions
+-- Handlers
 --
 
 -- noqa: disable=LT05
@@ -260,9 +241,20 @@ end;
 $$ language plpgsql;
 
 create function cqrs.bid_created_handler(event cqrs.bid_created) returns void as $$
+declare
+  current_max_amount amount;
 begin
-  insert into shop.bid (id, auction_id, bidder_id, amount)
-  values (event.id, event.auction_id, event.bidder_id, event.amount);
+  select max(amount) into current_max_amount
+  from shop.bid where auction_id = event.auction_id;
+
+  insert into shop.bid (id, auction_id, bidder_id, amount, concurrent_amount)
+  values (
+    event.id,
+    event.auction_id,
+    event.bidder_id,
+    event.amount,
+    coalesce(current_max_amount, 0)
+  );
 end;
 $$ language plpgsql;
 
