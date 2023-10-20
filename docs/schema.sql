@@ -82,6 +82,17 @@ create type cqrs.show_created as (
 -- Tables
 --
 
+-- Table: cqrs.event
+
+create table cqrs.event (
+  id serial not null primary key,
+  created timestamp not null default now(),
+  type cqrs.event_type not null,
+  data jsonb not null
+);
+
+alter table cqrs.event enable row level security;
+
 -- Table: auth.person
 
 create table auth.person (
@@ -157,17 +168,6 @@ create table shop.bid (
 );
 
 alter table shop.bid enable row level security;
-
--- Table: cqrs.event
-
-create table cqrs.event (
-  id serial not null primary key,
-  created timestamp not null default now(),
-  type cqrs.event_type not null,
-  data jsonb not null
-);
-
-alter table cqrs.event enable row level security;
 
 --
 -- Policies
