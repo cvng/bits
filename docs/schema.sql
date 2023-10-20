@@ -1,5 +1,10 @@
 -- Schema https://github.com/cvng/bits/tree/main/docs/schema.sql (work@cvng.dev)
 
+create schema auth;
+create schema cqrs;
+create schema live;
+create schema shop;
+
 --
 -- Roles
 --
@@ -76,11 +81,6 @@ create type cqrs.show_created as (
 --
 -- Tables
 --
-
-create schema auth;
-create schema cqrs;
-create schema live;
-create schema shop;
 
 -- Table: auth.person
 
