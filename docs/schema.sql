@@ -86,7 +86,7 @@ create type cqrs.show_created as (
 
 create table cqrs.event (
   id serial not null primary key,
-  created timestamp not null default now(),
+  created timestamp not null default clock_timestamp(),
   type cqrs.event_type not null,
   data jsonb not null
 );
@@ -231,62 +231,89 @@ for each row execute function cqrs.event_insert_trigger();
 -- Handlers
 --
 
--- noqa: disable=LT05
-
-create function cqrs.auction_created_handler(event cqrs.auction_created) returns void as $$
+create function cqrs.auction_created_handler(event cqrs.auction_created)
+returns void as $$
 begin
-  insert into shop.auction (id, show_id, product_id)
-  values (event.id, event.show_id, event.product_id);
+  insert into shop.auction (created, id, show_id, product_id)
+  values (
+    clock_timestamp(),
+    event.id,
+    event.show_id,
+    event.product_id
+  );
 end;
 $$ language plpgsql;
 
-create function cqrs.bid_created_handler(event cqrs.bid_created) returns void as $$
+create function cqrs.bid_created_handler(event cqrs.bid_created)
+returns void as $$
 declare
   current_max_amount amount;
 begin
   select max(amount) into current_max_amount
   from shop.bid where auction_id = event.auction_id;
 
-  insert into shop.bid (id, auction_id, bidder_id, amount, concurrent_amount)
+  insert into shop.bid (created, id, auction_id, bidder_id, concurrent_amount, amount)
   values (
+    clock_timestamp(),
     event.id,
     event.auction_id,
     event.bidder_id,
-    event.amount,
-    coalesce(current_max_amount, 0)
+    coalesce(current_max_amount, 0),
+    event.amount
   );
 end;
 $$ language plpgsql;
 
-create function cqrs.comment_created_handler(event cqrs.comment_created) returns void as $$
+create function cqrs.comment_created_handler(event cqrs.comment_created)
+returns void as $$
 begin
-  insert into live.comment (id, author_id, show_id, text)
-  values (event.id, event.author_id, event.show_id, event.text);
+  insert into live.comment (created, id, author_id, show_id, text)
+  values (
+    clock_timestamp(),
+    event.id,
+    event.author_id,
+    event.show_id,
+    event.text
+  );
 end;
 $$ language plpgsql;
 
-create function cqrs.person_created_handler(event cqrs.person_created) returns void as $$
+create function cqrs.person_created_handler(event cqrs.person_created)
+returns void as $$
 begin
-  insert into auth.person (id, email)
-  values (event.id, event.email);
+  insert into auth.person (created, id, email)
+  values (
+    clock_timestamp(),
+    event.id,
+    event.email
+  );
 end;
 $$ language plpgsql;
 
-create function cqrs.product_created_handler(event cqrs.product_created) returns void as $$
+create function cqrs.product_created_handler(event cqrs.product_created)
+returns void as $$
 begin
-  insert into shop.product (id, name)
-  values (event.id, event.name);
+  insert into shop.product (created, id, name)
+  values (
+    clock_timestamp(),
+    event.id,
+    event.name
+  );
 end;
 $$ language plpgsql;
 
-create function cqrs.show_created_handler(event cqrs.show_created) returns void as $$
+create function cqrs.show_created_handler(event cqrs.show_created)
+returns void as $$
 begin
-  insert into live.show (id, creator_id, name)
-  values (event.id, event.creator_id, event.name);
+  insert into live.show (created, id, creator_id, name)
+  values (
+    clock_timestamp(),
+    event.id,
+    event.creator_id,
+    event.name
+  );
 end;
 $$ language plpgsql;
-
--- noqa: enable=LT05
 
 --
 -- Views
