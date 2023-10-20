@@ -31,7 +31,7 @@ create schema shop;
 -- Table: auth.person
 
 create table auth.person (
-  id id not null default gen_random_uuid() primary key,
+  id id not null primary key,
   created timestamp not null default now(),
   updated timestamp,
   email email not null
@@ -42,7 +42,7 @@ alter table auth.person enable row level security;
 -- Table: live.show
 
 create table live.show (
-  id id not null default gen_random_uuid() primary key,
+  id id not null primary key,
   created timestamp not null default now(),
   updated timestamp,
   creator_id id not null references auth.person (id),
@@ -55,7 +55,7 @@ alter table live.show enable row level security;
 -- Table: live.comment
 
 create table live.comment (
-  id id not null default gen_random_uuid() primary key,
+  id id not null primary key,
   created timestamp not null default now(),
   updated timestamp,
   author_id id not null references auth.person (id),
@@ -68,7 +68,7 @@ alter table live.comment enable row level security;
 -- Table: shop.product
 
 create table shop.product (
-  id id not null default gen_random_uuid() primary key,
+  id id not null primary key,
   created timestamp not null default now(),
   updated timestamp,
   name text not null
@@ -79,7 +79,7 @@ alter table shop.product enable row level security;
 -- Table: shop.auction
 
 create table shop.auction (
-  id id not null default gen_random_uuid() primary key,
+  id id not null primary key,
   created timestamp not null default now(),
   updated timestamp,
   show_id id not null references live.show (id),
@@ -93,7 +93,7 @@ alter table shop.auction enable row level security;
 -- Table: shop.bid
 
 create table shop.bid (
-  id id not null default gen_random_uuid() primary key,
+  id id not null primary key,
   created timestamp not null default now(),
   updated timestamp,
   auction_id id not null references shop.auction (id),
