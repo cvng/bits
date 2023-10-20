@@ -59,63 +59,59 @@ create table cqrs.show_created (
 -- Triggers
 --
 
--- noqa: disable=LT05
-
-create function cqrs.auction_created_trigger(event cqrs.auction_created) returns trigger as $$
+create function cqrs.auction_created_trigger() returns trigger as $$
 begin
   insert into shop.auction (id, show_id, product_id)
-  values (event.id, event.show_id, event.product_id);
+  values (new.id, new.show_id, new.product_id);
 
   return new;
 end;
 $$ language plpgsql;
 
-create function cqrs.bid_created_trigger(event cqrs.bid_created) returns trigger as $$
+create function cqrs.bid_created_trigger() returns trigger as $$
 begin
   insert into shop.bid (id, auction_id, bidder_id, amount)
-  values (event.id, event.auction_id, event.bidder_id, event.amount);
+  values (new.id, new.auction_id, new.bidder_id, new.amount);
 
   return new;
 end;
 $$ language plpgsql;
 
-create function cqrs.comment_created_trigger(event cqrs.comment_created) returns trigger as $$
+create function cqrs.comment_created_trigger() returns trigger as $$
 begin
   insert into live.comment (id, author_id, show_id, text)
-  values (event.id, event.author_id, event.show_id, event.text);
+  values (new.id, new.author_id, new.show_id, new.text);
 
   return new;
 end;
 $$ language plpgsql;
 
-create function cqrs.person_created_trigger(event cqrs.person_created) returns trigger as $$
+create function cqrs.person_created_trigger() returns trigger as $$
 begin
   insert into auth.person (id, email)
-  values (event.id, event.email);
+  values (new.id, new.email);
 
   return new;
 end;
 $$ language plpgsql;
 
-create function cqrs.product_created_trigger(event cqrs.product_created) returns trigger as $$
+create function cqrs.product_created_trigger() returns trigger as $$
 begin
   insert into shop.product (id, name)
-  values (event.id, event.name);
+  values (new.id, new.name);
 
   return new;
 end;
 $$ language plpgsql;
 
-create function cqrs.show_created_trigger(event cqrs.show_created) returns trigger as $$
+create function cqrs.show_created_trigger() returns trigger as $$
 begin
   insert into live.show (id, creator_id, name)
-  values (event.id, event.creator_id, event.name);
+  values (new.id, new.creator_id, new.name);
 
   return new;
 end;
 $$ language plpgsql;
-
--- noqa: enable=LT05
 
 create trigger auction_created_trigger after insert on cqrs.auction_created
 for each row execute function cqrs.auction_created_trigger();
