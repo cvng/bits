@@ -22,12 +22,6 @@ psql "$host" \
     --variable=ON_ERROR_STOP=1 \
     --file="docs/schema.sql" \
 
-psql "$host" \
-    --no-psqlrc \
-    --single-transaction \
-    --variable=ON_ERROR_STOP=1 \
-    --file="docs/es.sql" \
-
 # Seed
 
 jq --compact-output ".[]" tasks/seed.json | psql "$host" \
