@@ -1,3 +1,8 @@
 {
-  "recommendations": ["rust-lang.rust-analyzer", "dorzey.vscode-sqlfluff"]
+  "recommendations": [
+    "dorzey.vscode-sqlfluff",
+    "graphql.vscode-graphql",
+    "rust-lang.rust-analyzer",
+    "usernamehw.errorlens"
+  ]
 }
