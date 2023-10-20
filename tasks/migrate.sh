@@ -10,7 +10,7 @@ host="$DATABASE_URL"
 psql "$host" \
     --no-psqlrc \
     --variable=ON_ERROR_STOP=1 \
-    --command="\connect postgres" \
+    --command="\connect postgres;" \
     --command="drop database if exists bits with (force);" \
     --command="create database bits;" \
 
