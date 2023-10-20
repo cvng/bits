@@ -97,7 +97,7 @@ alter table cqrs.event enable row level security;
 
 create table auth.person (
   id id not null primary key,
-  created timestamp not null default now(),
+  created timestamp not null default clock_timestamp(),
   updated timestamp,
   email email not null
 );
@@ -108,7 +108,7 @@ alter table auth.person enable row level security;
 
 create table live.show (
   id id not null primary key,
-  created timestamp not null default now(),
+  created timestamp not null default clock_timestamp(),
   updated timestamp,
   creator_id id not null references auth.person (id),
   name text not null,
@@ -121,7 +121,7 @@ alter table live.show enable row level security;
 
 create table live.comment (
   id id not null primary key,
-  created timestamp not null default now(),
+  created timestamp not null default clock_timestamp(),
   updated timestamp,
   author_id id not null references auth.person (id),
   show_id id not null references live.show (id),
@@ -134,7 +134,7 @@ alter table live.comment enable row level security;
 
 create table shop.product (
   id id not null primary key,
-  created timestamp not null default now(),
+  created timestamp not null default clock_timestamp(),
   updated timestamp,
   name text not null
 );
@@ -145,7 +145,7 @@ alter table shop.product enable row level security;
 
 create table shop.auction (
   id id not null primary key,
-  created timestamp not null default now(),
+  created timestamp not null default clock_timestamp(),
   updated timestamp,
   show_id id not null references live.show (id),
   product_id id not null references shop.product (id),
@@ -159,7 +159,7 @@ alter table shop.auction enable row level security;
 
 create table shop.bid (
   id id not null primary key,
-  created timestamp not null default now(),
+  created timestamp not null default clock_timestamp(),
   updated timestamp,
   auction_id id not null references shop.auction (id),
   bidder_id id not null references auth.person (id),
@@ -234,13 +234,8 @@ for each row execute function cqrs.event_insert_trigger();
 create function cqrs.auction_created_handler(event cqrs.auction_created)
 returns void as $$
 begin
-  insert into shop.auction (created, id, show_id, product_id)
-  values (
-    clock_timestamp(),
-    event.id,
-    event.show_id,
-    event.product_id
-  );
+  insert into shop.auction (id, show_id, product_id)
+  values (event.id, event.show_id, event.product_id);
 end;
 $$ language plpgsql;
 
@@ -252,9 +247,8 @@ begin
   select max(amount) into current_max_amount
   from shop.bid where auction_id = event.auction_id;
 
-  insert into shop.bid (created, id, auction_id, bidder_id, concurrent_amount, amount)
+  insert into shop.bid (id, auction_id, bidder_id, concurrent_amount, amount)
   values (
-    clock_timestamp(),
     event.id,
     event.auction_id,
     event.bidder_id,
@@ -267,51 +261,32 @@ $$ language plpgsql;
 create function cqrs.comment_created_handler(event cqrs.comment_created)
 returns void as $$
 begin
-  insert into live.comment (created, id, author_id, show_id, text)
-  values (
-    clock_timestamp(),
-    event.id,
-    event.author_id,
-    event.show_id,
-    event.text
-  );
+  insert into live.comment (id, author_id, show_id, text)
+  values (event.id, event.author_id, event.show_id, event.text);
 end;
 $$ language plpgsql;
 
 create function cqrs.person_created_handler(event cqrs.person_created)
 returns void as $$
 begin
-  insert into auth.person (created, id, email)
-  values (
-    clock_timestamp(),
-    event.id,
-    event.email
-  );
+  insert into auth.person (id, email)
+  values (event.id, event.email);
 end;
 $$ language plpgsql;
 
 create function cqrs.product_created_handler(event cqrs.product_created)
 returns void as $$
 begin
-  insert into shop.product (created, id, name)
-  values (
-    clock_timestamp(),
-    event.id,
-    event.name
-  );
+  insert into shop.product (id, name)
+  values (event.id, event.name);
 end;
 $$ language plpgsql;
 
 create function cqrs.show_created_handler(event cqrs.show_created)
 returns void as $$
 begin
-  insert into live.show (created, id, creator_id, name)
-  values (
-    clock_timestamp(),
-    event.id,
-    event.creator_id,
-    event.name
-  );
+  insert into live.show (id, creator_id, name)
+  values (event.id, event.creator_id, event.name);
 end;
 $$ language plpgsql;
 
