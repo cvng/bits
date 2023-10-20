@@ -5,12 +5,9 @@ truncate table shop.auction cascade;
 truncate table shop.bid cascade;
 truncate table shop.product cascade;
 
-insert into auth.person (id, email)
+insert into cqrs.event (type, data)
 values
-(
-  '00000000-0000-0000-0000-000000000000',
-  'username@test.dev'
-);
+('person_created', '{ "id": "00000000-0000-0000-0000-000000000000", "email": "username@test.dev" }'); -- noqa: LT05
 
 insert into live.show (id, creator_id, name)
 values

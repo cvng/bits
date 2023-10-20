@@ -21,23 +21,10 @@ create domain amount as numeric;
 create domain email as text check (value = lower(value) and value like '%@%');
 
 --
--- Enums
---
-
-create type event as enum (
-  'person_created',
-  'show_created',
-  'product_created',
-  'auction_created',
-  'bid_created'
-);
-
---
 -- Tables
 --
 
 create schema auth;
-create schema cqrs;
 create schema live;
 create schema shop;
 
@@ -116,15 +103,6 @@ create table shop.bid (
 );
 
 alter table shop.bid enable row level security;
-
-create table cqrs.event (
-  id id not null default gen_random_uuid() primary key,
-  created timestamp not null default now(),
-  type event not null,
-  data jsonb not null
-);
-
-alter table cqrs.event enable row level security;
 
 --
 -- Policies
