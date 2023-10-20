@@ -37,6 +37,8 @@ pub fn schema(connection: DatabaseConnection) -> SchemaBuilder {
     [auction, bid, comment, person, product, show,]
   );
 
+  // TODO: register_mutations(builder, connection, dataloader);
+
   builder
     .schema_builder()
     // TODO(security): .limit_depth(5).limit_complexity(5) @cvng
