@@ -6,102 +6,131 @@ create schema cqrs;
 -- Enums
 --
 
-create type cqrs.event_type as enum (
-  'person_created',
-  'show_created',
-  'product_created',
+create type cqrs.event as enum (
   'auction_created',
-  'bid_created'
+  'bid_created',
+  'comment_created',
+  'person_created',
+  'product_created',
+  'show_created'
 );
 
 --
 -- Tables
 --
 
-create table cqrs.event (
-  id id not null default gen_random_uuid() primary key,
-  created timestamp not null default now(),
-  type cqrs.event_type not null,
-  data jsonb not null
+create table cqrs.auction_created (
+  id id not null,
+  show_id id not null,
+  product_id id not null
 );
 
-alter table cqrs.event enable row level security;
+create table cqrs.bid_created (
+  id id not null,
+  auction_id id not null,
+  bidder_id id not null,
+  amount amount not null
+);
+
+create table cqrs.comment_created (
+  id id not null,
+  author_id id not null,
+  show_id id not null,
+  text text not null
+);
+
+create table cqrs.person_created (
+  id id not null,
+  email email not null
+);
+
+create table cqrs.product_created (
+  id id not null,
+  name text not null
+);
+
+create table cqrs.show_created (
+  id id not null,
+  creator_id id not null,
+  name text not null
+);
 
 --
 -- Triggers
 --
 
-create function cqrs.event_insert_trigger() returns trigger as $$
+-- noqa: disable=LT05
+
+create function cqrs.auction_created_trigger(event cqrs.auction_created) returns trigger as $$
 begin
-  case new.type
-    when 'auction_created' then perform cqrs.auction_created(new);
-    when 'bid_created' then perform cqrs.bid_created(new);
-    when 'person_created' then perform cqrs.person_created(new);
-    when 'product_created' then perform cqrs.product_created(new);
-    when 'show_created' then perform cqrs.show_created(new);
-  end case;
+  insert into shop.auction (id, show_id, product_id)
+  values (event.id, event.show_id, event.product_id);
 
   return new;
 end;
 $$ language plpgsql;
 
-create trigger event_insert_trigger after insert on cqrs.event
-for each row execute function cqrs.event_insert_trigger();
-
---
--- Handlers
---
-
-create function cqrs.auction_created(event cqrs.event) returns void as $$
-begin
-  insert into shop.auction (id, show_id, product_id)
-  values (
-    (event.data->>'id')::id,
-    (event.data->>'show_id')::id,
-    (event.data->>'product_id')::id
-  );
-end;
-$$ language plpgsql;
-
-create function cqrs.bid_created(event cqrs.event) returns void as $$
+create function cqrs.bid_created_trigger(event cqrs.bid_created) returns trigger as $$
 begin
   insert into shop.bid (id, auction_id, bidder_id, amount)
-  values (
-    (event.data->>'id')::id,
-    (event.data->>'auction_id')::id,
-    (event.data->>'bidder_id')::id,
-    (event.data->>'amount')::amount
-  );
+  values (event.id, event.auction_id, event.bidder_id, event.amount);
+
+  return new;
 end;
 $$ language plpgsql;
 
-create function cqrs.person_created(event cqrs.event) returns void as $$
+create function cqrs.comment_created_trigger(event cqrs.comment_created) returns trigger as $$
+begin
+  insert into live.comment (id, author_id, show_id, text)
+  values (event.id, event.author_id, event.show_id, event.text);
+
+  return new;
+end;
+$$ language plpgsql;
+
+create function cqrs.person_created_trigger(event cqrs.person_created) returns trigger as $$
 begin
   insert into auth.person (id, email)
-  values (
-    (event.data->>'id')::id,
-    (event.data->>'email')::email
-  );
+  values (event.id, event.email);
+
+  return new;
 end;
 $$ language plpgsql;
 
-create function cqrs.product_created(event cqrs.event) returns void as $$
+create function cqrs.product_created_trigger(event cqrs.product_created) returns trigger as $$
 begin
   insert into shop.product (id, name)
-  values (
-    (event.data->>'id')::id,
-    (event.data->>'name')::text
-  );
+  values (event.id, event.name);
+
+  return new;
 end;
 $$ language plpgsql;
 
-create function cqrs.show_created(event cqrs.event) returns void as $$
+create function cqrs.show_created_trigger(event cqrs.show_created) returns trigger as $$
 begin
   insert into live.show (id, creator_id, name)
-  values (
-    (event.data->>'id')::id,
-    (event.data->>'creator_id')::id,
-    (event.data->>'name')::text
-  );
+  values (event.id, event.creator_id, event.name);
+
+  return new;
 end;
 $$ language plpgsql;
+
+-- noqa: enable=LT05
+
+create trigger auction_created_trigger after insert on cqrs.auction_created
+for each row execute function cqrs.auction_created_trigger();
+
+create trigger bid_created_trigger after insert on cqrs.bid_created
+for each row execute function cqrs.bid_created_trigger();
+
+create trigger comment_created_trigger after insert on cqrs.comment_created
+for each row execute function cqrs.comment_created_trigger();
+
+create trigger person_created_trigger after insert on cqrs.person_created
+for each row execute function cqrs.person_created_trigger();
+
+create trigger product_created_trigger after insert on cqrs.product_created
+for each row execute function cqrs.product_created_trigger();
+
+create trigger show_created_trigger after insert on cqrs.show_created
+for each row execute function cqrs.show_created_trigger();
