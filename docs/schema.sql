@@ -99,7 +99,7 @@ create table auth.person (
   id id not null primary key,
   created timestamp not null default clock_timestamp(),
   updated timestamp,
-  email email not null
+  email email not null unique
 );
 
 alter table auth.person enable row level security;
