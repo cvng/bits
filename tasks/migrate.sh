@@ -18,11 +18,13 @@ psql "$host" \
     --variable=ON_ERROR_STOP=1 \
     --single-transaction \
     --file="docs/schema.sql" \
+    --quiet \
 
-PGOPTIONS='--client-min-messages=warning' psql "$host" \
+psql "$host" \
     --no-psqlrc \
     --variable=ON_ERROR_STOP=1 \
     --file="docs/es.sql" \
+    --quiet \
 
 PGOPTIONS='--client-min-messages=warning' psql "$host" \
     --no-psqlrc \
