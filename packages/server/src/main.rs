@@ -23,10 +23,6 @@ async fn main() {
 
   let router = server::app(schema);
 
-  println!("Starting LISTEN loop.");
-
-  bits_graphql::listen(&database_url).await.ok();
-
   println!("GraphiQL IDE: http://{addr}/graphql");
 
   Server::bind(&addr)
