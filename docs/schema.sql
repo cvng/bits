@@ -220,6 +220,8 @@ begin
       perform cqrs.show_created_handler(jsonb_populate_record(null::cqrs.show_created, new.data));
   end case;
 
+  perform cqrs.handler(new);
+
   return new;
 end;
 $$ language plpgsql;
@@ -230,6 +232,15 @@ for each row execute function cqrs.event_insert_trigger();
 --
 -- Handlers
 --
+
+create function cqrs.handler(event cqrs.event) returns void as $$
+begin
+  perform pg_notify(
+    'cqrs.event',
+    jsonb_build_object('id', event.id, 'created', event.created, 'type', event.type, 'data', event.data)::text
+  );
+end;
+$$ language plpgsql;
 
 create function cqrs.auction_created_handler(event cqrs.auction_created)
 returns void as $$

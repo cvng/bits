@@ -13,7 +13,7 @@ async fn main() {
   let database_url = env::var("DATABASE_URL")
     .expect("DATABASE_URL environment variable not set");
 
-  let connection = Database::connect(database_url)
+  let connection = Database::connect(&database_url)
     .await
     .expect("Fail to initialize database connection");
 

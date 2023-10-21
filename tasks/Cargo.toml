@@ -5,7 +5,7 @@ edition = "2021"
 
 [[bin]]
 name = "tasks"
-path = "main.rs"
+path = "bin.rs"
 
 [dependencies]
 anyhow = "1.0.75"
