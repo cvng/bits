@@ -88,19 +88,11 @@ create table cqrs.event (
   id serial not null primary key,
   created timestamp not null default clock_timestamp(),
   type cqrs.event_type not null,
-  data jsonb not null
+  data jsonb not null,
+  recv boolean not null default false
 );
 
 alter table cqrs.event enable row level security;
-
--- Table: cqrs.queue
-
-create table cqrs.queue (
-  id serial not null primary key,
-  event_id int not null references cqrs.event (id)
-);
-
-alter table cqrs.queue enable row level security;
 
 -- Table: auth.person
 
@@ -229,7 +221,7 @@ begin
       perform cqrs.show_created_handler(jsonb_populate_record(null::cqrs.show_created, new.data));
   end case;
 
-  insert into cqrs.queue (event_id) values (new.id);
+  perform cqrs.handler(new);
 
   return new;
 end;
@@ -237,6 +229,15 @@ $$ language plpgsql;
 
 create trigger event_insert_trigger after insert on cqrs.event
 for each row execute function cqrs.event_insert_trigger();
+
+create function cqrs.handler(event cqrs.event) returns void as $$
+begin
+  perform pg_notify(
+    'cqrs.event',
+    jsonb_build_object('id', event.id, 'created', event.created, 'type', event.type, 'data', event.data)::text
+  );
+end;
+$$ language plpgsql;
 
 --
 -- Handlers

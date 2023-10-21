@@ -2,7 +2,7 @@
 
 use sqlx::postgres::PgListener;
 
-const NOTIFICATION_CHANNEL: &str = "cqrs.queue";
+const NOTIFICATION_CHANNEL: &str = "cqrs.event";
 
 pub async fn listen(
   database_url: &str,
