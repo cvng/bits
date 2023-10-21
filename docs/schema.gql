@@ -1,3 +1,12 @@
+input AddAuctionProductInput {
+  auctionId: ID!
+  productId: ID!
+}
+
+type AddAuctionProductResult {
+  ok: Boolean!
+}
+
 type Auction {
   id: String!
   created: String!
@@ -121,6 +130,12 @@ input BidFilterInput {
   or: [BidFilterInput!]
 }
 
+input BidInput {
+  userId: ID!
+  productId: ID!
+  amount: Int!
+}
+
 input BidInsertInput {
   id: String!
   created: String!
@@ -139,6 +154,10 @@ input BidOrderInput {
   bidderId: OrderByEnum
   concurrentAmount: OrderByEnum
   amount: OrderByEnum
+}
+
+type BidResult {
+  ok: Boolean!
 }
 
 input BidUpdateInput {
@@ -194,6 +213,12 @@ input CommentFilterInput {
   or: [CommentFilterInput!]
 }
 
+input CommentInput {
+  userId: ID!
+  showId: ID!
+  text: String!
+}
+
 input CommentInsertInput {
   id: String!
   created: String!
@@ -212,6 +237,10 @@ input CommentOrderInput {
   text: OrderByEnum
 }
 
+type CommentResult {
+  ok: Boolean!
+}
+
 input CommentUpdateInput {
   id: String
   created: String
@@ -219,6 +248,23 @@ input CommentUpdateInput {
   authorId: String
   showId: String
   text: String
+}
+
+input CreateProductInput {
+  name: String!
+}
+
+type CreateProductResult {
+  ok: Boolean!
+}
+
+input CreateShowInput {
+  creator_id: ID!
+  name: String!
+}
+
+type CreateShowResult {
+  ok: Boolean!
 }
 
 input CursorInput {
@@ -246,6 +292,12 @@ type Mutation {
   showCreateOne(data: ShowInsertInput!): ShowBasic!
   showCreateBatch(data: [ShowInsertInput!]!): [ShowBasic!]!
   showUpdate(data: ShowUpdateInput!, filter: ShowFilterInput): [ShowBasic!]!
+  bid(input: BidInput!): BidResult!
+  comment(input: CommentInput!): CommentResult!
+  createProduct(input: CreateProductInput!): CreateProductResult!
+  createShow(input: CreateShowInput!): CreateShowResult!
+  startShow(input: StartShowInput!): StartShowResult!
+  addAuctionProduct(input: AddAuctionProductInput!): AddAuctionProductResult!
 }
 
 input OffsetInput {
@@ -418,6 +470,14 @@ input ShowUpdateInput {
   creatorId: String
   name: String
   started: String
+}
+
+input StartShowInput {
+  id: ID!
+}
+
+type StartShowResult {
+  ok: Boolean!
 }
 
 input StringFilterInput {
