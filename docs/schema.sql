@@ -93,6 +93,15 @@ create table cqrs.event (
 
 alter table cqrs.event enable row level security;
 
+-- Table: cqrs.queue
+
+create table cqrs.queue (
+  id serial not null primary key,
+  event_id int not null references cqrs.event (id)
+);
+
+alter table cqrs.queue enable row level security;
+
 -- Table: auth.person
 
 create table auth.person (
@@ -219,6 +228,8 @@ begin
     when 'show_created' then
       perform cqrs.show_created_handler(jsonb_populate_record(null::cqrs.show_created, new.data));
   end case;
+
+  insert into cqrs.queue (event_id) values (new.id);
 
   return new;
 end;

@@ -13,7 +13,7 @@ async fn main() {
   let database_url = env::var("DATABASE_URL")
     .expect("DATABASE_URL environment variable not set");
 
-  let connection = Database::connect(database_url)
+  let connection = Database::connect(&database_url)
     .await
     .expect("Fail to initialize database connection");
 
@@ -22,6 +22,10 @@ async fn main() {
     .expect("Fail to initialize GraphQL schema");
 
   let router = server::app(schema);
+
+  println!("Starting LISTEN loop.");
+
+  bits_graphql::listen(&database_url).await.ok();
 
   println!("GraphiQL IDE: http://{addr}/graphql");
 
