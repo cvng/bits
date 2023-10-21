@@ -88,8 +88,7 @@ create table cqrs.event (
   id serial not null primary key,
   created timestamp not null default clock_timestamp(),
   type cqrs.event_type not null,
-  data jsonb not null,
-  recv boolean not null default false
+  data jsonb not null
 );
 
 alter table cqrs.event enable row level security;
@@ -230,6 +229,10 @@ $$ language plpgsql;
 create trigger event_insert_trigger after insert on cqrs.event
 for each row execute function cqrs.event_insert_trigger();
 
+--
+-- Handlers
+--
+
 create function cqrs.handler(event cqrs.event) returns void as $$
 begin
   perform pg_notify(
@@ -238,10 +241,6 @@ begin
   );
 end;
 $$ language plpgsql;
-
---
--- Handlers
---
 
 create function cqrs.auction_created_handler(event cqrs.auction_created)
 returns void as $$
