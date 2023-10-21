@@ -23,7 +23,7 @@ pub struct OrmDataLoader {
   pub db: DatabaseConnection,
 }
 
-/// Build the GraphQL schema. TODO: limit_depth & complexity
+/// Build the GraphQL schema. TODO: limit depth & complexity
 pub fn schema(connection: DatabaseConnection) -> SchemaBuilder {
   let loader = OrmDataLoader {
     db: connection.clone(),
@@ -45,7 +45,8 @@ fn register_entities(mut builder: Builder) -> Builder {
 }
 
 fn register_mutations(mut builder: Builder) -> Builder {
-  builder.mutations = Mutation::fields();
+  builder.mutations.extend(Mutation::mutations());
   builder.inputs.extend(Mutation::inputs());
+  builder.outputs.extend(Mutation::outputs());
   builder
 }

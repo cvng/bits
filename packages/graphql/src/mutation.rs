@@ -3,6 +3,7 @@ use async_graphql::dynamic::FieldFuture;
 use async_graphql::dynamic::FieldValue;
 use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
+use async_graphql::dynamic::Object;
 use async_graphql::dynamic::ResolverContext;
 use async_graphql::dynamic::TypeRef;
 use async_graphql::Result;
@@ -11,35 +12,46 @@ use bits_core::commands;
 pub struct Mutation;
 
 impl Mutation {
-  #[rustfmt::skip]
   pub fn inputs() -> Vec<InputObject> {
     vec![
       InputObject::new("BidInput")
-        .field(InputValue::new("user_id", TypeRef::named_nn(TypeRef::ID)))
-        .field(InputValue::new("product_id", TypeRef::named_nn(TypeRef::ID)))
+        .field(InputValue::new("userId", TypeRef::named_nn(TypeRef::ID)))
+        .field(InputValue::new(
+          "productId",
+          TypeRef::named_nn(TypeRef::ID),
+        ))
         .field(InputValue::new("amount", TypeRef::named_nn(TypeRef::INT))),
       InputObject::new("CommentInput")
-        .field(InputValue::new("user_id", TypeRef::named_nn(TypeRef::ID)))
-        .field(InputValue::new("show_id", TypeRef::named_nn(TypeRef::ID)))
+        .field(InputValue::new("userId", TypeRef::named_nn(TypeRef::ID)))
+        .field(InputValue::new("showId", TypeRef::named_nn(TypeRef::ID)))
         .field(InputValue::new("text", TypeRef::named_nn(TypeRef::STRING))),
       InputObject::new("CreateProductInput")
         .field(InputValue::new("name", TypeRef::named_nn(TypeRef::STRING))),
       InputObject::new("CreateShowInput")
-        .field(InputValue::new("creator_id", TypeRef::named_nn(TypeRef::ID)))
+        .field(InputValue::new(
+          "creator_id",
+          TypeRef::named_nn(TypeRef::ID),
+        ))
         .field(InputValue::new("name", TypeRef::named_nn(TypeRef::STRING))),
       InputObject::new("StartShowInput")
         .field(InputValue::new("id", TypeRef::named_nn(TypeRef::ID))),
       InputObject::new("AddAuctionProductInput")
-        .field(InputValue::new("auction_id", TypeRef::named_nn(TypeRef::ID)))
-        .field(InputValue::new("product_id", TypeRef::named_nn(TypeRef::ID))),
+        .field(InputValue::new(
+          "auctionId",
+          TypeRef::named_nn(TypeRef::ID),
+        ))
+        .field(InputValue::new(
+          "productId",
+          TypeRef::named_nn(TypeRef::ID),
+        )),
     ]
   }
 
-  pub fn fields() -> Vec<Field> {
+  pub fn mutations() -> Vec<Field> {
     vec![
       Field::new(
         "bid".to_string(),
-        TypeRef::named_nn("Boolean".to_string()),
+        TypeRef::named_nn("BidResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
             Ok(Some(FieldValue::owned_any(bid(ctx).await?)))
@@ -52,7 +64,7 @@ impl Mutation {
       )),
       Field::new(
         "comment".to_string(),
-        TypeRef::named_nn("Boolean".to_string()),
+        TypeRef::named_nn("CommentResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
             Ok(Some(FieldValue::owned_any(comment(ctx).await?)))
@@ -65,7 +77,7 @@ impl Mutation {
       )),
       Field::new(
         "createProduct".to_string(),
-        TypeRef::named_nn("Boolean".to_string()),
+        TypeRef::named_nn("CreateProductResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
             Ok(Some(FieldValue::owned_any(create_product(ctx).await?)))
@@ -78,7 +90,7 @@ impl Mutation {
       )),
       Field::new(
         "createShow".to_string(),
-        TypeRef::named_nn("Boolean".to_string()),
+        TypeRef::named_nn("CreateShowResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
             Ok(Some(FieldValue::owned_any(create_show(ctx).await?)))
@@ -91,7 +103,7 @@ impl Mutation {
       )),
       Field::new(
         "startShow".to_string(),
-        TypeRef::named_nn("Boolean".to_string()),
+        TypeRef::named_nn("StartShowResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
             Ok(Some(FieldValue::owned_any(start_show(ctx).await?)))
@@ -104,7 +116,7 @@ impl Mutation {
       )),
       Field::new(
         "addAuctionProduct".to_string(),
-        TypeRef::named_nn("Boolean".to_string()),
+        TypeRef::named_nn("AddAuctionProductResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
             Ok(Some(FieldValue::owned_any(add_auction_product(ctx).await?)))
@@ -114,6 +126,53 @@ impl Mutation {
       .argument(InputValue::new(
         "input".to_string(),
         TypeRef::named_nn("AddAuctionProductInput".to_string()),
+      )),
+    ]
+  }
+
+  pub fn outputs() -> Vec<Object> {
+    vec![
+      Object::new("BidResult").field(Field::new(
+        "ok".to_string(),
+        TypeRef::named_nn(TypeRef::BOOLEAN),
+        |_| {
+          FieldFuture::new(async move { Ok(Some(FieldValue::owned_any(true))) })
+        },
+      )),
+      Object::new("CommentResult").field(Field::new(
+        "ok".to_string(),
+        TypeRef::named_nn(TypeRef::BOOLEAN),
+        |_| {
+          FieldFuture::new(async move { Ok(Some(FieldValue::owned_any(true))) })
+        },
+      )),
+      Object::new("CreateProductResult").field(Field::new(
+        "ok".to_string(),
+        TypeRef::named_nn(TypeRef::BOOLEAN),
+        |_| {
+          FieldFuture::new(async move { Ok(Some(FieldValue::owned_any(true))) })
+        },
+      )),
+      Object::new("CreateShowResult").field(Field::new(
+        "ok".to_string(),
+        TypeRef::named_nn(TypeRef::BOOLEAN),
+        |_| {
+          FieldFuture::new(async move { Ok(Some(FieldValue::owned_any(true))) })
+        },
+      )),
+      Object::new("StartShowResult").field(Field::new(
+        "ok".to_string(),
+        TypeRef::named_nn(TypeRef::BOOLEAN),
+        |_| {
+          FieldFuture::new(async move { Ok(Some(FieldValue::owned_any(true))) })
+        },
+      )),
+      Object::new("AddAuctionProductResult").field(Field::new(
+        "ok".to_string(),
+        TypeRef::named_nn(TypeRef::BOOLEAN),
+        |_| {
+          FieldFuture::new(async move { Ok(Some(FieldValue::owned_any(true))) })
+        },
       )),
     ]
   }
