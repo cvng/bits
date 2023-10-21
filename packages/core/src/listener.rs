@@ -1,3 +1,5 @@
+// https://github.com/launchbadge/sqlx/tree/main/examples/postgres/listen
+
 use futures::TryStreamExt;
 use sqlx::postgres::PgListener;
 use sqlx::Executor;
@@ -10,7 +12,7 @@ use std::time::Duration;
 /// How long to sit in the listen loop before exiting.
 ///
 /// This ensures the example eventually exits, which is required for automated testing.
-const LISTEN_DURATION: Duration = Duration::from_secs(5);
+const LISTEN_DURATION: Duration = Duration::from_secs(3600);
 
 pub async fn listen(
   database_url: &str,
@@ -29,9 +31,7 @@ pub async fn listen(
     }
   });
 
-  println!("Starting LISTEN loop.");
-
-  listener.listen_all(vec!["chan0", "chan1", "chan2"]).await?;
+  listener.listen_all(vec!["cqrs.queue"]).await?;
 
   let mut counter = 0usize;
   loop {
@@ -98,9 +98,9 @@ from (
      ) notifies(chan, payload)
     "#,
   )
-  .bind(&COUNTER.fetch_add(1, Ordering::SeqCst))
-  .bind(&COUNTER.fetch_add(1, Ordering::SeqCst))
-  .bind(&COUNTER.fetch_add(1, Ordering::SeqCst))
+  .bind(COUNTER.fetch_add(1, Ordering::SeqCst))
+  .bind(COUNTER.fetch_add(1, Ordering::SeqCst))
+  .bind(COUNTER.fetch_add(1, Ordering::SeqCst))
   .execute(pool)
   .await;
 
