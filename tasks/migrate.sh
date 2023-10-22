@@ -2,21 +2,14 @@
 
 set -e
 
-# Drop
+host="postgres://postgres:password@localhost:5432/bits"
+name="bits"
 
-psql "postgres://postgres:password@localhost:5432/postgres" \
+psql "$host" \
     --no-psqlrc \
     --variable=ON_ERROR_STOP=1 \
     --command="\connect postgres;" \
-    --command="drop database if exists bits with (force);" \
-    --command="create database bits;" \
-    --quiet
-
-# Init
-
-psql "postgres://postgres:password@localhost:5432/bits" \
-    --no-psqlrc \
-    --variable=ON_ERROR_STOP=1 \
-    --command="\connect bits;" \
+    --command="drop database if exists $name with (force);" \
+    --command="create database $name;" \
+    --command="\connect $name;" \
     --file="docs/schema.sql" \
-    --quiet
