@@ -3,14 +3,42 @@
 set -e
 source .env
 
-host="$DATABASE_URL"
+# Seed data from JSON event "stream" & test permissions
 
-# Seed
+host="postgres://postgres:password@localhost:5432/bits"
+name="bits"
+file="tasks/seed.json"
 
-jq --compact-output ".[]" tasks/seed.json | psql "$host" \
-    --no-psqlrc \
-    --single-transaction \
-    --variable=ON_ERROR_STOP=1 \
-    --command="create table tmp (row jsonb);" \
-    --command="\copy tmp (row) from stdin;" \
-    --command="insert into cqrs.event (type, data) select (row->>'type')::cqrs.event_type, (row->>'data')::jsonb from tmp;" \
+psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
+<<SQL
+\connect $name;
+
+alter role authenticator with password 'password';
+create table if not exists tmp (row jsonb);
+grant select on tmp to public;
+SQL
+
+jq --compact-output ".[]" "$file" | psql "$host" --no-psqlrc \
+    --variable=ON_ERROR_STOP=1 --quiet --command="\copy tmp (row) from stdin;"
+
+psql "$DATABASE_URL" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
+<<SQL
+\connect $name;
+
+call auth.login('seller', '00000000-1000-0000-0000-000000000000');
+insert into cqrs.event (type, data)
+select
+    (row->>'type')::cqrs.event_type,
+    (row->>'data')::jsonb
+from tmp where row->>'role' = 'seller';
+
+call auth.login('bidder', '00000000-2000-0000-0000-000000000000');
+insert into cqrs.event (type, data)
+select
+    (row->>'type')::cqrs.event_type,
+    (row->>'data')::jsonb
+from tmp where row->>'role' = 'bidder';
+
+call auth.login('administrator', '00000000-0000-0000-0000-000000000000');
+select id, created, type, data->>'id' as "data.id" from cqrs.event;
+SQL

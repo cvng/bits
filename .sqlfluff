@@ -5,3 +5,6 @@ dialect = postgres
 
 [sqlfluff:indentation]
 tab_space_size = 2
+
+[sqlfluff:layout:type:binary_operator]
+line_position = trailing

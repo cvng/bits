@@ -1,23 +1,17 @@
 # https://www.postgresql.org/docs/current/app-psql.html
 
 set -e
-source .env
 
-host="$DATABASE_URL"
+host="postgres://postgres:password@localhost:5432/bits"
+name="bits"
 
-# Drop
+psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
+<<SQL
+\connect postgres;
 
-psql "$host" \
-    --no-psqlrc \
-    --variable=ON_ERROR_STOP=1 \
-    --command="\connect postgres;" \
-    --command="drop database if exists bits with (force);" \
-    --command="create database bits;" \
+drop database if exists $name with (force);
+create database $name;
+SQL
 
-# Init
-
-psql "$host" \
-    --no-psqlrc \
-    --single-transaction \
-    --variable=ON_ERROR_STOP=1 \
-    --file="docs/schema.sql" \
+psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
+    --file="docs/schema.sql"
