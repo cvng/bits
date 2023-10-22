@@ -198,6 +198,7 @@ grant seller to administrator;
 
 -- Schema
 
+grant usage on schema auth to authenticator;
 grant usage on schema auth to viewer;
 grant usage on schema cqrs to viewer;
 grant usage on schema live to bidder;
@@ -242,7 +243,7 @@ grant insert on shop.product to seller;
 -- Policies
 --
 
-create procedure public.login(granted_role auth.role, user_id id) as $$
+create procedure auth.login(granted_role auth.role, user_id id) as $$
 begin
   perform set_config('role', granted_role::text, false);
   perform set_config('auth.user', user_id::text, false);
