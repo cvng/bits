@@ -9,11 +9,13 @@ create schema shop;
 -- Roles
 --
 
+drop role if exists administrator;
 drop role if exists authenticator;
 drop role if exists bidder;
 drop role if exists seller;
 drop role if exists viewer;
 
+create role administrator;
 create role authenticator noinherit login;
 create role bidder;
 create role seller;
@@ -32,6 +34,7 @@ create domain email as text check (value = lower(value) and value like '%@%');
 --
 
 create type auth.role as enum (
+  'administrator',
   'bidder',
   'seller',
   'viewer'
@@ -183,13 +186,15 @@ alter table shop.bid enable row level security;
 -- Grants
 --
 
--- Hierarchy
+-- Hierarchy: authenticator > viewer > bidder > seller > administrator
 
+grant administrator to authenticator;
 grant viewer to authenticator;
 grant bidder to authenticator;
 grant seller to authenticator;
 grant viewer to bidder;
 grant bidder to seller;
+grant seller to administrator;
 
 -- Schema
 
@@ -250,10 +255,16 @@ begin
 end;
 $$ language plpgsql;
 
+create function auth.role() returns auth.role as $$
+begin
+  return (current_setting('role'))::auth.role;
+end;
+$$ language plpgsql;
+
 -- Table: cqrs.event
 
 create policy event_select_policy on cqrs.event for select to viewer
-using (false);
+using ('administrator'::auth.role = auth.role());
 
 create policy event_insert_policy on cqrs.event for insert to viewer
 with check (true);

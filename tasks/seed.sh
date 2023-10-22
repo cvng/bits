@@ -38,9 +38,7 @@ select
     (row->>'type')::cqrs.event_type,
     (row->>'data')::jsonb
 from tmp where row->>'role' = 'bidder';
-SQL
 
-psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
-<<SQL
+call login('administrator', '00000000-0000-0000-0000-000000000000');
 select id, created, type, data->>'id' as "data.id" from cqrs.event;
 SQL
