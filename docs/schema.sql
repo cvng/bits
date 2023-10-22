@@ -14,7 +14,7 @@ drop role if exists bidder;
 drop role if exists seller;
 drop role if exists viewer;
 
-create role authenticator noinherit login password 'password';
+create role authenticator noinherit login;
 create role bidder;
 create role seller;
 create role viewer;

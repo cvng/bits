@@ -11,6 +11,7 @@ jq --compact-output ".[]" tasks/seed.json | psql "postgres://postgres:password@l
     --no-psqlrc \
     --variable=ON_ERROR_STOP=1 \
     --command="\connect bits;" \
+    --command="alter role authenticator with password 'password';" \
     --command="create table tmp (row jsonb);" \
     --command="grant select on tmp to public;" \
     --command="\copy tmp (row) from stdin;" \
