@@ -209,8 +209,8 @@ with check (bidder_id = auth.user_id());
 create policy bid_read_policy on shop.bid for select to viewer
 using (true);
 
-create policy person_policy on auth.person for all to viewer
-using (id = auth.user_id());
+create policy person_policy on auth.person for insert to viewer
+with check (id = auth.user_id());
 
 create policy event_create_policy on cqrs.event for insert to viewer
 with check (true);
