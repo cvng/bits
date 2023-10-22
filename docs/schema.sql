@@ -175,11 +175,25 @@ alter table shop.bid enable row level security;
 -- Grants
 --
 
+-- Role: viewer
+
 grant viewer to authenticator;
 grant usage on schema cqrs to viewer;
 grant insert on cqrs.event to viewer;
 grant usage on schema auth to viewer;
 grant insert on auth.person to viewer;
+
+-- Role: seller
+
+grant seller to authenticator;
+grant viewer to seller;
+grant usage on schema cqrs to seller;
+grant insert on cqrs.event to seller;
+grant usage on schema live to seller;
+grant insert on live.show to seller;
+grant usage on schema shop to seller;
+grant insert on shop.product to seller;
+grant insert on shop.auction to seller;
 
 --
 -- Policies
@@ -203,17 +217,24 @@ with check (creator_id = auth.user_id());
 create policy show_read_policy on live.show for select to viewer
 using (true);
 
+create policy auction_create_policy on shop.auction for insert to seller
+with check (true); -- TODO: check auction.shop_id && auction.product_id
+
 create policy bid_create_policy on shop.bid for insert to bidder
 with check (bidder_id = auth.user_id());
 
 create policy bid_read_policy on shop.bid for select to viewer
 using (true);
 
-create policy person_policy on auth.person for insert to viewer
+create policy product_create_policy on shop.product for insert to seller
+with check (true);
+
+create policy person_read_policy on auth.person for insert to viewer
 with check (id = auth.user_id());
 
 create policy event_create_policy on cqrs.event for insert to viewer
 with check (true);
+
 
 --
 -- Triggers
