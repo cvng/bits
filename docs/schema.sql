@@ -188,14 +188,17 @@ grant insert on auth.person to viewer;
 -- Role: bidder
 
 grant bidder to authenticator;
--- grant viewer to bidder; -- TODO: check
-grant usage on schema cqrs to bidder;
-grant insert on cqrs.event to bidder;
+grant viewer to bidder;
+grant usage on schema live to bidder;
+grant insert on live.comment to bidder;
+grant usage on schema shop to bidder;
+grant select on shop.bid to bidder;
+grant insert on shop.bid to bidder;
 
 -- Role: seller
 
 grant seller to authenticator;
-grant viewer to seller; -- TODO: check
+grant viewer to seller;
 grant usage on schema cqrs to seller;
 grant insert on cqrs.event to seller;
 grant usage on schema live to seller;
