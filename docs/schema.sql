@@ -317,22 +317,34 @@ create function cqrs.event_insert_trigger() returns trigger as $$
 begin
   case new.type
     when 'auction_created' then
-      perform cqrs.auction_created_handler(jsonb_populate_record(null::cqrs.auction_created, new.data));
+      perform cqrs.auction_created_handler(
+        jsonb_populate_record(null::cqrs.auction_created, new.data)
+      );
 
     when 'bid_created' then
-      perform cqrs.bid_created_handler(jsonb_populate_record(null::cqrs.bid_created, new.data));
+      perform cqrs.bid_created_handler(
+        jsonb_populate_record(null::cqrs.bid_created, new.data)
+      );
 
     when 'comment_created' then
-      perform cqrs.comment_created_handler(jsonb_populate_record(null::cqrs.comment_created, new.data));
+      perform cqrs.comment_created_handler(
+        jsonb_populate_record(null::cqrs.comment_created, new.data)
+      );
 
     when 'person_created' then
-      perform cqrs.person_created_handler(jsonb_populate_record(null::cqrs.person_created, new.data));
+      perform cqrs.person_created_handler(
+        jsonb_populate_record(null::cqrs.person_created, new.data)
+      );
 
     when 'product_created' then
-      perform cqrs.product_created_handler(jsonb_populate_record(null::cqrs.product_created, new.data));
+      perform cqrs.product_created_handler(
+        jsonb_populate_record(null::cqrs.product_created, new.data)
+      );
 
     when 'show_created' then
-      perform cqrs.show_created_handler(jsonb_populate_record(null::cqrs.show_created, new.data));
+      perform cqrs.show_created_handler(
+        jsonb_populate_record(null::cqrs.show_created, new.data)
+      );
   end case;
 
   perform cqrs.handler(new);
@@ -352,7 +364,12 @@ create function cqrs.handler(event cqrs.event) returns void as $$
 begin
   perform pg_notify(
     'cqrs.event',
-    jsonb_build_object('id', event.id, 'created', event.created, 'type', event.type, 'data', event.data)::text
+    jsonb_build_object(
+      'id', event.id,
+      'created', event.created,
+      'type', event.type,
+      'data', event.data
+    )::text
   );
 end;
 $$ language plpgsql;
