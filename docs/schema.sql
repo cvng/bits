@@ -9,10 +9,12 @@ create schema shop;
 -- Roles
 --
 
+drop role if exists authenticator;
 drop role if exists bidder;
 drop role if exists seller;
 drop role if exists viewer;
 
+create role authenticator noinherit login password 'password';
 create role bidder;
 create role seller;
 create role viewer;
@@ -170,29 +172,49 @@ create table shop.bid (
 alter table shop.bid enable row level security;
 
 --
+-- Grants
+--
+
+grant viewer to authenticator;
+grant usage on schema cqrs to viewer;
+grant insert on cqrs.event to viewer;
+grant usage, select on all sequences in schema cqrs to viewer;
+grant usage on schema auth to viewer;
+grant insert on auth.person to viewer;
+
+--
 -- Policies
 --
 
+create function auth.user_id() returns id as $$
+begin
+  return (current_setting('auth.user_id'))::id;
+end;
+$$ language plpgsql;
+
 create policy comment_create_policy on live.comment for insert to bidder
-with check (author_id = current_setting('auth.person_id')::id);
+with check (author_id = auth.user_id());
 
 create policy comment_read_policy on live.comment for select to viewer
 using (true);
 
 create policy show_create_policy on live.show for insert to seller
-with check (creator_id = current_setting('auth.person_id')::id);
+with check (creator_id = auth.user_id());
 
 create policy show_read_policy on live.show for select to viewer
 using (true);
 
 create policy bid_create_policy on shop.bid for insert to bidder
-with check (bidder_id = current_setting('auth.person_id')::id);
+with check (bidder_id = auth.user_id());
 
 create policy bid_read_policy on shop.bid for select to viewer
 using (true);
 
-create policy person_policy on auth.person
-using (id = current_setting('auth.person_id')::id);
+create policy person_policy on auth.person for all to viewer
+using (id = auth.user_id());
+
+create policy event_create_policy on cqrs.event for insert to viewer
+with check (true);
 
 --
 -- Triggers
