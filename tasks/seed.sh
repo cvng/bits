@@ -14,7 +14,7 @@ psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
 \connect $name;
 
 alter role authenticator with password 'password';
-create table tmp (row jsonb);
+create table if not exists tmp (row jsonb);
 grant select on tmp to public;
 SQL
 
