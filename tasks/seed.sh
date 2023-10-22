@@ -3,27 +3,41 @@
 set -e
 source .env
 
-host="$DATABASE_URL"
+# Seed data from JSON "event" stream & test permissions
 
-# Seed
+host="postgres://postgres:password@localhost:5432/bits"
+name="bits"
+file="tasks/seed.json"
 
-jq --compact-output ".[]" tasks/seed.json | psql "postgres://postgres:password@localhost:5432/bits" \
-    --no-psqlrc \
-    --variable=ON_ERROR_STOP=1 \
-    --command="\connect bits;" \
-    --command="alter role authenticator with password 'password';" \
-    --command="create table tmp (row jsonb);" \
-    --command="grant select on tmp to public;" \
-    --command="\copy tmp (row) from stdin;" \
-    --quiet
+psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
+<<SQL
+\connect $name;
 
-psql "$host" \
-    --no-psqlrc \
-    --variable=ON_ERROR_STOP=1 \
-    --command="\connect bits;" \
-    --command="set role seller;" \
-    --command="do \$$ begin perform set_config('auth.user_id', '00000000-1000-0000-0000-000000000000', false); end \$$;" \
-    --command="insert into cqrs.event (type, data) select (row->>'type')::cqrs.event_type, (row->>'data')::jsonb from tmp where row->>'role' = 'seller';" \
-    --command="set role bidder;" \
-    --command="do \$$ begin perform set_config('auth.user_id', '00000000-2000-0000-0000-000000000000', false); end \$$;" \
-    --command="insert into cqrs.event (type, data) select (row->>'type')::cqrs.event_type, (row->>'data')::jsonb from tmp where row->>'role' = 'bidder';" \
+alter role authenticator with password 'password';
+create table tmp (row jsonb);
+grant select on tmp to public;
+SQL
+
+jq --compact-output ".[]" "$file" | psql "$host" --no-psqlrc \
+    --variable=ON_ERROR_STOP=1 --quiet --command="\copy tmp (row) from stdin;"
+
+psql "$DATABASE_URL" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
+<<SQL
+\connect $name;
+
+do \$$ begin perform login('seller', '00000000-1000-0000-0000-000000000000'); end \$$;
+insert into cqrs.event (type, data)
+select
+    (row->>'type')::cqrs.event_type,
+    (row->>'data')::jsonb
+from tmp where row->>'role' = 'seller';
+
+do \$$ begin perform login('bidder', '00000000-2000-0000-0000-000000000000'); end \$$;
+insert into cqrs.event (type, data)
+select
+    (row->>'type')::cqrs.event_type,
+    (row->>'data')::jsonb
+from tmp where row->>'role' = 'bidder';
+
+select id, created, type, data->>'id' as "data.id" from cqrs.event;
+SQL

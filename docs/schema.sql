@@ -31,6 +31,12 @@ create domain email as text check (value = lower(value) and value like '%@%');
 -- Enums
 --
 
+create type auth.role as enum (
+  'bidder',
+  'seller',
+  'viewer'
+);
+
 create type cqrs.event_type as enum (
   'auction_created',
   'bid_created',
@@ -230,6 +236,13 @@ grant insert on shop.product to seller;
 --
 -- Policies
 --
+
+create function public.login(user_role auth.role, user_id id) returns void as $$
+begin
+  perform set_config('role', user_role::text, false);
+  perform set_config('auth.user_id', user_id::text, false);
+end;
+$$ language plpgsql;
 
 create function auth.user_id() returns id as $$
 begin
