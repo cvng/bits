@@ -237,16 +237,17 @@ grant insert on shop.product to seller;
 -- Policies
 --
 
-create function public.login(user_role auth.role, user_id id) returns void as $$
+create function public.login(granted_role auth.role, user_id id)
+returns void as $$
 begin
-  perform set_config('role', user_role::text, false);
-  perform set_config('auth.user_id', user_id::text, false);
+  perform set_config('role', granted_role::text, false);
+  perform set_config('auth.user', user_id::text, false);
 end;
 $$ language plpgsql;
 
-create function auth.user_id() returns id as $$
+create function auth.user() returns id as $$
 begin
-  return (current_setting('auth.user_id'))::id;
+  return (current_setting('auth.user'))::id;
 end;
 $$ language plpgsql;
 
@@ -261,10 +262,10 @@ with check (true);
 -- Table: auth.person
 
 create policy person_select_policy on auth.person for select to viewer
-using (id = auth.user_id());
+using (id = auth.user());
 
 create policy person_insert_policy on auth.person for insert to viewer
-with check (id = auth.user_id());
+with check (id = auth.user());
 
 -- Table: live.show
 
@@ -272,7 +273,7 @@ create policy show_select_policy on live.show for select to viewer
 using (true);
 
 create policy show_insert_policy on live.show for insert to seller
-with check (creator_id = auth.user_id());
+with check (creator_id = auth.user());
 
 -- Table: live.comment
 
@@ -280,7 +281,7 @@ create policy comment_select_policy on live.comment for select to viewer
 using (true);
 
 create policy comment_insert_policy on live.comment for insert to bidder
-with check (author_id = auth.user_id());
+with check (author_id = auth.user());
 
 -- Table: shop.product
 
@@ -288,7 +289,7 @@ create policy product_select_policy on shop.product for select to viewer
 using (true);
 
 create policy product_insert_policy on shop.product for insert to seller
-with check (creator_id = auth.user_id());
+with check (creator_id = auth.user());
 
 -- Table: shop.auction
 
@@ -297,8 +298,8 @@ using (true);
 
 create policy auction_insert_policy on shop.auction for insert to seller
 with check (
-  show_id in (select id from live.show where creator_id = auth.user_id()) and
-  product_id in (select id from shop.product where creator_id = auth.user_id())
+  show_id in (select id from live.show where creator_id = auth.user()) and
+  product_id in (select id from shop.product where creator_id = auth.user())
 );
 
 -- Table: shop.bid
@@ -307,7 +308,7 @@ create policy bid_select_policy on shop.bid for select to viewer
 using (true);
 
 create policy bid_insert_policy on shop.bid for insert to bidder
-with check (bidder_id = auth.user_id());
+with check (bidder_id = auth.user());
 
 --
 -- Triggers
