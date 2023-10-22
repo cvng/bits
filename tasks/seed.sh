@@ -3,7 +3,7 @@
 set -e
 source .env
 
-# Seed data from JSON "event" stream & test permissions
+# Seed data from JSON event "stream" & test permissions
 
 host="postgres://postgres:password@localhost:5432/bits"
 name="bits"
