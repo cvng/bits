@@ -186,20 +186,16 @@ alter table shop.bid enable row level security;
 -- Grants
 --
 
--- Hierarchy: authenticator > viewer > bidder > seller > administrator
+-- Hierarchy
 
-grant administrator to authenticator;
-grant viewer to authenticator;
-grant bidder to authenticator;
-grant seller to authenticator;
-grant viewer to bidder;
+grant viewer to bidder, seller, administrator, authenticator;
 grant bidder to seller;
 grant seller to administrator;
+grant administrator to authenticator;
 
 -- Schema
 
-grant usage on schema auth to authenticator;
-grant usage on schema auth to viewer;
+grant usage on schema auth to viewer, authenticator;
 grant usage on schema cqrs to viewer;
 grant usage on schema live to bidder;
 grant usage on schema shop to bidder;
