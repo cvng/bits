@@ -237,8 +237,7 @@ grant insert on shop.product to seller;
 -- Policies
 --
 
-create function public.login(granted_role auth.role, user_id id)
-returns void as $$
+create procedure public.login(granted_role auth.role, user_id id) as $$
 begin
   perform set_config('role', granted_role::text, false);
   perform set_config('auth.user', user_id::text, false);

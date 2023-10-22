@@ -25,14 +25,14 @@ psql "$DATABASE_URL" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
 <<SQL
 \connect $name;
 
-do \$$ begin perform login('seller', '00000000-1000-0000-0000-000000000000'); end \$$;
+call login('seller', '00000000-1000-0000-0000-000000000000');
 insert into cqrs.event (type, data)
 select
     (row->>'type')::cqrs.event_type,
     (row->>'data')::jsonb
 from tmp where row->>'role' = 'seller';
 
-do \$$ begin perform login('bidder', '00000000-2000-0000-0000-000000000000'); end \$$;
+call login('bidder', '00000000-2000-0000-0000-000000000000');
 insert into cqrs.event (type, data)
 select
     (row->>'type')::cqrs.event_type,
