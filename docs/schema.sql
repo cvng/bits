@@ -258,7 +258,7 @@ $$ language plpgsql;
 
 create function auth.role() returns auth.role as $$
 begin
-  return (current_setting('role'))::auth.role;
+  return current_role::auth.role;
 end;
 $$ language plpgsql;
 
