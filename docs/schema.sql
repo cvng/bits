@@ -71,6 +71,7 @@ create type cqrs.person_created as (
 
 create type cqrs.product_created as (
   id id,
+  creator_id id,
   name text
 );
 
@@ -138,6 +139,7 @@ create table shop.product (
   id id not null primary key,
   created timestamp not null default clock_timestamp(),
   updated timestamp,
+  creator_id id not null references auth.person (id),
   name text not null
 );
 
@@ -194,6 +196,8 @@ grant insert on live.show to seller;
 grant usage on schema shop to seller;
 grant insert on shop.product to seller;
 grant insert on shop.auction to seller;
+grant select on live.show to seller;
+grant select on shop.product to seller;
 
 --
 -- Policies
@@ -215,10 +219,13 @@ create policy show_create_policy on live.show for insert to seller
 with check (creator_id = auth.user_id());
 
 create policy show_read_policy on live.show for select to viewer
-using (true);
+using (creator_id = auth.user_id());
 
 create policy auction_create_policy on shop.auction for insert to seller
-with check (true); -- TODO: check auction.shop_id && auction.product_id
+with check (
+  show_id in (select id from live.show where creator_id = auth.user_id()) and
+  product_id in (select id from shop.product where creator_id = auth.user_id())
+);
 
 create policy bid_create_policy on shop.bid for insert to bidder
 with check (bidder_id = auth.user_id());
@@ -229,12 +236,14 @@ using (true);
 create policy product_create_policy on shop.product for insert to seller
 with check (true);
 
+create policy product_read_policy on shop.product for select to viewer
+using (creator_id = auth.user_id());
+
 create policy person_read_policy on auth.person for insert to viewer
 with check (id = auth.user_id());
 
 create policy event_create_policy on cqrs.event for insert to viewer
 with check (true);
-
 
 --
 -- Triggers
@@ -330,8 +339,8 @@ $$ language plpgsql;
 create function cqrs.product_created_handler(event cqrs.product_created)
 returns void as $$
 begin
-  insert into shop.product (id, name)
-  values (event.id, event.name);
+  insert into shop.product (id, creator_id, name)
+  values (event.id, event.creator_id, event.name);
 end;
 $$ language plpgsql;
 
