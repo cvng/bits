@@ -180,33 +180,37 @@ alter table shop.bid enable row level security;
 -- Role: viewer
 
 grant viewer to authenticator;
-grant usage on schema cqrs to viewer;
-grant insert on cqrs.event to viewer;
 grant usage on schema auth to viewer;
+grant usage on schema cqrs to viewer;
+
 grant insert on auth.person to viewer;
+grant insert on cqrs.event to viewer;
 
 -- Role: bidder
 
 grant bidder to authenticator;
 grant viewer to bidder;
+
 grant usage on schema live to bidder;
-grant insert on live.comment to bidder;
 grant usage on schema shop to bidder;
-grant select on shop.bid to bidder;
+
+grant insert on live.comment to bidder;
 grant insert on shop.bid to bidder;
+grant select on shop.bid to bidder;
 
 -- Role: seller
 
 grant seller to authenticator;
 grant viewer to seller;
+
 grant usage on schema cqrs to seller;
-grant insert on cqrs.event to seller;
 grant usage on schema live to seller;
-grant insert on live.show to seller;
 grant usage on schema shop to seller;
-grant insert on shop.product to seller;
-grant insert on shop.auction to seller;
+
+grant insert on live.show to seller;
 grant select on live.show to seller;
+grant insert on shop.auction to seller;
+grant insert on shop.product to seller;
 grant select on shop.product to seller;
 
 --
