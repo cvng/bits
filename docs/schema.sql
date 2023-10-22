@@ -87,7 +87,7 @@ create type cqrs.show_created as (
 -- Table: cqrs.event
 
 create table cqrs.event (
-  id serial not null primary key,
+  id int not null primary key generated always as identity,
   created timestamp not null default clock_timestamp(),
   type cqrs.event_type not null,
   data jsonb not null
@@ -178,7 +178,6 @@ alter table shop.bid enable row level security;
 grant viewer to authenticator;
 grant usage on schema cqrs to viewer;
 grant insert on cqrs.event to viewer;
-grant usage, select on all sequences in schema cqrs to viewer;
 grant usage on schema auth to viewer;
 grant insert on auth.person to viewer;
 
