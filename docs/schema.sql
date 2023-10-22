@@ -183,16 +183,14 @@ grant viewer to authenticator;
 grant bidder to authenticator;
 grant seller to authenticator;
 grant viewer to bidder;
-grant viewer to seller;
+grant bidder to seller;
 
 -- Schema
 
 grant usage on schema auth to viewer;
 grant usage on schema cqrs to viewer;
 grant usage on schema live to bidder;
-grant usage on schema live to seller;
 grant usage on schema shop to bidder;
-grant usage on schema shop to seller;
 
 -- Table: cqrs.event
 
