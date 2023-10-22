@@ -223,13 +223,13 @@ create policy comment_create_policy on live.comment for insert to bidder
 with check (author_id = auth.user_id());
 
 create policy comment_read_policy on live.comment for select to viewer
-using (author_id = auth.user_id());
+using (true);
 
 create policy show_create_policy on live.show for insert to seller
 with check (creator_id = auth.user_id());
 
 create policy show_read_policy on live.show for select to viewer
-using (creator_id = auth.user_id());
+using (true);
 
 create policy auction_create_policy on shop.auction for insert to seller
 with check (
@@ -241,13 +241,13 @@ create policy bid_create_policy on shop.bid for insert to bidder
 with check (bidder_id = auth.user_id());
 
 create policy bid_read_policy on shop.bid for select to viewer
-using (bidder_id = auth.user_id());
+using (true);
 
 create policy product_create_policy on shop.product for insert to seller
 with check (creator_id = auth.user_id());
 
 create policy product_read_policy on shop.product for select to viewer
-using (creator_id = auth.user_id());
+using (true);
 
 create policy person_read_policy on auth.person for insert to viewer
 with check (id = auth.user_id());
