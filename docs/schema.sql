@@ -9,12 +9,6 @@ create schema shop;
 -- Roles
 --
 
-drop role if exists administrator;
-drop role if exists authenticator;
-drop role if exists bidder;
-drop role if exists seller;
-drop role if exists viewer;
-
 create role administrator;
 create role authenticator noinherit login;
 create role bidder;
