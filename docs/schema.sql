@@ -97,7 +97,7 @@ create type cqrs.show_created as (
 -- Table: cqrs.event
 
 create table cqrs.event (
-  id int64 not null primary key generated always as identity,
+  id bigint not null primary key generated always as identity,
   created timestamptz not null default clock_timestamp(),
   type cqrs.event_type not null,
   data jsonb not null
