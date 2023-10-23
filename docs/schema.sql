@@ -97,8 +97,8 @@ create type cqrs.show_created as (
 -- Table: cqrs.event
 
 create table cqrs.event (
-  id int not null primary key generated always as identity,
-  created timestamp not null default clock_timestamp(),
+  id int64 not null primary key generated always as identity,
+  created timestamptz not null default clock_timestamp(),
   type cqrs.event_type not null,
   data jsonb not null
 );
@@ -109,8 +109,8 @@ alter table cqrs.event enable row level security;
 
 create table auth.person (
   id id not null primary key,
-  created timestamp not null default clock_timestamp(),
-  updated timestamp,
+  created timestamptz not null default clock_timestamp(),
+  updated timestamptz,
   email email not null unique
 );
 
@@ -120,11 +120,11 @@ alter table auth.person enable row level security;
 
 create table live.show (
   id id not null primary key,
-  created timestamp not null default clock_timestamp(),
-  updated timestamp,
+  created timestamptz not null default clock_timestamp(),
+  updated timestamptz,
   creator_id id not null references auth.person (id),
   name text not null,
-  started timestamp
+  started timestamptz
 );
 
 alter table live.show enable row level security;
@@ -133,8 +133,8 @@ alter table live.show enable row level security;
 
 create table live.comment (
   id id not null primary key,
-  created timestamp not null default clock_timestamp(),
-  updated timestamp,
+  created timestamptz not null default clock_timestamp(),
+  updated timestamptz,
   author_id id not null references auth.person (id),
   show_id id not null references live.show (id),
   text text not null
@@ -146,8 +146,8 @@ alter table live.comment enable row level security;
 
 create table shop.product (
   id id not null primary key,
-  created timestamp not null default clock_timestamp(),
-  updated timestamp,
+  created timestamptz not null default clock_timestamp(),
+  updated timestamptz,
   creator_id id not null references auth.person (id),
   name text not null
 );
@@ -158,12 +158,12 @@ alter table shop.product enable row level security;
 
 create table shop.auction (
   id id not null primary key,
-  created timestamp not null default clock_timestamp(),
-  updated timestamp,
+  created timestamptz not null default clock_timestamp(),
+  updated timestamptz,
   show_id id not null references live.show (id),
   product_id id not null references shop.product (id),
-  started timestamp,
-  expired timestamp
+  started timestamptz,
+  expired timestamptz
 );
 
 alter table shop.auction enable row level security;
@@ -172,8 +172,8 @@ alter table shop.auction enable row level security;
 
 create table shop.bid (
   id id not null primary key,
-  created timestamp not null default clock_timestamp(),
-  updated timestamp,
+  created timestamptz not null default clock_timestamp(),
+  updated timestamptz,
   auction_id id not null references shop.auction (id),
   bidder_id id not null references auth.person (id),
   concurrent_amount amount not null default 0,
