@@ -6,8 +6,12 @@ use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::ResolverContext;
 use async_graphql::dynamic::TypeRef;
+use async_graphql::Context;
 use async_graphql::Result;
+use async_graphql::Value;
 use bits_core::commands;
+use bits_core::AuctionProductId;
+use bits_core::UserId;
 
 pub struct Mutation;
 
@@ -16,10 +20,7 @@ impl Mutation {
     vec![
       InputObject::new("BidInput")
         .field(InputValue::new("userId", TypeRef::named_nn(TypeRef::ID)))
-        .field(InputValue::new(
-          "productId",
-          TypeRef::named_nn(TypeRef::ID),
-        ))
+        .field(InputValue::new("productId", TypeRef::named_nn(TypeRef::ID)))
         .field(InputValue::new("amount", TypeRef::named_nn(TypeRef::INT))),
       InputObject::new("CommentInput")
         .field(InputValue::new("userId", TypeRef::named_nn(TypeRef::ID)))
@@ -36,14 +37,8 @@ impl Mutation {
       InputObject::new("StartShowInput")
         .field(InputValue::new("id", TypeRef::named_nn(TypeRef::ID))),
       InputObject::new("AddAuctionProductInput")
-        .field(InputValue::new(
-          "auctionId",
-          TypeRef::named_nn(TypeRef::ID),
-        ))
-        .field(InputValue::new(
-          "productId",
-          TypeRef::named_nn(TypeRef::ID),
-        )),
+        .field(InputValue::new("auctionId", TypeRef::named_nn(TypeRef::ID)))
+        .field(InputValue::new("productId", TypeRef::named_nn(TypeRef::ID))),
     ]
   }
 
@@ -51,10 +46,32 @@ impl Mutation {
     vec![
       Field::new(
         "bid".to_string(),
-        TypeRef::named_nn("BidResult".to_string()),
+        TypeRef::named_nn("Boolean".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
-            Ok(Some(FieldValue::owned_any(bid(ctx).await?)))
+            let input = ctx.args.get("input").unwrap().object().unwrap();
+
+            let input = commands::bid::BidInput {
+              user_id: input
+                .get("userId")
+                .unwrap()
+                .string()
+                .unwrap()
+                .parse::<UserId>()
+                .unwrap(),
+              product_id: input
+                .get("productId")
+                .unwrap()
+                .string()
+                .unwrap()
+                .parse::<AuctionProductId>()
+                .unwrap(),
+              amount: input.get("amount").unwrap().i64().unwrap(),
+            };
+
+            let result = bid(ctx.ctx, input).await?;
+
+            Ok(Some(Value::from(result.ok)))
           })
         },
       )
@@ -178,11 +195,15 @@ impl Mutation {
   }
 }
 
+pub struct MutationResult {
+  pub ok: bool,
+}
+
 async fn bid(
-  _ctx: ResolverContext<'_>,
-  // input: commands::bid::BidInput,
-) -> Result<commands::bid::BidResult> {
-  Err("bid".into()) // TODO: Ok(commands::bid::bid(input)?)
+  _ctx: &Context<'_>,
+  _input: commands::bid::BidInput,
+) -> Result<MutationResult> {
+  Ok(MutationResult { ok: true })
 }
 
 async fn comment(

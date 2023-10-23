@@ -1,1 +1,1 @@
-pub type Amount = i32;
+pub type Amount = i64;
