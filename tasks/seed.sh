@@ -25,20 +25,20 @@ psql "$DATABASE_URL" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
 <<SQL
 \connect $name;
 
-call auth.login('seller', '00000000-1000-0000-0000-000000000000');
+do \$$ begin execute auth.login('seller', '00000000-1000-0000-0000-000000000000'); end \$$;
 insert into cqrs.event (type, data)
 select
     (row->>'type')::cqrs.event_type,
     (row->>'data')::jsonb
 from tmp where row->>'role' = 'seller';
 
-call auth.login('bidder', '00000000-2000-0000-0000-000000000000');
+do \$$ begin execute auth.login('bidder', '00000000-2000-0000-0000-000000000000'); end \$$;
 insert into cqrs.event (type, data)
 select
     (row->>'type')::cqrs.event_type,
     (row->>'data')::jsonb
 from tmp where row->>'role' = 'bidder';
 
-call auth.login('administrator', '00000000-0000-0000-0000-000000000000');
+do \$$ begin execute auth.login('administrator', '00000000-0000-0000-0000-000000000000'); end \$$;
 select id, created, type, data->>'id' as "data.id" from cqrs.event;
 SQL
