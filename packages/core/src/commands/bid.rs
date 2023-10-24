@@ -1,8 +1,8 @@
 use crate::command::Command;
 use crate::database;
 use crate::dispatcher;
+use async_graphql::dynamic;
 use async_graphql::InputObject;
-use async_graphql::SimpleObject;
 use bits_data::Amount;
 use bits_data::Auction;
 use bits_data::AuctionId;
@@ -24,9 +24,35 @@ pub struct BidInput {
   pub amount: Amount,
 }
 
-#[derive(SimpleObject)]
 pub struct BidResult {
   pub bid: Bid,
+  pub ok: bool,
+}
+
+impl BidResult {
+  pub fn type_name() -> String {
+    "BidResult".to_string()
+  }
+
+  pub fn to_object() -> dynamic::Object {
+    dynamic::Object::new(Self::type_name()).field(dynamic::Field::new(
+      "ok".to_string(),
+      dynamic::TypeRef::named_nn(dynamic::TypeRef::BOOLEAN),
+      |ctx| {
+        dynamic::FieldFuture::new(async move {
+          Ok(ctx.parent_value.as_value().cloned())
+        })
+      },
+    ))
+  }
+}
+
+impl From<BidResult> for async_graphql::Value {
+  fn from(value: BidResult) -> Self {
+    let mut map = dynamic::indexmap::IndexMap::new();
+    map.insert(async_graphql::Name::new("ok"), value.ok.into());
+    async_graphql::Value::Object(map)
+  }
 }
 
 #[derive(Debug, Error)]
@@ -108,7 +134,10 @@ impl Command for BidCommand {
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::BidCreated { payload } => Some(BidResult { bid: payload.bid }),
+      Event::BidCreated { payload } => Some(BidResult {
+        bid: payload.bid,
+        ok: true,
+      }),
       _ => None,
     })
   }

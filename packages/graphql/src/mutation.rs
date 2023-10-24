@@ -1,4 +1,3 @@
-use async_graphql::dynamic::indexmap::IndexMap;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
 use async_graphql::dynamic::FieldValue;
@@ -8,9 +7,9 @@ use async_graphql::dynamic::Object;
 use async_graphql::dynamic::ResolverContext;
 use async_graphql::dynamic::TypeRef;
 use async_graphql::Context;
-use async_graphql::Name;
 use async_graphql::Result;
 use async_graphql::Value;
+use bits_core::bid::BidResult;
 use bits_core::commands;
 use bits_core::AuctionProductId;
 use bits_core::UserId;
@@ -71,7 +70,7 @@ impl Mutation {
               amount: input.get("amount").unwrap().i64().unwrap(),
             };
 
-            let result = bid(ctx.ctx, input).await?;
+            let result = Self::bid(ctx.ctx, input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -179,43 +178,13 @@ impl Mutation {
       )),
     ]
   }
-}
 
-pub struct BidResult {
-  pub ok: bool,
-}
-
-impl BidResult {
-  pub fn type_name() -> String {
-    "BidResult".to_string()
+  async fn bid(
+    _ctx: &Context<'_>,
+    input: commands::bid::BidInput,
+  ) -> Result<commands::bid::BidResult> {
+    Ok(commands::bid::bid(input)?)
   }
-
-  pub fn to_object() -> Object {
-    Object::new(Self::type_name()).field(Field::new(
-      "ok".to_string(),
-      TypeRef::named_nn(TypeRef::BOOLEAN),
-      |ctx| {
-        FieldFuture::new(
-          async move { Ok(ctx.parent_value.as_value().cloned()) },
-        )
-      },
-    ))
-  }
-}
-
-impl From<BidResult> for Value {
-  fn from(value: BidResult) -> Self {
-    let mut map = IndexMap::new();
-    map.insert(Name::new("ok"), value.ok.into());
-    Value::Object(map)
-  }
-}
-
-async fn bid(
-  _ctx: &Context<'_>,
-  _input: commands::bid::BidInput,
-) -> Result<BidResult> {
-  Ok(BidResult { ok: true })
 }
 
 async fn comment(
