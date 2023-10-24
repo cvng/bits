@@ -6,6 +6,7 @@ use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::ResolverContext;
 use async_graphql::dynamic::TypeRef;
+use async_graphql::value;
 use async_graphql::Context;
 use async_graphql::Result;
 use async_graphql::Value;
@@ -46,7 +47,7 @@ impl Mutation {
     vec![
       Field::new(
         "bid".to_string(),
-        TypeRef::named_nn("Boolean".to_string()),
+        TypeRef::named_nn("BidResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
             let input = ctx.args.get("input").unwrap().object().unwrap();
@@ -71,7 +72,7 @@ impl Mutation {
 
             let result = bid(ctx.ctx, input).await?;
 
-            Ok(Some(Value::from(result.ok)))
+            Ok(Some(result.to_value()))
           })
         },
       )
@@ -153,42 +154,42 @@ impl Mutation {
         "ok".to_string(),
         TypeRef::named_nn(TypeRef::BOOLEAN),
         |_| {
-          FieldFuture::new(async move { Ok(Some(FieldValue::owned_any(true))) })
+          FieldFuture::new(async move { Ok(Some(Value::from(true))) })
         },
       )),
       Object::new("CommentResult").field(Field::new(
         "ok".to_string(),
         TypeRef::named_nn(TypeRef::BOOLEAN),
         |_| {
-          FieldFuture::new(async move { Ok(Some(FieldValue::owned_any(true))) })
+          FieldFuture::new(async move { Ok(Some(Value::from(true))) })
         },
       )),
       Object::new("CreateProductResult").field(Field::new(
         "ok".to_string(),
         TypeRef::named_nn(TypeRef::BOOLEAN),
         |_| {
-          FieldFuture::new(async move { Ok(Some(FieldValue::owned_any(true))) })
+          FieldFuture::new(async move { Ok(Some(Value::from(true))) })
         },
       )),
       Object::new("CreateShowResult").field(Field::new(
         "ok".to_string(),
         TypeRef::named_nn(TypeRef::BOOLEAN),
         |_| {
-          FieldFuture::new(async move { Ok(Some(FieldValue::owned_any(true))) })
+          FieldFuture::new(async move { Ok(Some(Value::from(true))) })
         },
       )),
       Object::new("StartShowResult").field(Field::new(
         "ok".to_string(),
         TypeRef::named_nn(TypeRef::BOOLEAN),
         |_| {
-          FieldFuture::new(async move { Ok(Some(FieldValue::owned_any(true))) })
+          FieldFuture::new(async move { Ok(Some(Value::from(true))) })
         },
       )),
       Object::new("AddAuctionProductResult").field(Field::new(
         "ok".to_string(),
         TypeRef::named_nn(TypeRef::BOOLEAN),
         |_| {
-          FieldFuture::new(async move { Ok(Some(FieldValue::owned_any(true))) })
+          FieldFuture::new(async move { Ok(Some(Value::from(true))) })
         },
       )),
     ]
@@ -197,6 +198,12 @@ impl Mutation {
 
 pub struct MutationResult {
   pub ok: bool,
+}
+
+impl MutationResult {
+  pub fn to_value(&self) -> Value {
+    value!({ "ok": true })
+  }
 }
 
 async fn bid(
