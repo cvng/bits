@@ -48,7 +48,7 @@ impl Mutation {
     vec![
       Field::new(
         "bid".to_string(),
-        TypeRef::named_nn("BidResult".to_string()),
+        TypeRef::named_nn(BidResult::type_name()),
         move |ctx| {
           FieldFuture::new(async move {
             let input = ctx.args.get("input").unwrap().object().unwrap();
@@ -71,9 +71,9 @@ impl Mutation {
               amount: input.get("amount").unwrap().i64().unwrap(),
             };
 
-            let result = bid(ctx.ctx, input).await?.to_value();
+            let result = bid(ctx.ctx, input).await?;
 
-            Ok(Some(result))
+            Ok(Some(FieldValue::value(result)))
           })
         },
       )
@@ -151,15 +151,7 @@ impl Mutation {
 
   pub fn outputs() -> Vec<Object> {
     vec![
-      Object::new("BidResult").field(Field::new(
-        "ok".to_string(),
-        TypeRef::named_nn(TypeRef::BOOLEAN),
-        |ctx| {
-          FieldFuture::new(
-            async move { Ok(ctx.parent_value.as_value().cloned()) },
-          )
-        },
-      )),
+      BidResult::to_object(),
       Object::new("CommentResult").field(Field::new(
         "ok".to_string(),
         TypeRef::named_nn(TypeRef::BOOLEAN),
@@ -194,10 +186,28 @@ pub struct BidResult {
 }
 
 impl BidResult {
-  pub fn to_value(&self) -> Value {
-    let mut object = IndexMap::new();
-    object.insert(Name::new("ok"), self.ok.into());
-    Value::Object(object)
+  pub fn type_name() -> String {
+    "BidResult".to_string()
+  }
+
+  pub fn to_object() -> Object {
+    Object::new(Self::type_name()).field(Field::new(
+      "ok".to_string(),
+      TypeRef::named_nn(TypeRef::BOOLEAN),
+      |ctx| {
+        FieldFuture::new(
+          async move { Ok(ctx.parent_value.as_value().cloned()) },
+        )
+      },
+    ))
+  }
+}
+
+impl From<BidResult> for Value {
+  fn from(value: BidResult) -> Self {
+    let mut map = IndexMap::new();
+    map.insert(Name::new("ok"), value.ok.into());
+    Value::Object(map)
   }
 }
 
