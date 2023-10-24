@@ -19,10 +19,7 @@ pub struct Mutation;
 impl Mutation {
   pub fn inputs() -> Vec<InputObject> {
     vec![
-      InputObject::new("BidInput")
-        .field(InputValue::new("userId", TypeRef::named_nn(TypeRef::ID)))
-        .field(InputValue::new("productId", TypeRef::named_nn(TypeRef::ID)))
-        .field(InputValue::new("amount", TypeRef::named_nn(TypeRef::INT))),
+      commands::bid::BidInput::to_object(),
       InputObject::new("CommentInput")
         .field(InputValue::new("userId", TypeRef::named_nn(TypeRef::ID)))
         .field(InputValue::new("showId", TypeRef::named_nn(TypeRef::ID)))
@@ -47,7 +44,7 @@ impl Mutation {
     vec![
       Field::new(
         "bid".to_string(),
-        TypeRef::named_nn(BidResult::type_name()),
+        TypeRef::named_nn("BidResult"),
         move |ctx| {
           FieldFuture::new(async move {
             let input = ctx.args.get("input").unwrap().object().unwrap();

@@ -2,6 +2,8 @@ use crate::command::Command;
 use crate::database;
 use crate::dispatcher;
 use async_graphql::dynamic;
+use async_graphql::dynamic::InputValue;
+use async_graphql::dynamic::TypeRef;
 use async_graphql::InputObject;
 use bits_data::Amount;
 use bits_data::Auction;
@@ -24,20 +26,24 @@ pub struct BidInput {
   pub amount: Amount,
 }
 
+impl BidInput {
+  pub fn to_object() -> dynamic::InputObject {
+    dynamic::InputObject::new("BidInput")
+      .field(InputValue::new("userId", TypeRef::named_nn(TypeRef::ID)))
+      .field(InputValue::new("productId", TypeRef::named_nn(TypeRef::ID)))
+      .field(InputValue::new("amount", TypeRef::named_nn(TypeRef::INT)))
+  }
+}
+
 pub struct BidResult {
   pub bid: Bid,
-  pub ok: bool,
 }
 
 impl BidResult {
-  pub fn type_name() -> String {
-    "BidResult".to_string()
-  }
-
   pub fn to_object() -> dynamic::Object {
-    dynamic::Object::new(Self::type_name()).field(dynamic::Field::new(
-      "ok".to_string(),
-      dynamic::TypeRef::named_nn(dynamic::TypeRef::BOOLEAN),
+    dynamic::Object::new("BidResult").field(dynamic::Field::new(
+      "id".to_string(),
+      TypeRef::named_nn(TypeRef::ID),
       |ctx| {
         dynamic::FieldFuture::new(async move {
           Ok(ctx.parent_value.as_value().cloned())
@@ -50,7 +56,10 @@ impl BidResult {
 impl From<BidResult> for async_graphql::Value {
   fn from(value: BidResult) -> Self {
     let mut map = dynamic::indexmap::IndexMap::new();
-    map.insert(async_graphql::Name::new("ok"), value.ok.into());
+    map.insert(
+      async_graphql::Name::new("id"),
+      value.bid.id.to_string().into(),
+    );
     async_graphql::Value::Object(map)
   }
 }
@@ -134,10 +143,7 @@ impl Command for BidCommand {
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::BidCreated { payload } => Some(BidResult {
-        bid: payload.bid,
-        ok: true,
-      }),
+      Event::BidCreated { payload } => Some(BidResult { bid: payload.bid }),
       _ => None,
     })
   }
