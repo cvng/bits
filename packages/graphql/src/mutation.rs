@@ -1,3 +1,4 @@
+use async_graphql::dynamic::indexmap::IndexMap;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
 use async_graphql::dynamic::FieldValue;
@@ -6,8 +7,8 @@ use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::ResolverContext;
 use async_graphql::dynamic::TypeRef;
-use async_graphql::value;
 use async_graphql::Context;
+use async_graphql::Name;
 use async_graphql::Result;
 use async_graphql::Value;
 use bits_core::commands;
@@ -70,9 +71,9 @@ impl Mutation {
               amount: input.get("amount").unwrap().i64().unwrap(),
             };
 
-            let result = bid(ctx.ctx, input).await?;
+            let result = bid(ctx.ctx, input).await?.to_value();
 
-            Ok(Some(result.to_value()))
+            Ok(Some(result))
           })
         },
       )
@@ -153,64 +154,58 @@ impl Mutation {
       Object::new("BidResult").field(Field::new(
         "ok".to_string(),
         TypeRef::named_nn(TypeRef::BOOLEAN),
-        |_| {
-          FieldFuture::new(async move { Ok(Some(Value::from(true))) })
+        |ctx| {
+          FieldFuture::new(
+            async move { Ok(ctx.parent_value.as_value().cloned()) },
+          )
         },
       )),
       Object::new("CommentResult").field(Field::new(
         "ok".to_string(),
         TypeRef::named_nn(TypeRef::BOOLEAN),
-        |_| {
-          FieldFuture::new(async move { Ok(Some(Value::from(true))) })
-        },
+        |_| FieldFuture::new(async move { Ok(Some(Value::from(true))) }),
       )),
       Object::new("CreateProductResult").field(Field::new(
         "ok".to_string(),
         TypeRef::named_nn(TypeRef::BOOLEAN),
-        |_| {
-          FieldFuture::new(async move { Ok(Some(Value::from(true))) })
-        },
+        |_| FieldFuture::new(async move { Ok(Some(Value::from(true))) }),
       )),
       Object::new("CreateShowResult").field(Field::new(
         "ok".to_string(),
         TypeRef::named_nn(TypeRef::BOOLEAN),
-        |_| {
-          FieldFuture::new(async move { Ok(Some(Value::from(true))) })
-        },
+        |_| FieldFuture::new(async move { Ok(Some(Value::from(true))) }),
       )),
       Object::new("StartShowResult").field(Field::new(
         "ok".to_string(),
         TypeRef::named_nn(TypeRef::BOOLEAN),
-        |_| {
-          FieldFuture::new(async move { Ok(Some(Value::from(true))) })
-        },
+        |_| FieldFuture::new(async move { Ok(Some(Value::from(true))) }),
       )),
       Object::new("AddAuctionProductResult").field(Field::new(
         "ok".to_string(),
         TypeRef::named_nn(TypeRef::BOOLEAN),
-        |_| {
-          FieldFuture::new(async move { Ok(Some(Value::from(true))) })
-        },
+        |_| FieldFuture::new(async move { Ok(Some(Value::from(true))) }),
       )),
     ]
   }
 }
 
-pub struct MutationResult {
+pub struct BidResult {
   pub ok: bool,
 }
 
-impl MutationResult {
+impl BidResult {
   pub fn to_value(&self) -> Value {
-    value!({ "ok": true })
+    let mut object = IndexMap::new();
+    object.insert(Name::new("ok"), self.ok.into());
+    Value::Object(object)
   }
 }
 
 async fn bid(
   _ctx: &Context<'_>,
   _input: commands::bid::BidInput,
-) -> Result<MutationResult> {
-  Ok(MutationResult { ok: true })
+) -> Result<BidResult> {
+  Ok(BidResult { ok: true })
 }
 
 async fn comment(
