@@ -4,7 +4,7 @@ input AddAuctionProductInput {
 }
 
 type AddAuctionProductResult {
-  ok: Boolean!
+  id: ID!
 }
 
 type Auction {
@@ -18,16 +18,6 @@ type Auction {
   bid(filters: BidFilterInput, orderBy: BidOrderInput, pagination: PaginationInput): BidConnection!
   product: Product
   show: Show
-}
-
-type AuctionBasic {
-  id: String!
-  created: String!
-  updated: String
-  showId: String!
-  productId: String!
-  started: String
-  expired: String
 }
 
 type AuctionConnection {
@@ -54,16 +44,6 @@ input AuctionFilterInput {
   or: [AuctionFilterInput!]
 }
 
-input AuctionInsertInput {
-  id: String!
-  created: String!
-  updated: String
-  showId: String!
-  productId: String!
-  started: String
-  expired: String
-}
-
 input AuctionOrderInput {
   id: OrderByEnum
   created: OrderByEnum
@@ -72,16 +52,6 @@ input AuctionOrderInput {
   productId: OrderByEnum
   started: OrderByEnum
   expired: OrderByEnum
-}
-
-input AuctionUpdateInput {
-  id: String
-  created: String
-  updated: String
-  showId: String
-  productId: String
-  started: String
-  expired: String
 }
 
 type Bid {
@@ -94,16 +64,6 @@ type Bid {
   amount: String!
   auction: Auction
   person: User
-}
-
-type BidBasic {
-  id: String!
-  created: String!
-  updated: String
-  auctionId: String!
-  bidderId: String!
-  concurrentAmount: String!
-  amount: String!
 }
 
 type BidConnection {
@@ -136,16 +96,6 @@ input BidInput {
   amount: Int!
 }
 
-input BidInsertInput {
-  id: String!
-  created: String!
-  updated: String
-  auctionId: String!
-  bidderId: String!
-  concurrentAmount: String!
-  amount: String!
-}
-
 input BidOrderInput {
   id: OrderByEnum
   created: OrderByEnum
@@ -157,17 +107,7 @@ input BidOrderInput {
 }
 
 type BidResult {
-  ok: Boolean!
-}
-
-input BidUpdateInput {
-  id: String
-  created: String
-  updated: String
-  auctionId: String
-  bidderId: String
-  concurrentAmount: String
-  amount: String
+  id: ID!
 }
 
 type Comment {
@@ -179,15 +119,6 @@ type Comment {
   text: String!
   person: User
   show: Show
-}
-
-type CommentBasic {
-  id: String!
-  created: String!
-  updated: String
-  authorId: String!
-  showId: String!
-  text: String!
 }
 
 type CommentConnection {
@@ -219,15 +150,6 @@ input CommentInput {
   text: String!
 }
 
-input CommentInsertInput {
-  id: String!
-  created: String!
-  updated: String
-  authorId: String!
-  showId: String!
-  text: String!
-}
-
 input CommentOrderInput {
   id: OrderByEnum
   created: OrderByEnum
@@ -238,16 +160,7 @@ input CommentOrderInput {
 }
 
 type CommentResult {
-  ok: Boolean!
-}
-
-input CommentUpdateInput {
-  id: String
-  created: String
-  updated: String
-  authorId: String
-  showId: String
-  text: String
+  id: ID!
 }
 
 input CreateProductInput {
@@ -255,16 +168,16 @@ input CreateProductInput {
 }
 
 type CreateProductResult {
-  ok: Boolean!
+  id: ID!
 }
 
 input CreateShowInput {
-  creator_id: ID!
+  creatorId: ID!
   name: String!
 }
 
 type CreateShowResult {
-  ok: Boolean!
+  id: ID!
 }
 
 input CursorInput {
@@ -274,24 +187,6 @@ input CursorInput {
 
 type Mutation {
   _ping: String
-  auctionCreateOne(data: AuctionInsertInput!): AuctionBasic!
-  auctionCreateBatch(data: [AuctionInsertInput!]!): [AuctionBasic!]!
-  auctionUpdate(data: AuctionUpdateInput!, filter: AuctionFilterInput): [AuctionBasic!]!
-  bidCreateOne(data: BidInsertInput!): BidBasic!
-  bidCreateBatch(data: [BidInsertInput!]!): [BidBasic!]!
-  bidUpdate(data: BidUpdateInput!, filter: BidFilterInput): [BidBasic!]!
-  commentCreateOne(data: CommentInsertInput!): CommentBasic!
-  commentCreateBatch(data: [CommentInsertInput!]!): [CommentBasic!]!
-  commentUpdate(data: CommentUpdateInput!, filter: CommentFilterInput): [CommentBasic!]!
-  userCreateOne(data: UserInsertInput!): UserBasic!
-  userCreateBatch(data: [UserInsertInput!]!): [UserBasic!]!
-  userUpdate(data: UserUpdateInput!, filter: UserFilterInput): [UserBasic!]!
-  productCreateOne(data: ProductInsertInput!): ProductBasic!
-  productCreateBatch(data: [ProductInsertInput!]!): [ProductBasic!]!
-  productUpdate(data: ProductUpdateInput!, filter: ProductFilterInput): [ProductBasic!]!
-  showCreateOne(data: ShowInsertInput!): ShowBasic!
-  showCreateBatch(data: [ShowInsertInput!]!): [ShowBasic!]!
-  showUpdate(data: ShowUpdateInput!, filter: ShowFilterInput): [ShowBasic!]!
   bid(input: BidInput!): BidResult!
   comment(input: CommentInput!): CommentResult!
   createProduct(input: CreateProductInput!): CreateProductResult!
@@ -343,13 +238,6 @@ type Product {
   auction(filters: AuctionFilterInput, orderBy: AuctionOrderInput, pagination: PaginationInput): AuctionConnection!
 }
 
-type ProductBasic {
-  id: String!
-  created: String!
-  updated: String
-  name: String!
-}
-
 type ProductConnection {
   pageInfo: PageInfo!
   paginationInfo: PaginationInfo
@@ -371,25 +259,11 @@ input ProductFilterInput {
   or: [ProductFilterInput!]
 }
 
-input ProductInsertInput {
-  id: String!
-  created: String!
-  updated: String
-  name: String!
-}
-
 input ProductOrderInput {
   id: OrderByEnum
   created: OrderByEnum
   updated: OrderByEnum
   name: OrderByEnum
-}
-
-input ProductUpdateInput {
-  id: String
-  created: String
-  updated: String
-  name: String
 }
 
 type Query {
@@ -411,15 +285,6 @@ type Show {
   auction(filters: AuctionFilterInput, orderBy: AuctionOrderInput, pagination: PaginationInput): AuctionConnection!
   comment(filters: CommentFilterInput, orderBy: CommentOrderInput, pagination: PaginationInput): CommentConnection!
   person: User
-}
-
-type ShowBasic {
-  id: String!
-  created: String!
-  updated: String
-  creatorId: String!
-  name: String!
-  started: String
 }
 
 type ShowConnection {
@@ -445,15 +310,6 @@ input ShowFilterInput {
   or: [ShowFilterInput!]
 }
 
-input ShowInsertInput {
-  id: String!
-  created: String!
-  updated: String
-  creatorId: String!
-  name: String!
-  started: String
-}
-
 input ShowOrderInput {
   id: OrderByEnum
   created: OrderByEnum
@@ -463,21 +319,12 @@ input ShowOrderInput {
   started: OrderByEnum
 }
 
-input ShowUpdateInput {
-  id: String
-  created: String
-  updated: String
-  creatorId: String
-  name: String
-  started: String
-}
-
 input StartShowInput {
   id: ID!
 }
 
 type StartShowResult {
-  ok: Boolean!
+  id: ID!
 }
 
 input StringFilterInput {
@@ -525,13 +372,6 @@ type User {
   show(filters: ShowFilterInput, orderBy: ShowOrderInput, pagination: PaginationInput): ShowConnection!
 }
 
-type UserBasic {
-  id: String!
-  created: String!
-  updated: String
-  email: String!
-}
-
 type UserConnection {
   pageInfo: PageInfo!
   paginationInfo: PaginationInfo
@@ -553,24 +393,10 @@ input UserFilterInput {
   or: [UserFilterInput!]
 }
 
-input UserInsertInput {
-  id: String!
-  created: String!
-  updated: String
-  email: String!
-}
-
 input UserOrderInput {
   id: OrderByEnum
   created: OrderByEnum
   updated: OrderByEnum
   email: OrderByEnum
-}
-
-input UserUpdateInput {
-  id: String
-  created: String
-  updated: String
-  email: String
 }
 
