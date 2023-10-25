@@ -4,7 +4,6 @@ use async_graphql::dynamic::FieldValue;
 use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
-use async_graphql::dynamic::ResolverContext;
 use async_graphql::dynamic::TypeRef;
 use async_graphql::Context;
 use async_graphql::Result;
@@ -129,7 +128,20 @@ impl Mutation {
         TypeRef::named_nn("CreateShowResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
-            Ok(Some(FieldValue::owned_any(create_show(ctx).await?)))
+            let input = &ctx.args.get("input").unwrap().object()?;
+
+            let input = commands::create_show::CreateShowInput {
+              creator_id: input
+                .get("creatorId")
+                .unwrap()
+                .string()?
+                .parse::<bits_core::UserId>()?,
+              name: input.get("name").unwrap().string()?.parse()?,
+            };
+
+            let result = Self::create_show(ctx.ctx, input).await?;
+
+            Ok(Some(FieldValue::value(result)))
           })
         },
       )
@@ -142,7 +154,19 @@ impl Mutation {
         TypeRef::named_nn("StartShowResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
-            Ok(Some(FieldValue::owned_any(start_show(ctx).await?)))
+            let input = &ctx.args.get("input").unwrap().object()?;
+
+            let input = commands::start_show::StartShowInput {
+              id: input
+                .get("id")
+                .unwrap()
+                .string()?
+                .parse::<bits_core::ShowId>()?,
+            };
+
+            let result = Self::start_show(ctx.ctx, input).await?;
+
+            Ok(Some(FieldValue::value(result)))
           })
         },
       )
@@ -155,7 +179,24 @@ impl Mutation {
         TypeRef::named_nn("AddAuctionProductResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
-            Ok(Some(FieldValue::owned_any(add_auction_product(ctx).await?)))
+            let input = &ctx.args.get("input").unwrap().object()?;
+
+            let input = commands::add_auction_product::AddAuctionProductInput {
+              auction_id: input
+                .get("auctionId")
+                .unwrap()
+                .string()?
+                .parse::<bits_core::AuctionId>()?,
+              product_id: input
+                .get("productId")
+                .unwrap()
+                .string()?
+                .parse::<bits_core::ProductId>()?,
+            };
+
+            let result = Self::add_auction_product(ctx.ctx, input).await?;
+
+            Ok(Some(FieldValue::value(result)))
           })
         },
       )
@@ -170,14 +211,14 @@ impl Mutation {
     _ctx: &Context<'_>,
     input: commands::bid::BidInput,
   ) -> Result<commands::bid::BidResult> {
-    Ok(commands::bid::bid(input)?)
+    Ok(commands::bid::bid(input).await?)
   }
 
   async fn comment(
     _ctx: &Context<'_>,
     input: commands::comment::CommentInput,
   ) -> Result<commands::comment::CommentResult> {
-    Ok(commands::comment::comment(input)?)
+    Ok(commands::comment::comment(input).await?)
   }
 
   async fn create_product(
@@ -186,25 +227,25 @@ impl Mutation {
   ) -> Result<commands::create_product::CreateProductResult> {
     Ok(commands::create_product::create_product(input).await?)
   }
-}
 
-async fn create_show(
-  _ctx: ResolverContext<'_>,
-  // input: commands::create_show::CreateShowInput,
-) -> Result<commands::create_show::CreateShowResult> {
-  Err("create_show".into()) // TODO: (commands::create_show::create_show(input).await?)
-}
+  async fn create_show(
+    _ctx: &Context<'_>,
+    input: commands::create_show::CreateShowInput,
+  ) -> Result<commands::create_show::CreateShowResult> {
+    Ok(commands::create_show::create_show(input).await?)
+  }
 
-async fn start_show(
-  _ctx: ResolverContext<'_>,
-  // input: commands::start_show::StartShowInput,
-) -> Result<commands::start_show::StartShowResult> {
-  Err("start_show".into()) // TODO: Ok(commands::start_show::start_show(input).await?)
-}
+  async fn start_show(
+    _ctx: &Context<'_>,
+    input: commands::start_show::StartShowInput,
+  ) -> Result<commands::start_show::StartShowResult> {
+    Ok(commands::start_show::start_show(input).await?)
+  }
 
-async fn add_auction_product(
-  _ctx: ResolverContext<'_>,
-  // input: commands::add_auction_product::AddAuctionProductInput,
-) -> Result<commands::add_auction_product::AddAuctionProductResult> {
-  Err("add_auction_product".into()) // TODO: Ok(commands::add_auction_product::add_auction_product(input).await?)
+  async fn add_auction_product(
+    _ctx: &Context<'_>,
+    input: commands::add_auction_product::AddAuctionProductInput,
+  ) -> Result<commands::add_auction_product::AddAuctionProductResult> {
+    Ok(commands::add_auction_product::add_auction_product(input).await?)
+  }
 }

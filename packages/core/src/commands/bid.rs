@@ -152,7 +152,7 @@ impl Command for BidCommand {
   }
 }
 
-pub fn bid(input: BidInput) -> Result<BidResult, Error> {
+pub async fn bid(input: BidInput) -> Result<BidResult, Error> {
   let product = database::db()
     .auction_products
     .get(&input.product_id)

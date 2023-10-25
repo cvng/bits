@@ -105,7 +105,7 @@ impl Command for CommentCommand {
   }
 }
 
-pub fn comment(input: CommentInput) -> Result<CommentResult, Error> {
+pub async fn comment(input: CommentInput) -> Result<CommentResult, Error> {
   let show = database::db().shows.get(&input.show_id).cloned();
 
   let comment = Some(Comment {
