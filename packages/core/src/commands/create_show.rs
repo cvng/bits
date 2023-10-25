@@ -1,5 +1,6 @@
 use crate::command::Command;
 use crate::dispatcher;
+use async_graphql::dynamic::indexmap::IndexMap;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
 use async_graphql::dynamic::InputObject;
@@ -13,7 +14,6 @@ use bits_data::ShowId;
 use bits_data::Text;
 use bits_data::UserId;
 use thiserror::Error;
-use async_graphql::dynamic::indexmap::IndexMap;
 
 pub struct CreateShowInput {
   pub creator_id: UserId,
@@ -23,10 +23,7 @@ pub struct CreateShowInput {
 impl CreateShowInput {
   pub fn to_input_object() -> InputObject {
     InputObject::new("CreateShowInput")
-      .field(InputValue::new(
-        "creator_id",
-        TypeRef::named_nn(TypeRef::ID),
-      ))
+      .field(InputValue::new("creatorId", TypeRef::named_nn(TypeRef::ID)))
       .field(InputValue::new("name", TypeRef::named_nn(TypeRef::STRING)))
   }
 }

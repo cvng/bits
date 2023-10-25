@@ -4,7 +4,7 @@ use crate::entities::comment;
 use crate::entities::person;
 use crate::entities::product;
 use crate::entities::show;
-use crate::mutation::Mutation;
+use crate::mutation::MutationBuilder;
 use async_graphql::dataloader::DataLoader;
 use async_graphql::dynamic::SchemaBuilder;
 use lazy_static::lazy_static;
@@ -45,8 +45,11 @@ fn register_entities(mut builder: Builder) -> Builder {
 }
 
 fn register_mutations(mut builder: Builder) -> Builder {
-  builder.mutations = Mutation::mutations();
-  builder.inputs.extend(Mutation::inputs());
-  builder.outputs.extend(Mutation::outputs());
+  let mut mutation_builder = MutationBuilder::new();
+  mutation_builder.register();
+
+  builder.mutations = mutation_builder.mutations;
+  builder.inputs.extend(mutation_builder.inputs);
+  builder.outputs.extend(mutation_builder.outputs);
   builder
 }

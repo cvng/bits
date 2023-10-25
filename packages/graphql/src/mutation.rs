@@ -5,53 +5,37 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
-use async_graphql::Context;
-use async_graphql::Result;
 use bits_core::commands;
 
-pub struct Mutation {
-  pub inputs: Vec<InputObject>,
+pub struct MutationBuilder {
   pub outputs: Vec<Object>,
+  pub inputs: Vec<InputObject>,
   pub mutations: Vec<Field>,
 }
 
-impl Mutation {
+impl MutationBuilder {
   pub fn new() -> Self {
     Self {
-      inputs: Vec::new(),
       outputs: Vec::new(),
+      inputs: Vec::new(),
       mutations: Vec::new(),
     }
   }
 
-  pub fn register(&self) {
-    // TODO: self.bid()
+  pub fn register(&mut self) {
+    self.bid();
+    self.comment();
+    self.create_product();
+    self.create_show();
+    self.start_show();
+    self.add_auction_product();
   }
 
-  pub fn inputs() -> Vec<InputObject> {
-    vec![
-      commands::bid::BidInput::to_input_object(),
-      commands::comment::CommentInput::to_input_object(),
-      commands::create_product::CreateProductInput::to_input_object(),
-      commands::create_show::CreateShowInput::to_input_object(),
-      commands::start_show::StartShowInput::to_input_object(),
-      commands::add_auction_product::AddAuctionProductInput::to_input_object(),
-    ]
-  }
+  fn bid(&mut self) {
+    self.outputs.push(commands::bid::BidResult::to_object());
+    self.inputs.push(commands::bid::BidInput::to_input_object());
 
-  pub fn outputs() -> Vec<Object> {
-    vec![
-      commands::bid::BidResult::to_object(),
-      commands::comment::CommentResult::to_object(),
-      commands::create_product::CreateProductResult::to_object(),
-      commands::create_show::CreateShowResult::to_object(),
-      commands::start_show::StartShowResult::to_object(),
-      commands::add_auction_product::AddAuctionProductResult::to_object(),
-    ]
-  }
-
-  pub fn mutations() -> Vec<Field> {
-    vec![
+    self.mutations.push(
       Field::new(
         "bid".to_string(),
         TypeRef::named_nn("BidResult"),
@@ -83,6 +67,18 @@ impl Mutation {
         "input".to_string(),
         TypeRef::named_nn("BidInput".to_string()),
       )),
+    );
+  }
+
+  fn comment(&mut self) {
+    self
+      .outputs
+      .push(commands::comment::CommentResult::to_object());
+    self
+      .inputs
+      .push(commands::comment::CommentInput::to_input_object());
+
+    self.mutations.push(
       Field::new(
         "comment".to_string(),
         TypeRef::named_nn("CommentResult".to_string()),
@@ -118,6 +114,18 @@ impl Mutation {
         "input".to_string(),
         TypeRef::named_nn("CommentInput".to_string()),
       )),
+    )
+  }
+
+  fn create_product(&mut self) {
+    self
+      .outputs
+      .push(commands::create_product::CreateProductResult::to_object());
+    self
+      .inputs
+      .push(commands::create_product::CreateProductInput::to_input_object());
+
+    self.mutations.push(
       Field::new(
         "createProduct".to_string(),
         TypeRef::named_nn("CreateProductResult".to_string()),
@@ -140,6 +148,18 @@ impl Mutation {
         "input".to_string(),
         TypeRef::named_nn("CreateProductInput".to_string()),
       )),
+    )
+  }
+
+  fn create_show(&mut self) {
+    self
+      .outputs
+      .push(commands::create_show::CreateShowResult::to_object());
+    self
+      .inputs
+      .push(commands::create_show::CreateShowInput::to_input_object());
+
+    self.mutations.push(
       Field::new(
         "createShow".to_string(),
         TypeRef::named_nn("CreateShowResult".to_string()),
@@ -166,6 +186,18 @@ impl Mutation {
         "input".to_string(),
         TypeRef::named_nn("CreateShowInput".to_string()),
       )),
+    )
+  }
+
+  fn start_show(&mut self) {
+    self
+      .outputs
+      .push(commands::start_show::StartShowResult::to_object());
+    self
+      .inputs
+      .push(commands::start_show::StartShowInput::to_input_object());
+
+    self.mutations.push(
       Field::new(
         "startShow".to_string(),
         TypeRef::named_nn("StartShowResult".to_string()),
@@ -191,6 +223,18 @@ impl Mutation {
         "input".to_string(),
         TypeRef::named_nn("StartShowInput".to_string()),
       )),
+    )
+  }
+
+  fn add_auction_product(&mut self) {
+    self.outputs.push(
+      commands::add_auction_product::AddAuctionProductResult::to_object(),
+    );
+    self.inputs.push(
+      commands::add_auction_product::AddAuctionProductInput::to_input_object(),
+    );
+
+    self.mutations.push(
       Field::new(
         "addAuctionProduct".to_string(),
         TypeRef::named_nn("AddAuctionProductResult".to_string()),
@@ -222,48 +266,6 @@ impl Mutation {
         "input".to_string(),
         TypeRef::named_nn("AddAuctionProductInput".to_string()),
       )),
-    ]
-  }
-
-  async fn bid(
-    _ctx: &Context<'_>,
-    input: commands::bid::BidInput,
-  ) -> Result<commands::bid::BidResult> {
-    Ok(commands::bid::bid(input).await?)
-  }
-
-  async fn comment(
-    _ctx: &Context<'_>,
-    input: commands::comment::CommentInput,
-  ) -> Result<commands::comment::CommentResult> {
-    Ok(commands::comment::comment(input).await?)
-  }
-
-  async fn create_product(
-    _ctx: &Context<'_>,
-    input: commands::create_product::CreateProductInput,
-  ) -> Result<commands::create_product::CreateProductResult> {
-    Ok(commands::create_product::create_product(input).await?)
-  }
-
-  async fn create_show(
-    _ctx: &Context<'_>,
-    input: commands::create_show::CreateShowInput,
-  ) -> Result<commands::create_show::CreateShowResult> {
-    Ok(commands::create_show::create_show(input).await?)
-  }
-
-  async fn start_show(
-    _ctx: &Context<'_>,
-    input: commands::start_show::StartShowInput,
-  ) -> Result<commands::start_show::StartShowResult> {
-    Ok(commands::start_show::start_show(input).await?)
-  }
-
-  async fn add_auction_product(
-    _ctx: &Context<'_>,
-    input: commands::add_auction_product::AddAuctionProductInput,
-  ) -> Result<commands::add_auction_product::AddAuctionProductResult> {
-    Ok(commands::add_auction_product::add_auction_product(input).await?)
+    )
   }
 }
