@@ -53,7 +53,7 @@ impl MutationBuilder {
                 .unwrap()
                 .string()?
                 .parse::<bits_core::UserId>()?,
-              amount: input.get("amount").unwrap().i64()?,
+              amount: input.get("amount").unwrap().i64()?.into(),
             };
 
             let result = commands::bid::bid(input).await?;
@@ -95,11 +95,7 @@ impl MutationBuilder {
                 .unwrap()
                 .string()?
                 .parse::<bits_core::ShowId>()?,
-              text: input
-                .get("text")
-                .unwrap()
-                .string()?
-                .parse::<bits_core::Text>()?,
+              text: input.get("text").unwrap().string()?.parse()?,
             };
 
             let result = commands::comment::comment(input).await?;

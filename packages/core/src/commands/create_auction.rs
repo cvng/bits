@@ -83,9 +83,10 @@ impl Command for CreateAuctionCommand {
   ) -> Result<Vec<Self::Event>, Self::Error> {
     self
       .product
+      .clone()
       .ok_or(Error::ProductNotFound(input.product_id))?;
 
-    let auction = self.auction.ok_or(Error::NotCreated)?;
+    let auction = self.auction.clone().ok_or(Error::NotCreated)?;
 
     Ok(vec![Event::auction_created(auction)])
   }
@@ -93,7 +94,7 @@ impl Command for CreateAuctionCommand {
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
       Event::AuctionCreated { payload } => Some(CreateAuctionResult {
-        auction: payload.auction,
+        auction: payload.auction.clone(),
       }),
       _ => None,
     })
@@ -106,7 +107,7 @@ pub async fn create_auction(
   let product = database::db().products.get(&input.product_id).cloned();
 
   let auction = Some(Auction {
-    id: AuctionId::new(),
+    id: AuctionId::new_v4(),
     created: None,
     updated: None,
     show_id: input.show_id,
@@ -129,7 +130,7 @@ fn test_create_auction() {
     id: "048b47f4-3010-43ae-84c1-8088ab8488a8".parse().unwrap(),
     created: None,
     updated: None,
-    creator_id: bits_data::UserId::new(),
+    creator_id: bits_data::UserId::new_v4(),
     name: "name".parse().unwrap(),
     started: None,
   });
@@ -138,7 +139,7 @@ fn test_create_auction() {
     id: "2b1af787-2d94-4224-a2fc-1d8d155537c0".parse().unwrap(),
     created: None,
     updated: None,
-    creator_id: bits_data::UserId::new(),
+    creator_id: bits_data::UserId::new_v4().into(),
     name: "name".parse().unwrap(),
   });
 
@@ -151,7 +152,7 @@ fn test_create_auction() {
     id: "177d1966-d688-486e-9b13-8709c0a434a0".parse().unwrap(),
     created: None,
     updated: None,
-    show_id: input.show_id,
+    show_id: input.show_id.into(),
     product_id: input.product_id,
     started: None,
     expired: None,

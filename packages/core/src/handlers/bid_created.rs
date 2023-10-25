@@ -6,7 +6,7 @@ use bits_data::BidCreated;
 pub fn bid_created(event: BidCreated) -> Result<()> {
   database::db()
     .bids
-    .insert(event.bid.id, event.bid)
+    .insert(event.bid.id, event.bid.clone())
     .map(|_| ())
-    .ok_or(Error::NotFound(event.bid.id.into()))
+    .ok_or(Error::NotFound(event.bid.id))
 }

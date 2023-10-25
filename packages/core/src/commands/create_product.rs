@@ -12,13 +12,12 @@ use async_graphql::Value;
 use bits_data::Event;
 use bits_data::Product;
 use bits_data::ProductId;
-use bits_data::Text;
 use bits_data::UserId;
 use thiserror::Error;
 
 pub struct CreateProductInput {
   pub creator_id: UserId,
-  pub name: Text,
+  pub name: String,
 }
 
 impl CreateProductInput {
@@ -76,7 +75,7 @@ impl Command for CreateProductCommand {
     &self,
     _input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let product = self.product.ok_or(Error::NotCreated)?;
+    let product = self.product.clone().ok_or(Error::NotCreated)?;
 
     Ok(vec![Event::product_created(product)])
   }
@@ -84,7 +83,7 @@ impl Command for CreateProductCommand {
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
       Event::ProductCreated { payload } => Some(CreateProductResult {
-        product: payload.product,
+        product: payload.product.clone(),
       }),
       _ => None,
     })
@@ -95,11 +94,11 @@ pub async fn create_product(
   input: CreateProductInput,
 ) -> Result<CreateProductResult, Error> {
   let product = Some(Product {
-    id: ProductId::new(),
+    id: ProductId::new_v4(),
     created: None,
     updated: None,
     creator_id: input.creator_id,
-    name: input.name,
+    name: input.name.clone(),
   });
 
   CreateProductCommand { product }
@@ -122,7 +121,7 @@ fn test_create_product() {
     created: None,
     updated: None,
     creator_id: input.creator_id,
-    name: input.name,
+    name: input.name.clone(),
   });
 
   let events = CreateProductCommand { product }.handle(input).unwrap();

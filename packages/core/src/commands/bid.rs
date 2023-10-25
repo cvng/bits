@@ -97,9 +97,10 @@ impl Command for BidCommand {
   ) -> Result<Vec<Self::Event>, Self::Error> {
     let auction = self
       .auction
+      .clone()
       .ok_or(Error::AuctionNotFound(input.auction_id))?;
 
-    let bid = self.bid.ok_or(Error::NotCreated)?;
+    let bid = self.bid.clone().ok_or(Error::NotCreated)?;
 
     auction
       .started
@@ -113,7 +114,9 @@ impl Command for BidCommand {
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::BidCreated { payload } => Some(BidResult { bid: payload.bid }),
+      Event::BidCreated { payload } => Some(BidResult {
+        bid: payload.bid.clone(),
+      }),
       _ => None,
     })
   }
@@ -123,7 +126,7 @@ pub async fn bid(input: BidInput) -> Result<BidResult, Error> {
   let auction = database::db().auctions.get(&input.auction_id).cloned();
 
   let bid = Some(Bid {
-    id: BidId::new(),
+    id: BidId::new_v4(),
     created: None,
     updated: None,
     auction_id: input.auction_id,
@@ -161,7 +164,7 @@ fn test_bid() {
   let input = BidInput {
     auction_id: auction.as_ref().unwrap().id,
     bidder_id: "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68".parse().unwrap(),
-    amount: 100,
+    amount: 100.into(),
   };
 
   let bid = Some(Bid {
@@ -188,7 +191,7 @@ fn test_bid() {
           "auction_id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
           "bidder_id": "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68",
           "concurrent_amount": null,
-          "amount": 100
+          "amount": "100"
         }
       }
     },

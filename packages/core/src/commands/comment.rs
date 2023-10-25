@@ -15,15 +15,14 @@ use bits_data::CommentId;
 use bits_data::Event;
 use bits_data::Show;
 use bits_data::ShowId;
-use bits_data::Text;
 use bits_data::UserId;
 use thiserror::Error;
 
-#[derive(Copy, Clone, Serialize)]
+#[derive(Clone, Serialize)]
 pub struct CommentInput {
   pub user_id: UserId,
   pub show_id: ShowId,
-  pub text: Text,
+  pub text: String,
 }
 
 impl CommentInput {
@@ -86,9 +85,12 @@ impl Command for CommentCommand {
     &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    self.show.ok_or(Error::ShowNotFound(input.show_id))?;
+    self
+      .show
+      .clone()
+      .ok_or(Error::ShowNotFound(input.show_id))?;
 
-    let comment = self.comment.ok_or(Error::NotCreated)?;
+    let comment = self.comment.clone().ok_or(Error::NotCreated)?;
 
     Ok(vec![Event::comment_created(comment)])
   }
@@ -96,7 +98,7 @@ impl Command for CommentCommand {
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
       Event::CommentCreated { payload } => Some(CommentResult {
-        comment: payload.comment,
+        comment: payload.comment.clone(),
       }),
       _ => None,
     })
@@ -107,12 +109,12 @@ pub async fn comment(input: CommentInput) -> Result<CommentResult, Error> {
   let show = database::db().shows.get(&input.show_id).cloned();
 
   let comment = Some(Comment {
-    id: CommentId::new(),
+    id: CommentId::new_v4(),
     created: None,
     updated: None,
     author_id: input.user_id,
     show_id: input.show_id,
-    text: input.text,
+    text: input.text.clone(),
   });
 
   CommentCommand { show, comment }
@@ -129,7 +131,7 @@ fn test_comment() {
     id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
     created: None,
     updated: None,
-    creator_id: UserId::new(),
+    creator_id: UserId::new_v4(),
     name: "name".parse().unwrap(),
     started: None,
   });
@@ -146,7 +148,7 @@ fn test_comment() {
     updated: None,
     author_id: input.user_id,
     show_id: input.show_id,
-    text: input.text,
+    text: input.text.clone(),
   });
 
   let events = CommentCommand { show, comment }.handle(input).unwrap();

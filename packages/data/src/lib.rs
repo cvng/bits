@@ -1,21 +1,25 @@
 #[macro_use]
 extern crate serde;
 
-mod auction;
-mod bid;
-mod comment;
 pub mod entities;
 mod event;
-mod product;
 mod scalars;
-mod show;
-mod user;
 
-pub use auction::*;
-pub use bid::*;
-pub use comment::*;
+pub use entities::auction::Model as Auction;
+pub use entities::bid::Model as Bid;
+pub use entities::comment::Model as Comment;
+pub use entities::person::Model as User;
+pub use entities::product::Model as Product;
+pub use entities::show::Model as Show;
 pub use event::*;
-pub use product::*;
 pub use scalars::*;
-pub use show::*;
-pub use user::*;
+
+pub type ProductId = Uuid;
+pub type AuctionId = Uuid;
+pub type UserId = Uuid;
+pub type CommentId = Uuid;
+pub type BidId = Uuid;
+pub type ShowId = Uuid;
+
+pub const AUCTION_TIMEOUT_SECS: i64 = 60;
+pub const AUCTION_REFRESH_SECS: i64 = 15;

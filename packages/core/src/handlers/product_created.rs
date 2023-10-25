@@ -6,7 +6,7 @@ use bits_data::ProductCreated;
 pub fn product_created(event: ProductCreated) -> Result<()> {
   database::db()
     .products
-    .insert(event.product.id, event.product)
+    .insert(event.product.id, event.product.clone())
     .map(|_| ())
-    .ok_or(Error::NotFound(event.product.id.into()))
+    .ok_or(Error::NotFound(event.product.id))
 }
