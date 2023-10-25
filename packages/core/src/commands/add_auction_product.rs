@@ -124,7 +124,7 @@ fn test_add_auction_product() {
 
   let product = Some(Product {
     id: "2b1af787-2d94-4224-a2fc-1d8d155537c0".parse().unwrap(),
-    name: bits_data::Text::new("name"),
+    name: "name".parse().unwrap(),
   });
 
   let input = AddAuctionProductInput {

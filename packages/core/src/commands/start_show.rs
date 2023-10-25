@@ -117,7 +117,7 @@ fn test_start_show() {
   let show = Some(Show {
     id: "441fdcfb-1613-4ed8-8d31-9fe8708680b0".parse().unwrap(),
     creator_id: "ba7220d5-af00-4815-89d3-5f852b733591".parse().unwrap(),
-    name: bits_data::Text::new("name"),
+    name: "name".parse().unwrap(),
     started_at: None,
   });
 

@@ -9,23 +9,16 @@ use async_graphql::dynamic::TypeRef;
 use async_graphql::Context;
 use async_graphql::Result;
 use async_graphql::Value;
-use bits_core::bid::BidResult;
 use bits_core::commands;
-use bits_core::AuctionProductId;
-use bits_core::UserId;
 
 pub struct Mutation;
 
 impl Mutation {
   pub fn inputs() -> Vec<InputObject> {
     vec![
-      commands::bid::BidInput::to_object(),
-      InputObject::new("CommentInput")
-        .field(InputValue::new("userId", TypeRef::named_nn(TypeRef::ID)))
-        .field(InputValue::new("showId", TypeRef::named_nn(TypeRef::ID)))
-        .field(InputValue::new("text", TypeRef::named_nn(TypeRef::STRING))),
-      InputObject::new("CreateProductInput")
-        .field(InputValue::new("name", TypeRef::named_nn(TypeRef::STRING))),
+      commands::bid::BidInput::to_input_object(),
+      commands::comment::CommentInput::to_input_object(),
+      commands::create_product::CreateProductInput::to_input_object(),
       InputObject::new("CreateShowInput")
         .field(InputValue::new(
           "creator_id",
@@ -47,24 +40,20 @@ impl Mutation {
         TypeRef::named_nn("BidResult"),
         move |ctx| {
           FieldFuture::new(async move {
-            let input = ctx.args.get("input").unwrap().object().unwrap();
+            let input = &ctx.args.get("input").unwrap().object()?;
 
             let input = commands::bid::BidInput {
               user_id: input
                 .get("userId")
                 .unwrap()
-                .string()
-                .unwrap()
-                .parse::<UserId>()
-                .unwrap(),
+                .string()?
+                .parse::<bits_core::UserId>()?,
               product_id: input
                 .get("productId")
                 .unwrap()
-                .string()
-                .unwrap()
-                .parse::<AuctionProductId>()
-                .unwrap(),
-              amount: input.get("amount").unwrap().i64().unwrap(),
+                .string()?
+                .parse::<bits_core::AuctionProductId>()?,
+              amount: input.get("amount").unwrap().i64()?,
             };
 
             let result = Self::bid(ctx.ctx, input).await?;
@@ -82,7 +71,29 @@ impl Mutation {
         TypeRef::named_nn("CommentResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
-            Ok(Some(FieldValue::owned_any(comment(ctx).await?)))
+            let input = &ctx.args.get("input").unwrap().object()?;
+
+            let input = commands::comment::CommentInput {
+              user_id: input
+                .get("userId")
+                .unwrap()
+                .string()?
+                .parse::<bits_core::UserId>()?,
+              show_id: input
+                .get("showId")
+                .unwrap()
+                .string()?
+                .parse::<bits_core::ShowId>()?,
+              text: input
+                .get("text")
+                .unwrap()
+                .string()?
+                .parse::<bits_core::Text>()?,
+            };
+
+            let result = Self::comment(ctx.ctx, input).await?;
+
+            Ok(Some(FieldValue::value(result)))
           })
         },
       )
@@ -95,7 +106,15 @@ impl Mutation {
         TypeRef::named_nn("CreateProductResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
-            Ok(Some(FieldValue::owned_any(create_product(ctx).await?)))
+            let input = &ctx.args.get("input").unwrap().object()?;
+
+            let input = commands::create_product::CreateProductInput {
+              name: input.get("name").unwrap().string()?.parse()?,
+            };
+
+            let result = Self::create_product(ctx.ctx, input).await?;
+
+            Ok(Some(FieldValue::value(result)))
           })
         },
       )
@@ -147,17 +166,9 @@ impl Mutation {
 
   pub fn outputs() -> Vec<Object> {
     vec![
-      BidResult::to_object(),
-      Object::new("CommentResult").field(Field::new(
-        "ok".to_string(),
-        TypeRef::named_nn(TypeRef::BOOLEAN),
-        |_| FieldFuture::new(async move { Ok(Some(Value::from(true))) }),
-      )),
-      Object::new("CreateProductResult").field(Field::new(
-        "ok".to_string(),
-        TypeRef::named_nn(TypeRef::BOOLEAN),
-        |_| FieldFuture::new(async move { Ok(Some(Value::from(true))) }),
-      )),
+      commands::bid::BidResult::to_object(),
+      commands::comment::CommentResult::to_object(),
+      commands::create_product::CreateProductResult::to_object(),
       Object::new("CreateShowResult").field(Field::new(
         "ok".to_string(),
         TypeRef::named_nn(TypeRef::BOOLEAN),
@@ -182,20 +193,20 @@ impl Mutation {
   ) -> Result<commands::bid::BidResult> {
     Ok(commands::bid::bid(input)?)
   }
-}
 
-async fn comment(
-  _ctx: ResolverContext<'_>,
-  // input: commands::comment::CommentInput,
-) -> Result<commands::comment::CommentResult> {
-  Err("comment".into()) // TODO: Ok(commands::comment::comment(input)?)
-}
+  async fn comment(
+    _ctx: &Context<'_>,
+    input: commands::comment::CommentInput,
+  ) -> Result<commands::comment::CommentResult> {
+    Ok(commands::comment::comment(input)?)
+  }
 
-async fn create_product(
-  _ctx: ResolverContext<'_>,
-  // input: commands::create_product::CreateProductInput,
-) -> Result<commands::create_product::CreateProductResult> {
-  Err("create_product".into()) // TODO: Ok(commands::create_product::create_product(input).await?)
+  async fn create_product(
+    _ctx: &Context<'_>,
+    input: commands::create_product::CreateProductInput,
+  ) -> Result<commands::create_product::CreateProductResult> {
+    Ok(commands::create_product::create_product(input).await?)
+  }
 }
 
 async fn create_show(
