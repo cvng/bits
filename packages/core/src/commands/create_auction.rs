@@ -139,7 +139,7 @@ fn test_create_auction() {
     id: "2b1af787-2d94-4224-a2fc-1d8d155537c0".parse().unwrap(),
     created: None,
     updated: None,
-    creator_id: bits_data::UserId::new_v4().into(),
+    creator_id: bits_data::UserId::new_v4(),
     name: "name".parse().unwrap(),
   });
 
@@ -152,7 +152,7 @@ fn test_create_auction() {
     id: "177d1966-d688-486e-9b13-8709c0a434a0".parse().unwrap(),
     created: None,
     updated: None,
-    show_id: input.show_id.into(),
+    show_id: input.show_id,
     product_id: input.product_id,
     started: None,
     expired: None,
