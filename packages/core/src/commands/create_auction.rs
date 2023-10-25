@@ -122,7 +122,7 @@ pub async fn create_auction(
 }
 
 #[test]
-fn test_add_auction_product() {
+fn test_create_auction() {
   let show = Some(bits_data::Show {
     id: "048b47f4-3010-43ae-84c1-8088ab8488a8".parse().unwrap(),
     creator_id: bits_data::UserId::new(),
@@ -155,26 +155,14 @@ fn test_add_auction_product() {
   assert_json_snapshot!(events, @r###"
   [
     {
-      "type": "auction_product_created",
+      "type": "auction_created",
       "payload": {
-        "auction_product": {
+        "auction": {
           "id": "177d1966-d688-486e-9b13-8709c0a434a0",
           "auction_id": "bbee6e9a-7985-461c-8ed6-6aa05084e335",
           "product_id": "2b1af787-2d94-4224-a2fc-1d8d155537c0",
           "best_bid_id": null,
           "created_at": "2023-10-17T02:55:11.787907Z"
-        }
-      }
-    },
-    {
-      "type": "auction_marked_ready",
-      "payload": {
-        "auction": {
-          "id": "bbee6e9a-7985-461c-8ed6-6aa05084e335",
-          "show_id": "048b47f4-3010-43ae-84c1-8088ab8488a8",
-          "ready_at": "2023-10-17T02:55:11.787907Z",
-          "started_at": null,
-          "expired_at": null
         }
       }
     }

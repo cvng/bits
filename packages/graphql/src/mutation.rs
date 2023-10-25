@@ -230,7 +230,7 @@ impl MutationBuilder {
       .push(commands::create_auction::CreateAuctionInput::to_input_object());
     self.mutations.push(
       Field::new(
-        "addAuctionProduct".to_string(),
+        "createAuction".to_string(),
         TypeRef::named_nn("CreateAuctionResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
@@ -258,7 +258,7 @@ impl MutationBuilder {
       )
       .argument(InputValue::new(
         "input".to_string(),
-        TypeRef::named_nn("AddAuctionProductInput".to_string()),
+        TypeRef::named_nn("CreateAuctionInput".to_string()),
       )),
     )
   }
