@@ -142,7 +142,7 @@ fn test_comment() {
 
   let comment = Some(Comment {
     id: "7cc32b32-c5c6-4034-89f9-8363d856ebb4".parse().unwrap(),
-    created:None,
+    created: None,
     updated: None,
     author_id: input.user_id,
     show_id: input.show_id,
