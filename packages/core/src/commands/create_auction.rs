@@ -12,34 +12,32 @@ use async_graphql::Name;
 use async_graphql::Value;
 use bits_data::Auction;
 use bits_data::AuctionId;
-use bits_data::AuctionProduct;
-use bits_data::AuctionProductId;
 use bits_data::Event;
 use bits_data::Product;
 use bits_data::ProductId;
-use bits_data::Utc;
+use bits_data::ShowId;
 use thiserror::Error;
 
-pub struct AddAuctionProductInput {
-  pub auction_id: AuctionId,
+pub struct CreateAuctionInput {
+  pub show_id: ShowId,
   pub product_id: ProductId,
 }
 
-impl AddAuctionProductInput {
+impl CreateAuctionInput {
   pub fn to_input_object() -> InputObject {
-    InputObject::new("AddAuctionProductInput")
-      .field(InputValue::new("auctionId", TypeRef::named_nn(TypeRef::ID)))
+    InputObject::new("CreateAuctionInput")
+      .field(InputValue::new("showId", TypeRef::named_nn(TypeRef::ID)))
       .field(InputValue::new("productId", TypeRef::named_nn(TypeRef::ID)))
   }
 }
 
-pub struct AddAuctionProductResult {
-  pub auction_product: AuctionProduct,
+pub struct CreateAuctionResult {
+  pub auction: Auction,
 }
 
-impl AddAuctionProductResult {
+impl CreateAuctionResult {
   pub fn to_object() -> Object {
-    Object::new("AddAuctionProductResult").field(Field::new(
+    Object::new("CreateAuctionResult").field(Field::new(
       "id".to_string(),
       TypeRef::named_nn(TypeRef::ID),
       |ctx| {
@@ -51,10 +49,10 @@ impl AddAuctionProductResult {
   }
 }
 
-impl From<AddAuctionProductResult> for Value {
-  fn from(value: AddAuctionProductResult) -> Self {
+impl From<CreateAuctionResult> for Value {
+  fn from(value: CreateAuctionResult) -> Self {
     let mut map = IndexMap::new();
-    map.insert(Name::new("id"), value.auction_product.id.to_string().into());
+    map.insert(Name::new("id"), value.auction.id.to_string().into());
     Value::Object(map)
   }
 }
@@ -68,92 +66,68 @@ pub enum Error {
   NotCreated,
 }
 
-pub struct AddAuctionProductCommand {
+pub struct CreateAuctionCommand {
   pub auction: Option<Auction>,
   pub product: Option<Product>,
-  pub auction_product: Option<AuctionProduct>,
 }
 
-impl Command for AddAuctionProductCommand {
+impl Command for CreateAuctionCommand {
   type Error = Error;
   type Event = Event;
-  type Input = AddAuctionProductInput;
-  type Result = AddAuctionProductResult;
+  type Input = CreateAuctionInput;
+  type Result = CreateAuctionResult;
 
   fn handle(
     &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let mut events = vec![];
-
-    let mut auction = self
-      .auction
-      .ok_or(Error::AuctionNotFound(input.auction_id))?;
-
     self
       .product
       .ok_or(Error::ProductNotFound(input.product_id))?;
 
-    let auction_product = self.auction_product.ok_or(Error::NotCreated)?;
+    let auction = self.auction.ok_or(Error::NotCreated)?;
 
-    events.push(Event::auction_product_created(auction_product));
-
-    if auction.ready_at.is_none() {
-      auction.ready_at = Some(auction_product.created_at);
-
-      events.push(Event::auction_marked_ready(auction));
-    }
-
-    Ok(events)
+    Ok(vec![Event::auction_created(auction)])
   }
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::AuctionProductCreated { payload } => {
-        Some(AddAuctionProductResult {
-          auction_product: payload.auction_product,
-        })
-      }
+      Event::AuctionCreated { payload } => Some(CreateAuctionResult {
+        auction: payload.auction,
+      }),
       _ => None,
     })
   }
 }
 
-pub async fn add_auction_product(
-  input: AddAuctionProductInput,
-) -> Result<AddAuctionProductResult, Error> {
-  let auction = database::db().auctions.get(&input.auction_id).cloned();
-
+pub async fn create_auction(
+  input: CreateAuctionInput,
+) -> Result<CreateAuctionResult, Error> {
   let product = database::db().products.get(&input.product_id).cloned();
 
-  let auction_product = Some(AuctionProduct {
-    id: AuctionProductId::new(),
-    auction_id: input.auction_id,
+  let auction = Some(Auction {
+    id: AuctionId::new(),
+    show_id: input.show_id,
     product_id: input.product_id,
-    best_bid_id: None,
-    created_at: Utc::now(),
+    started: None,
+    expired: None,
   });
 
-  AddAuctionProductCommand {
-    auction,
-    product,
-    auction_product,
-  }
-  .handle(input)
-  .map(dispatcher::dispatch)?
-  .map(AddAuctionProductCommand::apply)
-  .map_err(|_| Error::NotCreated)?
-  .ok_or(Error::NotCreated)
+  CreateAuctionCommand { auction, product }
+    .handle(input)
+    .map(dispatcher::dispatch)?
+    .map(CreateAuctionCommand::apply)
+    .map_err(|_| Error::NotCreated)?
+    .ok_or(Error::NotCreated)
 }
 
 #[test]
 fn test_add_auction_product() {
-  let auction = Some(Auction {
-    id: "bbee6e9a-7985-461c-8ed6-6aa05084e335".parse().unwrap(),
-    show_id: "048b47f4-3010-43ae-84c1-8088ab8488a8".parse().unwrap(),
-    ready_at: None,
+  let show = Some(bits_data::Show {
+    id: "048b47f4-3010-43ae-84c1-8088ab8488a8".parse().unwrap(),
+    creator_id: bits_data::UserId::new(),
+    name: "name".parse().unwrap(),
     started_at: None,
-    expired_at: None,
   });
 
   let product = Some(Product {
@@ -161,26 +135,22 @@ fn test_add_auction_product() {
     name: "name".parse().unwrap(),
   });
 
-  let input = AddAuctionProductInput {
-    auction_id: auction.as_ref().unwrap().id,
+  let input = CreateAuctionInput {
+    show_id: show.as_ref().unwrap().id,
     product_id: product.as_ref().unwrap().id,
   };
 
-  let auction_product = Some(AuctionProduct {
+  let auction = Some(Auction {
     id: "177d1966-d688-486e-9b13-8709c0a434a0".parse().unwrap(),
-    auction_id: input.auction_id,
+    show_id: input.show_id,
     product_id: input.product_id,
-    best_bid_id: None,
-    created_at: "2023-10-17T02:55:11.787907Z".parse().unwrap(),
+    started: None,
+    expired: None,
   });
 
-  let events = AddAuctionProductCommand {
-    auction,
-    product,
-    auction_product,
-  }
-  .handle(input)
-  .unwrap();
+  let events = CreateAuctionCommand { auction, product }
+    .handle(input)
+    .unwrap();
 
   assert_json_snapshot!(events, @r###"
   [

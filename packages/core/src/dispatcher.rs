@@ -1,6 +1,5 @@
 use crate::error::Result;
-use crate::handlers::auction_marked_ready;
-use crate::handlers::auction_product_created;
+use crate::handlers::auction_created;
 use crate::handlers::auction_revived;
 use crate::handlers::auction_started;
 use crate::handlers::bid_created;
@@ -15,11 +14,8 @@ pub fn dispatch(events: Vec<Event>) -> Result<Vec<Event>> {
     .iter()
     .cloned()
     .try_for_each(|event| match event {
-      Event::AuctionMarkedReady { payload } => {
-        auction_marked_ready::auction_marked_ready(payload)
-      }
-      Event::AuctionProductCreated { payload } => {
-        auction_product_created::auction_product_created(payload)
+      Event::AuctionCreated { payload } => {
+        auction_created::auction_created(payload)
       }
       Event::AuctionRevived { payload } => {
         auction_revived::auction_revived(payload)

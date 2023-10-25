@@ -94,15 +94,10 @@ impl Command for StartShowCommand {
       return Err(Error::AlreadyStarted(show.id));
     }
 
-    // Check that the auction is ready.
-    if auction.ready_at.is_none() {
-      return Err(Error::AuctionNotReady(auction.id));
-    }
-
     let now = self.now;
 
     show.started_at = Some(now);
-    auction.started_at = Some(now);
+    auction.started = Some(now);
 
     Ok(vec![
       Event::show_started(show),

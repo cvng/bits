@@ -1,5 +1,4 @@
 use crate::Auction;
-use crate::AuctionProduct;
 use crate::Bid;
 use crate::Comment;
 use crate::Product;
@@ -8,8 +7,7 @@ use crate::Show;
 #[derive(Clone, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Event {
-  AuctionMarkedReady { payload: AuctionMarkedReady },
-  AuctionProductCreated { payload: AuctionProductCreated },
+  AuctionCreated { payload: AuctionCreated },
   AuctionRevived { payload: AuctionRevived },
   AuctionStarted { payload: AuctionStarted },
   BidCreated { payload: BidCreated },
@@ -20,15 +18,9 @@ pub enum Event {
 }
 
 impl Event {
-  pub fn auction_marked_ready(auction: Auction) -> Self {
-    Self::AuctionMarkedReady {
-      payload: AuctionMarkedReady { auction },
-    }
-  }
-
-  pub fn auction_product_created(auction_product: AuctionProduct) -> Self {
-    Self::AuctionProductCreated {
-      payload: AuctionProductCreated { auction_product },
+  pub fn auction_created(auction: Auction) -> Self {
+    Self::AuctionCreated {
+      payload: AuctionCreated { auction },
     }
   }
 
@@ -81,8 +73,8 @@ pub struct AuctionMarkedReady {
 }
 
 #[derive(Clone, Serialize)]
-pub struct AuctionProductCreated {
-  pub auction_product: AuctionProduct,
+pub struct AuctionCreated {
+  pub auction: Auction,
 }
 
 #[derive(Clone, Serialize)]

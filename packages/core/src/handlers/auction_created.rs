@@ -1,9 +1,9 @@
 use crate::database;
 use crate::error::Error;
 use crate::error::Result;
-use bits_data::AuctionMarkedReady;
+use bits_data::AuctionCreated;
 
-pub fn auction_marked_ready(event: AuctionMarkedReady) -> Result<()> {
+pub fn auction_created(event: AuctionCreated) -> Result<()> {
   database::db()
     .auctions
     .insert(event.auction.id, event.auction)
