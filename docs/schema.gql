@@ -1,12 +1,3 @@
-input AddAuctionProductInput {
-  auctionId: ID!
-  productId: ID!
-}
-
-type AddAuctionProductResult {
-  id: ID!
-}
-
 type Auction {
   id: String!
   created: String!
@@ -63,7 +54,7 @@ type Bid {
   concurrentAmount: String!
   amount: String!
   auction: Auction
-  person: User
+  person: Person
 }
 
 type BidConnection {
@@ -91,8 +82,8 @@ input BidFilterInput {
 }
 
 input BidInput {
-  userId: ID!
-  productId: ID!
+  auctionId: ID!
+  bidderId: ID!
   amount: Int!
 }
 
@@ -117,7 +108,7 @@ type Comment {
   authorId: String!
   showId: String!
   text: String!
-  person: User
+  person: Person
   show: Show
 }
 
@@ -163,6 +154,15 @@ type CommentResult {
   id: ID!
 }
 
+input CreateAuctionInput {
+  showId: ID!
+  productId: ID!
+}
+
+type CreateAuctionResult {
+  id: ID!
+}
+
 input CreateProductInput {
   name: String!
 }
@@ -192,7 +192,7 @@ type Mutation {
   createProduct(input: CreateProductInput!): CreateProductResult!
   createShow(input: CreateShowInput!): CreateShowResult!
   startShow(input: StartShowInput!): StartShowResult!
-  addAuctionProduct(input: AddAuctionProductInput!): AddAuctionProductResult!
+  createAuction(input: CreateAuctionInput!): CreateAuctionResult!
 }
 
 input OffsetInput {
@@ -230,12 +230,53 @@ input PaginationInput {
   offset: OffsetInput
 }
 
+type Person {
+  id: String!
+  created: String!
+  updated: String
+  email: String!
+  bid(filters: BidFilterInput, orderBy: BidOrderInput, pagination: PaginationInput): BidConnection!
+  comment(filters: CommentFilterInput, orderBy: CommentOrderInput, pagination: PaginationInput): CommentConnection!
+  product(filters: ProductFilterInput, orderBy: ProductOrderInput, pagination: PaginationInput): ProductConnection!
+  show(filters: ShowFilterInput, orderBy: ShowOrderInput, pagination: PaginationInput): ShowConnection!
+}
+
+type PersonConnection {
+  pageInfo: PageInfo!
+  paginationInfo: PaginationInfo
+  nodes: [Person!]!
+  edges: [PersonEdge!]!
+}
+
+type PersonEdge {
+  cursor: String!
+  node: Person!
+}
+
+input PersonFilterInput {
+  id: TextFilterInput
+  created: TextFilterInput
+  updated: TextFilterInput
+  email: StringFilterInput
+  and: [PersonFilterInput!]
+  or: [PersonFilterInput!]
+}
+
+input PersonOrderInput {
+  id: OrderByEnum
+  created: OrderByEnum
+  updated: OrderByEnum
+  email: OrderByEnum
+}
+
 type Product {
   id: String!
   created: String!
   updated: String
+  creatorId: String!
   name: String!
   auction(filters: AuctionFilterInput, orderBy: AuctionOrderInput, pagination: PaginationInput): AuctionConnection!
+  person: Person
 }
 
 type ProductConnection {
@@ -254,6 +295,7 @@ input ProductFilterInput {
   id: TextFilterInput
   created: TextFilterInput
   updated: TextFilterInput
+  creatorId: TextFilterInput
   name: StringFilterInput
   and: [ProductFilterInput!]
   or: [ProductFilterInput!]
@@ -263,6 +305,7 @@ input ProductOrderInput {
   id: OrderByEnum
   created: OrderByEnum
   updated: OrderByEnum
+  creatorId: OrderByEnum
   name: OrderByEnum
 }
 
@@ -270,7 +313,7 @@ type Query {
   auction(filters: AuctionFilterInput, orderBy: AuctionOrderInput, pagination: PaginationInput): AuctionConnection!
   bid(filters: BidFilterInput, orderBy: BidOrderInput, pagination: PaginationInput): BidConnection!
   comment(filters: CommentFilterInput, orderBy: CommentOrderInput, pagination: PaginationInput): CommentConnection!
-  user(filters: UserFilterInput, orderBy: UserOrderInput, pagination: PaginationInput): UserConnection!
+  person(filters: PersonFilterInput, orderBy: PersonOrderInput, pagination: PaginationInput): PersonConnection!
   product(filters: ProductFilterInput, orderBy: ProductOrderInput, pagination: PaginationInput): ProductConnection!
   show(filters: ShowFilterInput, orderBy: ShowOrderInput, pagination: PaginationInput): ShowConnection!
 }
@@ -284,7 +327,7 @@ type Show {
   started: String
   auction(filters: AuctionFilterInput, orderBy: AuctionOrderInput, pagination: PaginationInput): AuctionConnection!
   comment(filters: CommentFilterInput, orderBy: CommentOrderInput, pagination: PaginationInput): CommentConnection!
-  person: User
+  person: Person
 }
 
 type ShowConnection {
@@ -360,43 +403,5 @@ input TextFilterInput {
   is_not_null: String
   between: [String!]
   not_between: [String!]
-}
-
-type User {
-  id: String!
-  created: String!
-  updated: String
-  email: String!
-  bid(filters: BidFilterInput, orderBy: BidOrderInput, pagination: PaginationInput): BidConnection!
-  comment(filters: CommentFilterInput, orderBy: CommentOrderInput, pagination: PaginationInput): CommentConnection!
-  show(filters: ShowFilterInput, orderBy: ShowOrderInput, pagination: PaginationInput): ShowConnection!
-}
-
-type UserConnection {
-  pageInfo: PageInfo!
-  paginationInfo: PaginationInfo
-  nodes: [User!]!
-  edges: [UserEdge!]!
-}
-
-type UserEdge {
-  cursor: String!
-  node: User!
-}
-
-input UserFilterInput {
-  id: TextFilterInput
-  created: TextFilterInput
-  updated: TextFilterInput
-  email: StringFilterInput
-  and: [UserFilterInput!]
-  or: [UserFilterInput!]
-}
-
-input UserOrderInput {
-  id: OrderByEnum
-  created: OrderByEnum
-  updated: OrderByEnum
-  email: OrderByEnum
 }
 

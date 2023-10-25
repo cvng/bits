@@ -28,7 +28,7 @@ impl MutationBuilder {
     self.create_product();
     self.create_show();
     self.start_show();
-    self.add_auction_product();
+    self.create_auction();
   }
 
   fn bid(&mut self) {
@@ -43,16 +43,16 @@ impl MutationBuilder {
             let input = &ctx.args.get("input").unwrap().object()?;
 
             let input = commands::bid::BidInput {
-              user_id: input
-                .get("userId")
+              auction_id: input
+                .get("showId")
+                .unwrap()
+                .string()?
+                .parse::<bits_core::AuctionId>()?,
+              bidder_id: input
+                .get("bidderId")
                 .unwrap()
                 .string()?
                 .parse::<bits_core::UserId>()?,
-              product_id: input
-                .get("productId")
-                .unwrap()
-                .string()?
-                .parse::<bits_core::AuctionProductId>()?,
               amount: input.get("amount").unwrap().i64()?,
             };
 
@@ -221,27 +221,27 @@ impl MutationBuilder {
     )
   }
 
-  fn add_auction_product(&mut self) {
-    self.outputs.push(
-      commands::add_auction_product::AddAuctionProductResult::to_object(),
-    );
-    self.inputs.push(
-      commands::add_auction_product::AddAuctionProductInput::to_input_object(),
-    );
+  fn create_auction(&mut self) {
+    self
+      .outputs
+      .push(commands::create_auction::CreateAuctionResult::to_object());
+    self
+      .inputs
+      .push(commands::create_auction::CreateAuctionInput::to_input_object());
     self.mutations.push(
       Field::new(
-        "addAuctionProduct".to_string(),
-        TypeRef::named_nn("AddAuctionProductResult".to_string()),
+        "createAuction".to_string(),
+        TypeRef::named_nn("CreateAuctionResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
             let input = &ctx.args.get("input").unwrap().object()?;
 
-            let input = commands::add_auction_product::AddAuctionProductInput {
-              auction_id: input
-                .get("auctionId")
+            let input = commands::create_auction::CreateAuctionInput {
+              show_id: input
+                .get("showId")
                 .unwrap()
                 .string()?
-                .parse::<bits_core::AuctionId>()?,
+                .parse::<bits_core::ShowId>()?,
               product_id: input
                 .get("productId")
                 .unwrap()
@@ -250,7 +250,7 @@ impl MutationBuilder {
             };
 
             let result =
-              commands::add_auction_product::add_auction_product(input).await?;
+              commands::create_auction::create_auction(input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -258,7 +258,7 @@ impl MutationBuilder {
       )
       .argument(InputValue::new(
         "input".to_string(),
-        TypeRef::named_nn("AddAuctionProductInput".to_string()),
+        TypeRef::named_nn("CreateAuctionInput".to_string()),
       )),
     )
   }

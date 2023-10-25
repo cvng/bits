@@ -94,15 +94,10 @@ impl Command for StartShowCommand {
       return Err(Error::AlreadyStarted(show.id));
     }
 
-    // Check that the auction is ready.
-    if auction.ready_at.is_none() {
-      return Err(Error::AuctionNotReady(auction.id));
-    }
-
     let now = self.now;
 
     show.started_at = Some(now);
-    auction.started_at = Some(now);
+    auction.started = Some(now);
 
     Ok(vec![
       Event::show_started(show),
@@ -154,12 +149,17 @@ fn test_start_show() {
     started_at: None,
   });
 
+  let product = Some(bits_data::Product {
+    id: "e0c0e324-7b46-4020-ab33-bbbb91d26cfc".parse().unwrap(),
+    name: "name".parse().unwrap(),
+  });
+
   let auction = Some(Auction {
     id: "a4d74d78-a628-4a0e-8e42-db3b4dca5f5c".parse().unwrap(),
     show_id: show.as_ref().unwrap().id,
-    ready_at: Some("2023-10-17T02:55:11.787768Z".parse().unwrap()),
-    started_at: Some("2023-10-17T02:55:11.788274Z".parse().unwrap()),
-    expired_at: None,
+    product_id: product.as_ref().unwrap().id,
+    started: Some("2023-10-17T02:55:11.788274Z".parse().unwrap()),
+    expired: None,
   });
 
   let input = StartShowInput {
@@ -189,9 +189,9 @@ fn test_start_show() {
         "auction": {
           "id": "a4d74d78-a628-4a0e-8e42-db3b4dca5f5c",
           "show_id": "441fdcfb-1613-4ed8-8d31-9fe8708680b0",
-          "ready_at": "2023-10-17T02:55:11.787768Z",
-          "started_at": "2023-10-17T03:16:49.225067Z",
-          "expired_at": null
+          "product_id": "e0c0e324-7b46-4020-ab33-bbbb91d26cfc",
+          "started": "2023-10-17T03:16:49.225067Z",
+          "expired": null
         }
       }
     }
