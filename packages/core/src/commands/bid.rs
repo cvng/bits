@@ -154,7 +154,9 @@ pub async fn bid(input: BidInput) -> Result<BidResult, Error> {
 
 #[test]
 fn test_bid() {
-  let now = "2023-10-17T03:16:49.225067Z".parse::<DateTime>().unwrap();
+  let now = "2023-10-17T03:16:49.225067Z"
+    .parse::<bits_data::DateTime>()
+    .unwrap();
 
   let auction = Some(Auction {
     id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
@@ -187,8 +189,8 @@ fn test_bid() {
       "payload": {
         "bid": {
           "id": "bcd0ab01-96f0-4469-a3e6-254afe70b74f",
-          "user_id": "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68",
-          "product_id": "6bc8e88e-fc47-41c6-8dae-b180d1efae98",
+          "auction_id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
+          "bidder_id": "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68",
           "amount": 100,
           "created_at": "2023-10-16T04:41:02.676340Z"
         }
@@ -200,9 +202,9 @@ fn test_bid() {
         "auction": {
           "id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
           "show_id": "28e9d842-0918-460f-9cd9-7245dbba1966",
-          "ready_at": "2023-10-16T23:56:27.365540Z",
-          "started_at": "2023-10-16T23:56:27.365540Z",
-          "expired_at": "2023-10-16T04:41:17.676340Z"
+          "product_id": "6bc8e88e-fc47-41c6-8dae-b180d1efae98",
+          "started": "2023-10-16T23:56:27.365540Z",
+          "expired": "2023-10-16T04:41:17.676340Z"
         }
       }
     }
