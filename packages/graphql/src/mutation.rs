@@ -8,7 +8,6 @@ use async_graphql::dynamic::ResolverContext;
 use async_graphql::dynamic::TypeRef;
 use async_graphql::Context;
 use async_graphql::Result;
-use async_graphql::Value;
 use bits_core::commands;
 
 pub struct Mutation;
@@ -19,17 +18,20 @@ impl Mutation {
       commands::bid::BidInput::to_input_object(),
       commands::comment::CommentInput::to_input_object(),
       commands::create_product::CreateProductInput::to_input_object(),
-      InputObject::new("CreateShowInput")
-        .field(InputValue::new(
-          "creator_id",
-          TypeRef::named_nn(TypeRef::ID),
-        ))
-        .field(InputValue::new("name", TypeRef::named_nn(TypeRef::STRING))),
-      InputObject::new("StartShowInput")
-        .field(InputValue::new("id", TypeRef::named_nn(TypeRef::ID))),
-      InputObject::new("AddAuctionProductInput")
-        .field(InputValue::new("auctionId", TypeRef::named_nn(TypeRef::ID)))
-        .field(InputValue::new("productId", TypeRef::named_nn(TypeRef::ID))),
+      commands::create_show::CreateShowInput::to_input_object(),
+      commands::start_show::StartShowInput::to_input_object(),
+      commands::add_auction_product::AddAuctionProductInput::to_input_object(),
+    ]
+  }
+
+  pub fn outputs() -> Vec<Object> {
+    vec![
+      commands::bid::BidResult::to_object(),
+      commands::comment::CommentResult::to_object(),
+      commands::create_product::CreateProductResult::to_object(),
+      commands::create_show::CreateShowResult::to_object(),
+      commands::start_show::StartShowResult::to_object(),
+      commands::add_auction_product::AddAuctionProductResult::to_object(),
     ]
   }
 
@@ -160,29 +162,6 @@ impl Mutation {
       .argument(InputValue::new(
         "input".to_string(),
         TypeRef::named_nn("AddAuctionProductInput".to_string()),
-      )),
-    ]
-  }
-
-  pub fn outputs() -> Vec<Object> {
-    vec![
-      commands::bid::BidResult::to_object(),
-      commands::comment::CommentResult::to_object(),
-      commands::create_product::CreateProductResult::to_object(),
-      Object::new("CreateShowResult").field(Field::new(
-        "ok".to_string(),
-        TypeRef::named_nn(TypeRef::BOOLEAN),
-        |_| FieldFuture::new(async move { Ok(Some(Value::from(true))) }),
-      )),
-      Object::new("StartShowResult").field(Field::new(
-        "ok".to_string(),
-        TypeRef::named_nn(TypeRef::BOOLEAN),
-        |_| FieldFuture::new(async move { Ok(Some(Value::from(true))) }),
-      )),
-      Object::new("AddAuctionProductResult").field(Field::new(
-        "ok".to_string(),
-        TypeRef::named_nn(TypeRef::BOOLEAN),
-        |_| FieldFuture::new(async move { Ok(Some(Value::from(true))) }),
       )),
     ]
   }
