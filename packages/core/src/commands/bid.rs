@@ -30,7 +30,7 @@ pub struct BidInput {
 }
 
 impl BidInput {
-   pub fn to_input_object() -> InputObject {
+  pub fn to_input_object() -> InputObject {
     InputObject::new("BidInput")
       .field(InputValue::new("userId", TypeRef::named_nn(TypeRef::ID)))
       .field(InputValue::new("productId", TypeRef::named_nn(TypeRef::ID)))

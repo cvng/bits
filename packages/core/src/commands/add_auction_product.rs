@@ -1,6 +1,7 @@
 use crate::command::Command;
 use crate::database;
 use crate::dispatcher;
+use async_graphql::dynamic::indexmap::IndexMap;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
 use async_graphql::dynamic::InputObject;
@@ -17,7 +18,6 @@ use bits_data::Product;
 use bits_data::ProductId;
 use bits_data::Utc;
 use thiserror::Error;
-use async_graphql::dynamic::indexmap::IndexMap;
 
 pub struct AddAuctionProductInput {
   pub auction_id: AuctionId,

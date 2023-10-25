@@ -110,7 +110,7 @@ pub async fn create_product(
 #[test]
 fn test_create_product() {
   let input = CreateProductInput {
-    name: "name".parse().unwrap()
+    name: "name".parse().unwrap(),
   };
 
   let product = Some(Product {

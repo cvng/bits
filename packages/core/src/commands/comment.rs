@@ -135,7 +135,7 @@ fn test_comment() {
   let input = CommentInput {
     user_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
     show_id: show.as_ref().unwrap().id,
-    text: "text".parse().unwrap()
+    text: "text".parse().unwrap(),
   };
 
   let comment = Some(Comment {
