@@ -1,4 +1,3 @@
-mod entities;
 mod mutation;
 mod schema;
 

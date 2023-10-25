@@ -50,3 +50,15 @@ impl Related<super::show::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelatedEntity)]
+pub enum RelatedEntity {
+  #[sea_orm(entity = "super::bid::Entity")]
+  Bid,
+  #[sea_orm(entity = "super::comment::Entity")]
+  Comment,
+  #[sea_orm(entity = "super::product::Entity")]
+  Product,
+  #[sea_orm(entity = "super::show::Entity")]
+  Show,
+}

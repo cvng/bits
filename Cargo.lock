@@ -401,6 +401,8 @@ dependencies = [
  "arrayvec",
  "async-graphql",
  "chrono",
+ "sea-orm",
+ "seaography",
  "serde",
  "uuid",
 ]
