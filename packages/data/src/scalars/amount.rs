@@ -1,1 +1,1 @@
-pub type Amount = i64;
+pub type Amount = rust_decimal::Decimal;

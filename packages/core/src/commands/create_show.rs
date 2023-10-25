@@ -12,13 +12,12 @@ use async_graphql::Value;
 use bits_data::Event;
 use bits_data::Show;
 use bits_data::ShowId;
-use bits_data::Text;
 use bits_data::UserId;
 use thiserror::Error;
 
 pub struct CreateShowInput {
   pub creator_id: UserId,
-  pub name: Text,
+  pub name: String,
 }
 
 impl CreateShowInput {
@@ -76,16 +75,16 @@ impl Command for CreateShowCommand {
     &self,
     _input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let show = self.show.ok_or(Error::NotCreated)?;
+    let show = self.show.clone().ok_or(Error::NotCreated)?;
 
     Ok(vec![Event::show_created(show)])
   }
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::ShowCreated { payload } => {
-        Some(CreateShowResult { show: payload.show })
-      }
+      Event::ShowCreated { payload } => Some(CreateShowResult {
+        show: payload.show.clone(),
+      }),
       _ => None,
     })
   }
@@ -95,11 +94,11 @@ pub async fn create_show(
   input: CreateShowInput,
 ) -> Result<CreateShowResult, Error> {
   let show = Some(Show {
-    id: ShowId::new(),
+    id: ShowId::new_v4(),
     created: None,
     updated: None,
     creator_id: input.creator_id,
-    name: input.name,
+    name: input.name.clone(),
     started: None,
   });
 
@@ -123,7 +122,7 @@ fn test_show() {
     created: None,
     updated: None,
     creator_id: input.creator_id,
-    name: input.name,
+    name: input.name.clone(),
     started: None,
   });
 

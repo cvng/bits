@@ -6,7 +6,7 @@ use bits_data::AuctionRevived;
 pub fn auction_revived(event: AuctionRevived) -> Result<()> {
   database::db()
     .auctions
-    .insert(event.auction.id, event.auction)
+    .insert(event.auction.id, event.auction.clone())
     .map(|_| ())
-    .ok_or(Error::NotFound(event.auction.id.into()))
+    .ok_or(Error::NotFound(event.auction.id))
 }

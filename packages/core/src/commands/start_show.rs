@@ -85,9 +85,12 @@ impl Command for StartShowCommand {
     &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let mut show = self.show.ok_or(Error::NotFound(input.id))?;
+    let mut show = self.show.clone().ok_or(Error::NotFound(input.id))?;
 
-    let mut auction = self.auction.ok_or(Error::AuctionNotFound(show.id))?;
+    let mut auction = self
+      .auction
+      .clone()
+      .ok_or(Error::AuctionNotFound(show.id))?;
 
     // Check that the show hasn't already started.
     if show.started.is_some() {
@@ -107,9 +110,9 @@ impl Command for StartShowCommand {
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::ShowStarted { payload } => {
-        Some(StartShowResult { show: payload.show })
-      }
+      Event::ShowStarted { payload } => Some(StartShowResult {
+        show: payload.show.clone(),
+      }),
       _ => None,
     })
   }
@@ -118,11 +121,11 @@ impl Command for StartShowCommand {
 pub async fn start_show(
   input: StartShowInput,
 ) -> Result<StartShowResult, Error> {
-  let now = Utc::now();
+  let now = Utc::now().into();
 
   let show = database::db().shows.get(&input.id).cloned();
 
-  let auction = show.and_then(|show| {
+  let auction = show.clone().and_then(|show| {
     database::db()
       .auctions
       .values()
@@ -155,7 +158,7 @@ fn test_start_show() {
     id: "e0c0e324-7b46-4020-ab33-bbbb91d26cfc".parse().unwrap(),
     created: None,
     updated: None,
-    creator_id: bits_data::UserId::new(),
+    creator_id: bits_data::UserId::new_v4(),
     name: "name".parse().unwrap(),
   });
 
