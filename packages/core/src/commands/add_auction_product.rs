@@ -8,6 +8,7 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
+use async_graphql::Name;
 use async_graphql::Value;
 use bits_data::Auction;
 use bits_data::AuctionId;
@@ -53,10 +54,7 @@ impl AddAuctionProductResult {
 impl From<AddAuctionProductResult> for Value {
   fn from(value: AddAuctionProductResult) -> Self {
     let mut map = IndexMap::new();
-    map.insert(
-      async_graphql::Name::new("id"),
-      value.auction_product.id.to_string().into(),
-    );
+    map.insert(Name::new("id"), value.auction_product.id.to_string().into());
     Value::Object(map)
   }
 }

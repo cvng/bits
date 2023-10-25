@@ -7,6 +7,7 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
+use async_graphql::Name;
 use async_graphql::Value;
 use bits_data::Event;
 use bits_data::Show;
@@ -49,10 +50,7 @@ impl CreateShowResult {
 impl From<CreateShowResult> for Value {
   fn from(value: CreateShowResult) -> Self {
     let mut map = IndexMap::new();
-    map.insert(
-      async_graphql::Name::new("id"),
-      value.show.id.to_string().into(),
-    );
+    map.insert(Name::new("id"), value.show.id.to_string().into());
     Value::Object(map)
   }
 }
