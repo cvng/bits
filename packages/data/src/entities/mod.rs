@@ -5,6 +5,8 @@ pub mod prelude;
 pub mod auction;
 pub mod bid;
 pub mod comment;
+pub mod event;
 pub mod person;
 pub mod product;
+pub mod sea_orm_active_enums;
 pub mod show;

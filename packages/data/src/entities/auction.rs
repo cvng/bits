@@ -2,20 +2,20 @@
 
 use sea_orm::entity::prelude::*;
 
-#[derive(Clone, Eq, PartialEq, Debug, DeriveEntityModel)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
 #[sea_orm(table_name = "auction")]
 pub struct Model {
   #[sea_orm(primary_key, auto_increment = false)]
   pub id: Uuid,
-  pub created: DateTime,
-  pub updated: Option<DateTime>,
+  pub created: DateTimeWithTimeZone,
+  pub updated: Option<DateTimeWithTimeZone>,
   pub show_id: Uuid,
   pub product_id: Uuid,
-  pub started: Option<DateTime>,
-  pub expired: Option<DateTime>,
+  pub started: Option<DateTimeWithTimeZone>,
+  pub expired: Option<DateTimeWithTimeZone>,
 }
 
-#[derive(Copy, Clone, Debug, DeriveRelation, EnumIter)]
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
   #[sea_orm(has_many = "super::bid::Entity")]
   Bid,
@@ -57,7 +57,7 @@ impl Related<super::show::Entity> for Entity {
 
 impl ActiveModelBehavior for ActiveModel {}
 
-#[derive(Copy, Clone, Debug, DeriveRelatedEntity, EnumIter)]
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelatedEntity)]
 pub enum RelatedEntity {
   #[sea_orm(entity = "super::bid::Entity")]
   Bid,

@@ -2,32 +2,25 @@
 
 use sea_orm::entity::prelude::*;
 
-#[derive(Clone, Eq, PartialEq, Debug, DeriveEntityModel)]
-#[sea_orm(table_name = "bid")]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+#[sea_orm(table_name = "product")]
 pub struct Model {
   #[sea_orm(primary_key, auto_increment = false)]
   pub id: Uuid,
-  pub created: DateTime,
-  pub updated: Option<DateTime>,
-  pub auction_id: Uuid,
-  pub bidder_id: Uuid,
-  pub concurrent_amount: Decimal,
-  pub amount: Decimal,
+  pub created: DateTimeWithTimeZone,
+  pub updated: Option<DateTimeWithTimeZone>,
+  pub creator_id: Uuid,
+  #[sea_orm(column_type = "Text")]
+  pub name: String,
 }
 
-#[derive(Copy, Clone, Debug, DeriveRelation, EnumIter)]
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-  #[sea_orm(
-    belongs_to = "super::auction::Entity",
-    from = "Column::AuctionId",
-    to = "super::auction::Column::Id",
-    on_update = "NoAction",
-    on_delete = "NoAction"
-  )]
+  #[sea_orm(has_many = "super::auction::Entity")]
   Auction,
   #[sea_orm(
     belongs_to = "super::person::Entity",
-    from = "Column::BidderId",
+    from = "Column::CreatorId",
     to = "super::person::Column::Id",
     on_update = "NoAction",
     on_delete = "NoAction"
@@ -49,7 +42,7 @@ impl Related<super::person::Entity> for Entity {
 
 impl ActiveModelBehavior for ActiveModel {}
 
-#[derive(Copy, Clone, Debug, DeriveRelatedEntity, EnumIter)]
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelatedEntity)]
 pub enum RelatedEntity {
   #[sea_orm(entity = "super::auction::Entity")]
   Auction,

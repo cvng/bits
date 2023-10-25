@@ -4,6 +4,7 @@ extern crate serde;
 mod auction;
 mod bid;
 mod comment;
+pub mod entities;
 mod event;
 mod product;
 mod scalars;

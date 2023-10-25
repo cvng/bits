@@ -2,23 +2,25 @@
 
 use sea_orm::entity::prelude::*;
 
-#[derive(Clone, Eq, PartialEq, Debug, DeriveEntityModel)]
-#[sea_orm(table_name = "user")]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+#[sea_orm(table_name = "person")]
 pub struct Model {
   #[sea_orm(primary_key, auto_increment = false)]
   pub id: Uuid,
-  pub created: DateTime,
-  pub updated: Option<DateTime>,
-  #[sea_orm(column_type = "Text")]
+  pub created: DateTimeWithTimeZone,
+  pub updated: Option<DateTimeWithTimeZone>,
+  #[sea_orm(column_type = "Text", unique)]
   pub email: String,
 }
 
-#[derive(Copy, Clone, Debug, DeriveRelation, EnumIter)]
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
   #[sea_orm(has_many = "super::bid::Entity")]
   Bid,
   #[sea_orm(has_many = "super::comment::Entity")]
   Comment,
+  #[sea_orm(has_many = "super::product::Entity")]
+  Product,
   #[sea_orm(has_many = "super::show::Entity")]
   Show,
 }
@@ -35,6 +37,12 @@ impl Related<super::comment::Entity> for Entity {
   }
 }
 
+impl Related<super::product::Entity> for Entity {
+  fn to() -> RelationDef {
+    Relation::Product.def()
+  }
+}
+
 impl Related<super::show::Entity> for Entity {
   fn to() -> RelationDef {
     Relation::Show.def()
@@ -43,12 +51,14 @@ impl Related<super::show::Entity> for Entity {
 
 impl ActiveModelBehavior for ActiveModel {}
 
-#[derive(Copy, Clone, Debug, DeriveRelatedEntity, EnumIter)]
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelatedEntity)]
 pub enum RelatedEntity {
   #[sea_orm(entity = "super::bid::Entity")]
   Bid,
   #[sea_orm(entity = "super::comment::Entity")]
   Comment,
+  #[sea_orm(entity = "super::product::Entity")]
+  Product,
   #[sea_orm(entity = "super::show::Entity")]
   Show,
 }
