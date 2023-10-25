@@ -1,4 +1,5 @@
 use crate::id;
+use crate::DateTime;
 use crate::ShowId;
 use crate::Text;
 use crate::UserId;
@@ -9,7 +10,9 @@ id!(CommentId);
 #[derive(Copy, Clone, Serialize, SimpleObject)]
 pub struct Comment {
   pub id: CommentId,
-  pub user_id: UserId,
+  pub created: Option<DateTime>,
+  pub updated: Option<DateTime>,
+  pub author_id: UserId,
   pub show_id: ShowId,
   pub text: Text,
 }

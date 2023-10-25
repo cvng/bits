@@ -131,6 +131,11 @@ impl MutationBuilder {
             let input = &ctx.args.get("input").unwrap().object()?;
 
             let input = commands::create_product::CreateProductInput {
+              creator_id: input
+                .get("creatorId")
+                .unwrap()
+                .string()?
+                .parse::<bits_core::UserId>()?,
               name: input.get("name").unwrap().string()?.parse()?,
             };
 

@@ -15,12 +15,9 @@ use bits_data::Auction;
 use bits_data::AuctionId;
 use bits_data::Bid;
 use bits_data::BidId;
-use bits_data::Duration;
 use bits_data::Event;
 use bits_data::ProductId;
 use bits_data::UserId;
-use bits_data::Utc;
-use bits_data::AUCTION_REFRESH_SECS;
 use thiserror::Error;
 
 pub struct BidInput {
@@ -98,7 +95,7 @@ impl Command for BidCommand {
     &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let mut auction = self
+    let auction = self
       .auction
       .ok_or(Error::AuctionNotFound(input.auction_id))?;
 
@@ -107,17 +104,6 @@ impl Command for BidCommand {
     auction
       .started
       .ok_or(Error::AuctionNotStarted(auction.id))?;
-
-    let expired_at = auction
-      .expired
-      .ok_or(Error::AuctionNotStarted(auction.id))?;
-
-    (bid.created_at < expired_at)
-      .then_some(())
-      .ok_or(Error::AuctionExpired(auction.id))?;
-
-    auction.expired =
-      Some(bid.created_at + Duration::seconds(AUCTION_REFRESH_SECS));
 
     Ok(vec![
       Event::bid_created(bid),
@@ -138,10 +124,12 @@ pub async fn bid(input: BidInput) -> Result<BidResult, Error> {
 
   let bid = Some(Bid {
     id: BidId::new(),
+    created: None,
+    updated: None,
     auction_id: input.auction_id,
     bidder_id: input.bidder_id,
+    concurrent_amount: None,
     amount: input.amount,
-    created_at: Utc::now(),
   });
 
   BidCommand { auction, bid }
@@ -160,10 +148,14 @@ fn test_bid() {
 
   let auction = Some(Auction {
     id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
+    created: None,
+    updated: None,
     show_id: "28e9d842-0918-460f-9cd9-7245dbba1966".parse().unwrap(),
     product_id: "6bc8e88e-fc47-41c6-8dae-b180d1efae98".parse().unwrap(),
     started: Some("2023-10-16T23:56:27.365540Z".parse().unwrap()),
-    expired: Some(now + Duration::seconds(bits_data::AUCTION_TIMEOUT_SECS)),
+    expired: Some(
+      now + bits_data::Duration::seconds(bits_data::AUCTION_TIMEOUT_SECS),
+    ),
   });
 
   let input = BidInput {
@@ -174,10 +166,12 @@ fn test_bid() {
 
   let bid = Some(Bid {
     id: "bcd0ab01-96f0-4469-a3e6-254afe70b74f".parse().unwrap(),
+    created: None,
+    updated: None,
     auction_id: input.auction_id,
     bidder_id: input.bidder_id,
+    concurrent_amount: None,
     amount: input.amount,
-    created_at: "2023-10-16T04:41:02.676340Z".parse().unwrap(),
   });
 
   let events = BidCommand { auction, bid }.handle(input).unwrap();
@@ -189,10 +183,12 @@ fn test_bid() {
       "payload": {
         "bid": {
           "id": "bcd0ab01-96f0-4469-a3e6-254afe70b74f",
+          "created": null,
+          "updated": null,
           "auction_id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
           "bidder_id": "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68",
-          "amount": 100,
-          "created_at": "2023-10-16T04:41:02.676340Z"
+          "concurrent_amount": null,
+          "amount": 100
         }
       }
     },
@@ -201,10 +197,12 @@ fn test_bid() {
       "payload": {
         "auction": {
           "id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
+          "created": null,
+          "updated": null,
           "show_id": "28e9d842-0918-460f-9cd9-7245dbba1966",
           "product_id": "6bc8e88e-fc47-41c6-8dae-b180d1efae98",
           "started": "2023-10-16T23:56:27.365540Z",
-          "expired": "2023-10-16T04:41:17.676340Z"
+          "expired": "2023-10-17T03:17:49.225067Z"
         }
       }
     }
