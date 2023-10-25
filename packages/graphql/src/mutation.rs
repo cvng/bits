@@ -9,9 +9,25 @@ use async_graphql::Context;
 use async_graphql::Result;
 use bits_core::commands;
 
-pub struct Mutation;
+pub struct Mutation {
+  pub inputs: Vec<InputObject>,
+  pub outputs: Vec<Object>,
+  pub mutations: Vec<Field>,
+}
 
 impl Mutation {
+  pub fn new() -> Self {
+    Self {
+      inputs: Vec::new(),
+      outputs: Vec::new(),
+      mutations: Vec::new(),
+    }
+  }
+
+  pub fn register(&self) {
+    // TODO: self.bid()
+  }
+
   pub fn inputs() -> Vec<InputObject> {
     vec![
       commands::bid::BidInput::to_input_object(),
@@ -57,7 +73,7 @@ impl Mutation {
               amount: input.get("amount").unwrap().i64()?,
             };
 
-            let result = Self::bid(ctx.ctx, input).await?;
+            let result = commands::bid::bid(input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -92,7 +108,7 @@ impl Mutation {
                 .parse::<bits_core::Text>()?,
             };
 
-            let result = Self::comment(ctx.ctx, input).await?;
+            let result = commands::comment::comment(input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -113,7 +129,8 @@ impl Mutation {
               name: input.get("name").unwrap().string()?.parse()?,
             };
 
-            let result = Self::create_product(ctx.ctx, input).await?;
+            let result =
+              commands::create_product::create_product(input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -139,7 +156,7 @@ impl Mutation {
               name: input.get("name").unwrap().string()?.parse()?,
             };
 
-            let result = Self::create_show(ctx.ctx, input).await?;
+            let result = commands::create_show::create_show(input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -164,7 +181,7 @@ impl Mutation {
                 .parse::<bits_core::ShowId>()?,
             };
 
-            let result = Self::start_show(ctx.ctx, input).await?;
+            let result = commands::start_show::start_show(input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -194,7 +211,8 @@ impl Mutation {
                 .parse::<bits_core::ProductId>()?,
             };
 
-            let result = Self::add_auction_product(ctx.ctx, input).await?;
+            let result =
+              commands::add_auction_product::add_auction_product(input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
