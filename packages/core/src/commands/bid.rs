@@ -159,7 +159,7 @@ fn test_bid() {
     show_id: "28e9d842-0918-460f-9cd9-7245dbba1966".parse().unwrap(),
     product_id: "6bc8e88e-fc47-41c6-8dae-b180d1efae98".parse().unwrap(),
     started: Some("2023-10-16T23:56:27.365540Z".parse().unwrap()),
-    expired: Some(now + Duration::seconds(bits_data::AUCTION_TIMEOUT_SECS)),
+    expired: Some(now + bits_data::Duration::seconds(bits_data::AUCTION_TIMEOUT_SECS)),
   });
 
   let input = BidInput {

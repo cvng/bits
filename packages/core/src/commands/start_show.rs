@@ -144,18 +144,25 @@ fn test_start_show() {
 
   let show = Some(Show {
     id: "441fdcfb-1613-4ed8-8d31-9fe8708680b0".parse().unwrap(),
+    created: None,
+    updated: None,
     creator_id: "ba7220d5-af00-4815-89d3-5f852b733591".parse().unwrap(),
     name: "name".parse().unwrap(),
-    started_at: None,
+    started: None,
   });
 
   let product = Some(bits_data::Product {
     id: "e0c0e324-7b46-4020-ab33-bbbb91d26cfc".parse().unwrap(),
+    created: None,
+    updated: None,
+    creator_id: bits_data::UserId::new(),
     name: "name".parse().unwrap(),
   });
 
   let auction = Some(Auction {
     id: "a4d74d78-a628-4a0e-8e42-db3b4dca5f5c".parse().unwrap(),
+    created: None,
+    updated: None,
     show_id: show.as_ref().unwrap().id,
     product_id: product.as_ref().unwrap().id,
     started: Some("2023-10-17T02:55:11.788274Z".parse().unwrap()),
@@ -177,9 +184,11 @@ fn test_start_show() {
       "payload": {
         "show": {
           "id": "441fdcfb-1613-4ed8-8d31-9fe8708680b0",
+          "created": null,
+          "updated": null,
           "creator_id": "ba7220d5-af00-4815-89d3-5f852b733591",
           "name": "name",
-          "started_at": "2023-10-17T03:16:49.225067Z"
+          "started": "2023-10-17T03:16:49.225067Z"
         }
       }
     },
@@ -188,6 +197,8 @@ fn test_start_show() {
       "payload": {
         "auction": {
           "id": "a4d74d78-a628-4a0e-8e42-db3b4dca5f5c",
+          "created": null,
+          "updated": null,
           "show_id": "441fdcfb-1613-4ed8-8d31-9fe8708680b0",
           "product_id": "e0c0e324-7b46-4020-ab33-bbbb91d26cfc",
           "started": "2023-10-17T03:16:49.225067Z",

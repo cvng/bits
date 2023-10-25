@@ -127,9 +127,11 @@ pub async fn comment(input: CommentInput) -> Result<CommentResult, Error> {
 fn test_comment() {
   let show = Some(bits_data::Show {
     id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
+    created: None,
+    updated: None,
     creator_id: UserId::new(),
     name: "name".parse().unwrap(),
-    started_at: None,
+    started: None,
   });
 
   let input = CommentInput {
@@ -140,7 +142,9 @@ fn test_comment() {
 
   let comment = Some(Comment {
     id: "7cc32b32-c5c6-4034-89f9-8363d856ebb4".parse().unwrap(),
-    user_id: input.user_id,
+    created:None,
+    updated: None,
+    author_id: input.user_id,
     show_id: input.show_id,
     text: input.text,
   });
@@ -154,7 +158,9 @@ fn test_comment() {
       "payload": {
         "comment": {
           "id": "7cc32b32-c5c6-4034-89f9-8363d856ebb4",
-          "user_id": "9ad4e977-8156-450e-ad00-944f9fc730ab",
+          "created": null,
+          "updated": null,
+          "author_id": "9ad4e977-8156-450e-ad00-944f9fc730ab",
           "show_id": "f5e84179-7f8d-461b-a1d9-497974de10a6",
           "text": "text"
         }

@@ -127,13 +127,18 @@ pub async fn create_auction(
 fn test_create_auction() {
   let show = Some(bits_data::Show {
     id: "048b47f4-3010-43ae-84c1-8088ab8488a8".parse().unwrap(),
+    created: None,
+    updated: None,
     creator_id: bits_data::UserId::new(),
     name: "name".parse().unwrap(),
-    started_at: None,
+    started: None,
   });
 
   let product = Some(Product {
     id: "2b1af787-2d94-4224-a2fc-1d8d155537c0".parse().unwrap(),
+    created: None,
+    updated: None,
+    creator_id: bits_data::UserId::new(),
     name: "name".parse().unwrap(),
   });
 
@@ -144,6 +149,8 @@ fn test_create_auction() {
 
   let auction = Some(Auction {
     id: "177d1966-d688-486e-9b13-8709c0a434a0".parse().unwrap(),
+    created: None,
+    updated: None,
     show_id: input.show_id,
     product_id: input.product_id,
     started: None,
@@ -161,6 +168,8 @@ fn test_create_auction() {
       "payload": {
         "auction": {
           "id": "177d1966-d688-486e-9b13-8709c0a434a0",
+          "created": null,
+          "updated": null,
           "show_id": "048b47f4-3010-43ae-84c1-8088ab8488a8",
           "product_id": "2b1af787-2d94-4224-a2fc-1d8d155537c0",
           "started": null,

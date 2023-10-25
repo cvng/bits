@@ -134,6 +134,9 @@ fn test_create_product() {
       "payload": {
         "product": {
           "id": "f9f1436d-6ed5-4644-8e9e-7e14deffa2ec",
+          "created": null,
+          "updated": null,
+          "creator_id": "abbba031-f122-42b8-b6ff-585ad245aadd",
           "name": "name"
         }
       }

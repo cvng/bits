@@ -120,9 +120,11 @@ fn test_show() {
 
   let show = Some(Show {
     id: "15f4491c-c0ab-437e-bdfd-60a62ad8c857".parse().unwrap(),
+    created: None,
+    updated: None,
     creator_id: input.creator_id,
     name: input.name,
-    started_at: None,
+    started: None,
   });
 
   let events = CreateShowCommand { show }.handle(input).unwrap();
@@ -134,9 +136,11 @@ fn test_show() {
       "payload": {
         "show": {
           "id": "15f4491c-c0ab-437e-bdfd-60a62ad8c857",
+          "created": null,
+          "updated": null,
           "creator_id": "d9bd7c14-d793-47f3-a644-f97921c862ed",
           "name": "name",
-          "started_at": null
+          "started": null
         }
       }
     }
