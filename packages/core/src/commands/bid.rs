@@ -105,12 +105,6 @@ impl Command for BidCommand {
       .started
       .ok_or(Error::AuctionNotStarted(auction.id))?;
 
-    let expired_at = auction.expired;
-
-    (expired_at.is_none())
-      .then_some(())
-      .ok_or(Error::AuctionExpired(auction.id))?;
-
     Ok(vec![
       Event::bid_created(bid),
       Event::auction_revived(auction),
@@ -187,10 +181,12 @@ fn test_bid() {
       "payload": {
         "bid": {
           "id": "bcd0ab01-96f0-4469-a3e6-254afe70b74f",
+          "created": null,
+          "updated": null,
           "auction_id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
           "bidder_id": "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68",
-          "amount": 100,
-          "created_at": "2023-10-16T04:41:02.676340Z"
+          "concurrent_amount": null,
+          "amount": 100
         }
       }
     },
@@ -199,10 +195,12 @@ fn test_bid() {
       "payload": {
         "auction": {
           "id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
+          "created": null,
+          "updated": null,
           "show_id": "28e9d842-0918-460f-9cd9-7245dbba1966",
           "product_id": "6bc8e88e-fc47-41c6-8dae-b180d1efae98",
           "started": "2023-10-16T23:56:27.365540Z",
-          "expired": "2023-10-16T04:41:17.676340Z"
+          "expired": "2023-10-17T03:17:49.225067Z"
         }
       }
     }

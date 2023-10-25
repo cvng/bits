@@ -113,7 +113,7 @@ pub async fn create_product(
 #[test]
 fn test_create_product() {
   let input = CreateProductInput {
-    creator_id: UserId::new(),
+    creator_id: "abbba031-f122-42b8-b6ff-585ad245aadd".parse().unwrap(),
     name: "name".parse().unwrap(),
   };
 
