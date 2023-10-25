@@ -96,9 +96,11 @@ pub async fn create_show(
 ) -> Result<CreateShowResult, Error> {
   let show = Some(Show {
     id: ShowId::new(),
+    created: None,
+    updated: None,
     creator_id: input.creator_id,
     name: input.name,
-    started_at: None,
+    started: None,
   });
 
   CreateShowCommand { show }

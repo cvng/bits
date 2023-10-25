@@ -107,6 +107,8 @@ pub async fn create_auction(
 
   let auction = Some(Auction {
     id: AuctionId::new(),
+    created: None,
+    updated: None,
     show_id: input.show_id,
     product_id: input.product_id,
     started: None,

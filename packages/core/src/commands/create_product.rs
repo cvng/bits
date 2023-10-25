@@ -13,9 +13,11 @@ use bits_data::Event;
 use bits_data::Product;
 use bits_data::ProductId;
 use bits_data::Text;
+use bits_data::UserId;
 use thiserror::Error;
 
 pub struct CreateProductInput {
+  pub creator_id: UserId,
   pub name: Text,
 }
 
@@ -94,6 +96,9 @@ pub async fn create_product(
 ) -> Result<CreateProductResult, Error> {
   let product = Some(Product {
     id: ProductId::new(),
+    created: None,
+    updated: None,
+    creator_id: input.creator_id,
     name: input.name,
   });
 
@@ -108,11 +113,15 @@ pub async fn create_product(
 #[test]
 fn test_create_product() {
   let input = CreateProductInput {
+    creator_id: UserId::new(),
     name: "name".parse().unwrap(),
   };
 
   let product = Some(Product {
     id: "f9f1436d-6ed5-4644-8e9e-7e14deffa2ec".parse().unwrap(),
+    created: None,
+    updated: None,
+    creator_id: input.creator_id,
     name: input.name,
   });
 

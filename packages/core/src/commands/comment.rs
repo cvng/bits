@@ -108,7 +108,9 @@ pub async fn comment(input: CommentInput) -> Result<CommentResult, Error> {
 
   let comment = Some(Comment {
     id: CommentId::new(),
-    user_id: input.user_id,
+    created: None,
+    updated: None,
+    author_id: input.user_id,
     show_id: input.show_id,
     text: input.text,
   });

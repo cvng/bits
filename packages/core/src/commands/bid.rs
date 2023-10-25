@@ -15,12 +15,9 @@ use bits_data::Auction;
 use bits_data::AuctionId;
 use bits_data::Bid;
 use bits_data::BidId;
-use bits_data::Duration;
 use bits_data::Event;
 use bits_data::ProductId;
 use bits_data::UserId;
-use bits_data::Utc;
-use bits_data::AUCTION_REFRESH_SECS;
 use thiserror::Error;
 
 pub struct BidInput {
@@ -98,7 +95,7 @@ impl Command for BidCommand {
     &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let mut auction = self
+    let auction = self
       .auction
       .ok_or(Error::AuctionNotFound(input.auction_id))?;
 
@@ -108,16 +105,11 @@ impl Command for BidCommand {
       .started
       .ok_or(Error::AuctionNotStarted(auction.id))?;
 
-    let expired_at = auction
-      .expired
-      .ok_or(Error::AuctionNotStarted(auction.id))?;
+    let expired_at = auction.expired;
 
-    (bid.created_at < expired_at)
+    (expired_at.is_none())
       .then_some(())
       .ok_or(Error::AuctionExpired(auction.id))?;
-
-    auction.expired =
-      Some(bid.created_at + Duration::seconds(AUCTION_REFRESH_SECS));
 
     Ok(vec![
       Event::bid_created(bid),
@@ -138,10 +130,12 @@ pub async fn bid(input: BidInput) -> Result<BidResult, Error> {
 
   let bid = Some(Bid {
     id: BidId::new(),
+    created: None,
+    updated: None,
     auction_id: input.auction_id,
     bidder_id: input.bidder_id,
+    concurrent_amount: None,
     amount: input.amount,
-    created_at: Utc::now(),
   });
 
   BidCommand { auction, bid }
@@ -160,6 +154,8 @@ fn test_bid() {
 
   let auction = Some(Auction {
     id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
+    created: None,
+    updated: None,
     show_id: "28e9d842-0918-460f-9cd9-7245dbba1966".parse().unwrap(),
     product_id: "6bc8e88e-fc47-41c6-8dae-b180d1efae98".parse().unwrap(),
     started: Some("2023-10-16T23:56:27.365540Z".parse().unwrap()),
@@ -174,10 +170,12 @@ fn test_bid() {
 
   let bid = Some(Bid {
     id: "bcd0ab01-96f0-4469-a3e6-254afe70b74f".parse().unwrap(),
+    created: None,
+    updated: None,
     auction_id: input.auction_id,
     bidder_id: input.bidder_id,
+    concurrent_amount: None,
     amount: input.amount,
-    created_at: "2023-10-16T04:41:02.676340Z".parse().unwrap(),
   });
 
   let events = BidCommand { auction, bid }.handle(input).unwrap();

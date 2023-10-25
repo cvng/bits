@@ -12,6 +12,8 @@ id!(AuctionId);
 #[derive(Copy, Clone, Serialize, SimpleObject)]
 pub struct Auction {
   pub id: AuctionId,
+  pub created: Option<DateTime>,
+  pub updated: Option<DateTime>,
   pub show_id: ShowId,
   pub product_id: ProductId,
   pub started: Option<DateTime>,

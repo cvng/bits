@@ -9,7 +9,9 @@ id!(ShowId);
 #[derive(Copy, Clone, Serialize, SimpleObject)]
 pub struct Show {
   pub id: ShowId,
+  pub created: Option<DateTime>,
+  pub updated: Option<DateTime>,
   pub creator_id: UserId,
   pub name: Text,
-  pub started_at: Option<DateTime>,
+  pub started: Option<DateTime>,
 }

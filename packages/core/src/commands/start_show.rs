@@ -90,13 +90,13 @@ impl Command for StartShowCommand {
     let mut auction = self.auction.ok_or(Error::AuctionNotFound(show.id))?;
 
     // Check that the show hasn't already started.
-    if show.started_at.is_some() {
+    if show.started.is_some() {
       return Err(Error::AlreadyStarted(show.id));
     }
 
     let now = self.now;
 
-    show.started_at = Some(now);
+    show.started = Some(now);
     auction.started = Some(now);
 
     Ok(vec![
