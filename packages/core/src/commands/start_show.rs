@@ -150,7 +150,7 @@ fn test_start_show() {
   });
 
   let product = Some(bits_data::Product {
-    id: bits_data::ProductId::new(),
+    id: "e0c0e324-7b46-4020-ab33-bbbb91d26cfc".parse().unwrap(),
     name: "name".parse().unwrap(),
   });
 
