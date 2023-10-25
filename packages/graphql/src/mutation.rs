@@ -34,7 +34,6 @@ impl MutationBuilder {
   fn bid(&mut self) {
     self.outputs.push(commands::bid::BidResult::to_object());
     self.inputs.push(commands::bid::BidInput::to_input_object());
-
     self.mutations.push(
       Field::new(
         "bid".to_string(),
@@ -77,7 +76,6 @@ impl MutationBuilder {
     self
       .inputs
       .push(commands::comment::CommentInput::to_input_object());
-
     self.mutations.push(
       Field::new(
         "comment".to_string(),
@@ -124,7 +122,6 @@ impl MutationBuilder {
     self
       .inputs
       .push(commands::create_product::CreateProductInput::to_input_object());
-
     self.mutations.push(
       Field::new(
         "createProduct".to_string(),
@@ -158,7 +155,6 @@ impl MutationBuilder {
     self
       .inputs
       .push(commands::create_show::CreateShowInput::to_input_object());
-
     self.mutations.push(
       Field::new(
         "createShow".to_string(),
@@ -196,7 +192,6 @@ impl MutationBuilder {
     self
       .inputs
       .push(commands::start_show::StartShowInput::to_input_object());
-
     self.mutations.push(
       Field::new(
         "startShow".to_string(),
@@ -233,7 +228,6 @@ impl MutationBuilder {
     self.inputs.push(
       commands::add_auction_product::AddAuctionProductInput::to_input_object(),
     );
-
     self.mutations.push(
       Field::new(
         "addAuctionProduct".to_string(),
