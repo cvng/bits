@@ -1,8 +1,15 @@
 use crate::command::Command;
 use crate::database;
 use crate::dispatcher;
-use async_graphql::InputObject;
-use async_graphql::SimpleObject;
+use async_graphql::dynamic::indexmap::IndexMap;
+use async_graphql::dynamic::Field;
+use async_graphql::dynamic::FieldFuture;
+use async_graphql::dynamic::InputObject;
+use async_graphql::dynamic::InputValue;
+use async_graphql::dynamic::Object;
+use async_graphql::dynamic::TypeRef;
+use async_graphql::Name;
+use async_graphql::Value;
 use bits_data::Amount;
 use bits_data::Auction;
 use bits_data::AuctionId;
@@ -17,16 +24,45 @@ use bits_data::Utc;
 use bits_data::AUCTION_REFRESH_SECS;
 use thiserror::Error;
 
-#[derive(InputObject)]
 pub struct BidInput {
   pub user_id: UserId,
   pub product_id: AuctionProductId,
   pub amount: Amount,
 }
 
-#[derive(SimpleObject)]
+impl BidInput {
+  pub fn to_input_object() -> InputObject {
+    InputObject::new("BidInput")
+      .field(InputValue::new("userId", TypeRef::named_nn(TypeRef::ID)))
+      .field(InputValue::new("productId", TypeRef::named_nn(TypeRef::ID)))
+      .field(InputValue::new("amount", TypeRef::named_nn(TypeRef::INT)))
+  }
+}
+
 pub struct BidResult {
   pub bid: Bid,
+}
+
+impl BidResult {
+  pub fn to_object() -> Object {
+    Object::new("BidResult").field(Field::new(
+      "id".to_string(),
+      TypeRef::named_nn(TypeRef::ID),
+      |ctx| {
+        FieldFuture::new(
+          async move { Ok(ctx.parent_value.as_value().cloned()) },
+        )
+      },
+    ))
+  }
+}
+
+impl From<BidResult> for Value {
+  fn from(value: BidResult) -> Self {
+    let mut map = IndexMap::new();
+    map.insert(Name::new("id"), value.bid.id.to_string().into());
+    Value::Object(map)
+  }
 }
 
 #[derive(Debug, Error)]
@@ -114,7 +150,7 @@ impl Command for BidCommand {
   }
 }
 
-pub fn bid(input: BidInput) -> Result<BidResult, Error> {
+pub async fn bid(input: BidInput) -> Result<BidResult, Error> {
   let product = database::db()
     .auction_products
     .get(&input.product_id)

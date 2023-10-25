@@ -1,8 +1,15 @@
 use crate::command::Command;
 use crate::database;
 use crate::dispatcher;
-use async_graphql::InputObject;
-use async_graphql::SimpleObject;
+use async_graphql::dynamic::indexmap::IndexMap;
+use async_graphql::dynamic::Field;
+use async_graphql::dynamic::FieldFuture;
+use async_graphql::dynamic::InputObject;
+use async_graphql::dynamic::InputValue;
+use async_graphql::dynamic::Object;
+use async_graphql::dynamic::TypeRef;
+use async_graphql::Name;
+use async_graphql::Value;
 use bits_data::Comment;
 use bits_data::CommentId;
 use bits_data::Event;
@@ -12,16 +19,47 @@ use bits_data::Text;
 use bits_data::UserId;
 use thiserror::Error;
 
-#[derive(Copy, Clone, Serialize, InputObject)]
+#[derive(Copy, Clone, Serialize)]
 pub struct CommentInput {
   pub user_id: UserId,
   pub show_id: ShowId,
   pub text: Text,
 }
 
-#[derive(Serialize, SimpleObject)]
+impl CommentInput {
+  pub fn to_input_object() -> InputObject {
+    InputObject::new("CommentInput")
+      .field(InputValue::new("userId", TypeRef::named_nn(TypeRef::ID)))
+      .field(InputValue::new("showId", TypeRef::named_nn(TypeRef::ID)))
+      .field(InputValue::new("text", TypeRef::named_nn(TypeRef::STRING)))
+  }
+}
+
+#[derive(Serialize)]
 pub struct CommentResult {
   pub comment: Comment,
+}
+
+impl CommentResult {
+  pub fn to_object() -> Object {
+    Object::new("CommentResult").field(Field::new(
+      "id".to_string(),
+      TypeRef::named_nn(TypeRef::ID),
+      |ctx| {
+        FieldFuture::new(
+          async move { Ok(ctx.parent_value.as_value().cloned()) },
+        )
+      },
+    ))
+  }
+}
+
+impl From<CommentResult> for Value {
+  fn from(value: CommentResult) -> Self {
+    let mut map = IndexMap::new();
+    map.insert(Name::new("id"), value.comment.id.to_string().into());
+    Value::Object(map)
+  }
 }
 
 #[derive(Debug, Error)]
@@ -65,7 +103,7 @@ impl Command for CommentCommand {
   }
 }
 
-pub fn comment(input: CommentInput) -> Result<CommentResult, Error> {
+pub async fn comment(input: CommentInput) -> Result<CommentResult, Error> {
   let show = database::db().shows.get(&input.show_id).cloned();
 
   let comment = Some(Comment {
@@ -88,14 +126,14 @@ fn test_comment() {
   let show = Some(bits_data::Show {
     id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
     creator_id: UserId::new(),
-    name: Text::new("name"),
+    name: "name".parse().unwrap(),
     started_at: None,
   });
 
   let input = CommentInput {
     user_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
     show_id: show.as_ref().unwrap().id,
-    text: Text::new("text"),
+    text: "text".parse().unwrap(),
   };
 
   let comment = Some(Comment {

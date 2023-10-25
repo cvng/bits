@@ -1,7 +1,14 @@
 use crate::command::Command;
 use crate::dispatcher;
-use async_graphql::InputObject;
-use async_graphql::SimpleObject;
+use async_graphql::dynamic::indexmap::IndexMap;
+use async_graphql::dynamic::Field;
+use async_graphql::dynamic::FieldFuture;
+use async_graphql::dynamic::InputObject;
+use async_graphql::dynamic::InputValue;
+use async_graphql::dynamic::Object;
+use async_graphql::dynamic::TypeRef;
+use async_graphql::Name;
+use async_graphql::Value;
 use bits_data::Event;
 use bits_data::Show;
 use bits_data::ShowId;
@@ -9,17 +16,44 @@ use bits_data::Text;
 use bits_data::UserId;
 use thiserror::Error;
 
-#[derive(InputObject)]
 pub struct CreateShowInput {
   pub creator_id: UserId,
   pub name: Text,
 }
 
-#[derive(SimpleObject)]
+impl CreateShowInput {
+  pub fn to_input_object() -> InputObject {
+    InputObject::new("CreateShowInput")
+      .field(InputValue::new("creatorId", TypeRef::named_nn(TypeRef::ID)))
+      .field(InputValue::new("name", TypeRef::named_nn(TypeRef::STRING)))
+  }
+}
+
 pub struct CreateShowResult {
   pub show: Show,
 }
 
+impl CreateShowResult {
+  pub fn to_object() -> Object {
+    Object::new("CreateShowResult").field(Field::new(
+      "id".to_string(),
+      TypeRef::named_nn(TypeRef::ID),
+      |ctx| {
+        FieldFuture::new(
+          async move { Ok(ctx.parent_value.as_value().cloned()) },
+        )
+      },
+    ))
+  }
+}
+
+impl From<CreateShowResult> for Value {
+  fn from(value: CreateShowResult) -> Self {
+    let mut map = IndexMap::new();
+    map.insert(Name::new("id"), value.show.id.to_string().into());
+    Value::Object(map)
+  }
+}
 #[derive(Debug, Error)]
 pub enum Error {
   #[error("show not created")]
@@ -79,7 +113,7 @@ pub async fn create_show(
 fn test_show() {
   let input = CreateShowInput {
     creator_id: "d9bd7c14-d793-47f3-a644-f97921c862ed".parse().unwrap(),
-    name: Text::new("name"),
+    name: "name".parse().unwrap(),
   };
 
   let show = Some(Show {
