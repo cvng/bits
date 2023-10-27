@@ -5,9 +5,9 @@ extern crate serde;
 #[cfg(test)]
 extern crate insta;
 
+mod client;
 mod command;
 pub mod commands;
-mod context;
 mod database;
 mod dispatcher;
 mod error;
@@ -15,8 +15,8 @@ mod handlers;
 mod listener;
 
 pub use bits_data::*;
+pub use client::Client;
 pub use commands::*;
-pub use context::Context;
 pub use database::db;
 pub use listener::listen;
 pub use sea_orm;

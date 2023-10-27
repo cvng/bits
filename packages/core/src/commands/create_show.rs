@@ -1,6 +1,6 @@
 use crate::command::Command;
 use crate::dispatcher;
-use crate::Context;
+use crate::Client;
 use async_graphql::dynamic::indexmap::IndexMap;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
@@ -92,7 +92,7 @@ impl Command for CreateShowCommand {
 }
 
 pub async fn create_show(
-  ctx: &Context,
+  client: &Client,
   input: CreateShowInput,
 ) -> Result<CreateShowResult, Error> {
   let show = Some(Show {
@@ -104,7 +104,7 @@ pub async fn create_show(
     started: None,
   });
 
-  dispatcher::dispatch(ctx, CreateShowCommand { show }.handle(input)?)
+  dispatcher::dispatch(client, CreateShowCommand { show }.handle(input)?)
     .await
     .map(CreateShowCommand::apply)
     .map_err(|_| Error::NotCreated)?

@@ -1,10 +1,10 @@
 use sea_orm::DatabaseConnection;
 
-pub struct Context {
+pub struct Client {
   connection: DatabaseConnection,
 }
 
-impl Context {
+impl Client {
   pub fn new(connection: DatabaseConnection) -> Self {
     Self { connection }
   }

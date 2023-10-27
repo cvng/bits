@@ -1,10 +1,10 @@
 use crate::database;
 use crate::error::Error;
 use crate::error::Result;
-use crate::Context;
+use crate::Client;
 use bits_data::ShowCreated;
 
-pub async fn show_created(_ctx: &Context, event: ShowCreated) -> Result<()> {
+pub async fn show_created(_client: &Client, event: ShowCreated) -> Result<()> {
   database::db()
     .shows
     .insert(event.show.id, event.show.clone())

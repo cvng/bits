@@ -1,7 +1,7 @@
 use crate::command::Command;
 use crate::database;
 use crate::dispatcher;
-use crate::Context;
+use crate::Client;
 use async_graphql::dynamic::indexmap::IndexMap;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
@@ -107,7 +107,7 @@ impl Command for CommentCommand {
 }
 
 pub async fn comment(
-  ctx: &Context,
+  client: &Client,
   input: CommentInput,
 ) -> Result<CommentResult, Error> {
   let show = database::db().shows.get(&input.show_id).cloned();
@@ -121,7 +121,7 @@ pub async fn comment(
     text: input.text.clone(),
   });
 
-  dispatcher::dispatch(ctx, CommentCommand { show, comment }.handle(input)?)
+  dispatcher::dispatch(client, CommentCommand { show, comment }.handle(input)?)
     .await
     .map(CommentCommand::apply)
     .map_err(|_| Error::NotCreated)?

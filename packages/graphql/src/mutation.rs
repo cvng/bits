@@ -6,7 +6,7 @@ use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
 use bits_core::commands;
-use bits_core::Context;
+use bits_core::Client;
 
 pub struct MutationBuilder {
   pub outputs: Vec<Object>,
@@ -41,7 +41,7 @@ impl MutationBuilder {
         TypeRef::named_nn("BidResult"),
         move |ctx| {
           FieldFuture::new(async move {
-            let context = ctx.data::<Context>()?;
+            let client = ctx.data::<Client>()?;
 
             let input = &ctx.args.get("input").unwrap().object()?;
 
@@ -59,7 +59,7 @@ impl MutationBuilder {
               amount: input.get("amount").unwrap().i64()?.into(),
             };
 
-            let result = commands::bid::bid(context, input).await?;
+            let result = commands::bid::bid(client, input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -85,7 +85,7 @@ impl MutationBuilder {
         TypeRef::named_nn("CommentResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
-            let context = ctx.data::<Context>()?;
+            let client = ctx.data::<Client>()?;
 
             let input = &ctx.args.get("input").unwrap().object()?;
 
@@ -103,7 +103,7 @@ impl MutationBuilder {
               text: input.get("text").unwrap().string()?.parse()?,
             };
 
-            let result = commands::comment::comment(context, input).await?;
+            let result = commands::comment::comment(client, input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -129,7 +129,7 @@ impl MutationBuilder {
         TypeRef::named_nn("CreateProductResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
-            let context = ctx.data::<Context>()?;
+            let client = ctx.data::<Client>()?;
 
             let input = &ctx.args.get("input").unwrap().object()?;
 
@@ -143,7 +143,7 @@ impl MutationBuilder {
             };
 
             let result =
-              commands::create_product::create_product(context, input).await?;
+              commands::create_product::create_product(client, input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -169,7 +169,7 @@ impl MutationBuilder {
         TypeRef::named_nn("CreateShowResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
-            let context = ctx.data::<Context>()?;
+            let client = ctx.data::<Client>()?;
 
             let input = &ctx.args.get("input").unwrap().object()?;
 
@@ -183,7 +183,7 @@ impl MutationBuilder {
             };
 
             let result =
-              commands::create_show::create_show(context, input).await?;
+              commands::create_show::create_show(client, input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -209,7 +209,7 @@ impl MutationBuilder {
         TypeRef::named_nn("StartShowResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
-            let context = ctx.data::<Context>()?;
+            let client = ctx.data::<Client>()?;
 
             let input = &ctx.args.get("input").unwrap().object()?;
 
@@ -222,7 +222,7 @@ impl MutationBuilder {
             };
 
             let result =
-              commands::start_show::start_show(context, input).await?;
+              commands::start_show::start_show(client, input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -248,7 +248,7 @@ impl MutationBuilder {
         TypeRef::named_nn("CreateAuctionResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
-            let context = ctx.data::<Context>()?;
+            let client = ctx.data::<Client>()?;
 
             let input = &ctx.args.get("input").unwrap().object()?;
 
@@ -266,7 +266,7 @@ impl MutationBuilder {
             };
 
             let result =
-              commands::create_auction::create_auction(context, input).await?;
+              commands::create_auction::create_auction(client, input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })

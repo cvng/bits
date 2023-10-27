@@ -1,6 +1,6 @@
 use crate::command::Command;
 use crate::dispatcher;
-use crate::Context;
+use crate::Client;
 use async_graphql::dynamic::indexmap::IndexMap;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
@@ -92,7 +92,7 @@ impl Command for CreateProductCommand {
 }
 
 pub async fn create_product(
-  ctx: &Context,
+  client: &Client,
   input: CreateProductInput,
 ) -> Result<CreateProductResult, Error> {
   let product = Some(Product {
@@ -103,7 +103,7 @@ pub async fn create_product(
     name: input.name.clone(),
   });
 
-  dispatcher::dispatch(ctx, CreateProductCommand { product }.handle(input)?)
+  dispatcher::dispatch(client, CreateProductCommand { product }.handle(input)?)
     .await
     .map(CreateProductCommand::apply)
     .map_err(|_| Error::NotCreated)?

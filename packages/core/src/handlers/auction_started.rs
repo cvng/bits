@@ -1,11 +1,11 @@
 use crate::database;
 use crate::error::Error;
 use crate::error::Result;
-use crate::Context;
+use crate::Client;
 use bits_data::AuctionStarted;
 
 pub async fn auction_started(
-  _ctx: &Context,
+  _client: &Client,
   event: AuctionStarted,
 ) -> Result<()> {
   database::db()

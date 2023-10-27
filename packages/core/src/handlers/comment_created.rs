@@ -1,11 +1,11 @@
 use crate::database;
 use crate::error::Error;
 use crate::error::Result;
-use crate::Context;
+use crate::Client;
 use bits_data::CommentCreated;
 
 pub async fn comment_created(
-  _ctx: &Context,
+  _client: &Client,
   event: CommentCreated,
 ) -> Result<()> {
   database::db()
