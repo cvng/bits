@@ -5,40 +5,40 @@ source .env
 
 # Seed data from JSON event "stream" & test permissions
 
-host="postgres://postgres:password@localhost:5432/bits"
+host="$DATABASE_URL"
 name="bits"
 file="tasks/seed.json"
 
-psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
+psql "$host" --variable=ON_ERROR_STOP=1 --quiet \
 <<SQL
 \connect $name;
 
-alter role authenticator with password 'password';
 create table if not exists tmp (row jsonb);
 grant select on tmp to public;
 SQL
 
-jq --compact-output ".[]" "$file" | psql "$host" --no-psqlrc \
+jq --compact-output ".[]" "$file" | psql "$host" \
     --variable=ON_ERROR_STOP=1 --quiet --command="\copy tmp (row) from stdin;"
 
-psql "$DATABASE_URL" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
+psql "$host" --variable=ON_ERROR_STOP=1 --quiet \
 <<SQL
 \connect $name;
 
-do \$$ begin execute auth.login('seller', '00000000-1000-0000-0000-000000000000'); end \$$;
-insert into cqrs.event (type, data)
-select
-    (row->>'type')::cqrs.event_type,
-    (row->>'data')::jsonb
-from tmp where row->>'role' = 'seller';
+insert into auth.person (id, email, role)
+values ('00000000-0000-0000-0000-000000000000', 'admin@test.dev', 'admin');
 
-do \$$ begin execute auth.login('bidder', '00000000-2000-0000-0000-000000000000'); end \$$;
-insert into cqrs.event (type, data)
-select
-    (row->>'type')::cqrs.event_type,
-    (row->>'data')::jsonb
-from tmp where row->>'role' = 'bidder';
+do \$$
+declare
+    event jsonb;
+begin
+for event in select row from tmp loop
+    perform auth.login((event->>'user')::id);
 
-do \$$ begin execute auth.login('administrator', '00000000-0000-0000-0000-000000000000'); end \$$;
+    insert into cqrs.event (type, data)
+    values ((event->>'type')::cqrs.event_type, (event->>'data')::jsonb);
+end loop;
+end; \$$;
+
+do \$$ begin perform auth.login('00000000-0000-0000-0000-000000000000'); end; \$$;
 select id, created, type, data->>'id' as "data.id" from cqrs.event;
 SQL

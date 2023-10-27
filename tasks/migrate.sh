@@ -1,17 +1,17 @@
 # https://www.postgresql.org/docs/current/app-psql.html
 
 set -e
+source .env
 
-host="postgres://postgres:password@localhost:5432/bits"
+host="$DATABASE_URL"
 name="bits"
 
-psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
+psql "$host" --variable=ON_ERROR_STOP=1 --quiet \
 <<SQL
 \connect postgres;
 
 drop database if exists $name with (force);
-drop role if exists administrator;
-drop role if exists authenticator;
+drop role if exists admin;
 drop role if exists bidder;
 drop role if exists seller;
 drop role if exists viewer;
@@ -19,5 +19,4 @@ drop role if exists viewer;
 create database $name;
 SQL
 
-psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
-    --file="docs/schema.sql"
+psql "$host" --variable=ON_ERROR_STOP=1 --quiet --file="docs/schema.sql"

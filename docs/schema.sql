@@ -1,4 +1,8 @@
--- Schema https://github.com/cvng/bits/tree/main/docs/schema.sql (work@cvng.dev)
+-- https://github.com/cvng/bits/tree/main/docs/schema.sql (work@cvng.dev)
+
+--
+-- Schema
+--
 
 create schema auth;
 create schema cqrs;
@@ -9,11 +13,19 @@ create schema shop;
 -- Roles
 --
 
-create role administrator;
-create role authenticator noinherit login;
+create role admin;
 create role bidder;
 create role seller;
-create role viewer;
+create role viewer noinherit;
+
+grant viewer to bidder;
+grant bidder to seller;
+grant seller to admin;
+
+grant usage on schema auth to viewer;
+grant usage on schema cqrs to viewer;
+grant usage on schema live to bidder;
+grant usage on schema shop to bidder;
 
 --
 -- Domains
@@ -28,7 +40,7 @@ create domain email as text check (value = lower(value) and value like '%@%');
 --
 
 create type auth.role as enum (
-  'administrator',
+  'admin',
   'bidder',
   'seller',
   'viewer'
@@ -69,7 +81,8 @@ create type cqrs.comment_created as (
 
 create type cqrs.person_created as (
   id id,
-  email email
+  email email,
+  role auth.role
 );
 
 create type cqrs.product_created as (
@@ -105,7 +118,8 @@ create table auth.person (
   id id not null primary key,
   created timestamptz not null default clock_timestamp(),
   updated timestamptz,
-  email email not null unique
+  email email not null unique,
+  role auth.role not null default 'viewer'::auth.role
 );
 
 alter table auth.person enable row level security;
@@ -177,22 +191,8 @@ create table shop.bid (
 alter table shop.bid enable row level security;
 
 --
--- Grants
+-- Privileges
 --
-
--- Hierarchy
-
-grant viewer to bidder, seller, administrator, authenticator;
-grant bidder to seller;
-grant seller to administrator;
-grant administrator to authenticator;
-
--- Schema
-
-grant usage on schema auth to viewer, authenticator;
-grant usage on schema cqrs to viewer;
-grant usage on schema live to bidder;
-grant usage on schema shop to bidder;
 
 -- Table: cqrs.event
 
@@ -202,7 +202,7 @@ grant insert on cqrs.event to viewer;
 -- Table: auth.person
 
 grant select on auth.person to viewer;
-grant insert on auth.person to viewer;
+grant insert on auth.person to admin;
 
 -- Table: live.comment
 
@@ -230,14 +230,24 @@ grant select on shop.product to viewer;
 grant insert on shop.product to seller;
 
 --
--- Policies
+-- Utilities
 --
 
-create function auth.login(granted_role auth.role, user_id id)
-returns void as $$
+create function auth.login(user_id id) returns void as $$
+declare
+  enabled_role auth.role;
 begin
-  perform set_config('role', granted_role::text, false);
+  enabled_role := (select role from auth.person where id = user_id);
+  assert enabled_role is not null;
+
+  perform set_config('role', enabled_role::text, false);
   perform set_config('auth.user', user_id::text, false);
+end;
+$$ language plpgsql;
+
+create function auth.role() returns auth.role as $$
+begin
+  return (current_setting('role'))::auth.role;
 end;
 $$ language plpgsql;
 
@@ -247,16 +257,14 @@ begin
 end;
 $$ language plpgsql;
 
-create function auth.role() returns auth.role as $$
-begin
-  return current_role::auth.role;
-end;
-$$ language plpgsql;
+--
+-- Policies
+--
 
 -- Table: cqrs.event
 
 create policy event_select_policy on cqrs.event for select to viewer
-using ('administrator'::auth.role = auth.role());
+using ('admin'::auth.role = auth.role());
 
 create policy event_insert_policy on cqrs.event for insert to viewer
 with check (true);
@@ -264,10 +272,10 @@ with check (true);
 -- Table: auth.person
 
 create policy person_select_policy on auth.person for select to viewer
-using (id = auth.user());
+using (true);
 
-create policy person_insert_policy on auth.person for insert to viewer
-with check (id = auth.user());
+create policy person_insert_policy on auth.person for insert to admin
+with check (true);
 
 -- Table: live.show
 
@@ -390,8 +398,8 @@ returns void as $$
 declare
   current_max_amount amount;
 begin
-  select max(amount) into current_max_amount
-  from shop.bid where auction_id = event.auction_id;
+  current_max_amount :=
+    (select max(amount) from shop.bid where auction_id = event.auction_id);
 
   insert into shop.bid (id, auction_id, bidder_id, concurrent_amount, amount)
   values (
@@ -415,8 +423,8 @@ $$ language plpgsql;
 create function cqrs.person_created_handler(event cqrs.person_created)
 returns void as $$
 begin
-  insert into auth.person (id, email)
-  values (event.id, event.email);
+  insert into auth.person (id, email, role)
+  values (event.id, event.email, event.role);
 end;
 $$ language plpgsql;
 
