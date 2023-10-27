@@ -9,7 +9,7 @@ create schema shop;
 -- Roles
 --
 
-create role administrator noinherit login;
+create role admin;
 create role bidder;
 create role seller;
 create role viewer;
@@ -27,7 +27,7 @@ create domain email as text check (value = lower(value) and value like '%@%');
 --
 
 create type auth.role as enum (
-  'administrator',
+  'admin',
   'bidder',
   'seller',
   'viewer'
@@ -195,7 +195,7 @@ alter table shop.bid enable row level security;
 
 grant viewer to bidder;
 grant bidder to seller;
-grant seller to administrator;
+grant seller to admin;
 
 -- Schema
 
@@ -212,13 +212,13 @@ grant insert on cqrs.event to viewer;
 -- Table: auth.person
 
 grant select on auth.person to viewer;
-grant insert on auth.person to administrator;
+grant insert on auth.person to admin;
 grant update on auth.person to viewer;
 
 -- Table: auth.person_role
 
 grant select on auth.person_role to viewer;
-grant insert on auth.person_role to administrator;
+grant insert on auth.person_role to admin;
 
 -- Table: live.comment
 
@@ -290,7 +290,7 @@ $$ language plpgsql;
 -- Table: cqrs.event
 
 create policy event_select_policy on cqrs.event for select to viewer
-using ('administrator'::auth.role = auth.role());
+using ('admin'::auth.role = auth.role());
 
 create policy event_insert_policy on cqrs.event for insert to viewer
 with check (true);
@@ -300,7 +300,7 @@ with check (true);
 create policy person_select_policy on auth.person for select to viewer
 using (id = auth.user());
 
-create policy person_insert_policy on auth.person for insert to administrator
+create policy person_insert_policy on auth.person for insert to admin
 with check (true);
 
 create policy person_update_policy on auth.person for update to viewer
@@ -309,9 +309,9 @@ using (id = auth.user());
 -- Table: auth.person_role
 
 create policy person_role_select_policy on auth.person_role for select to viewer
-using (id = auth.user());
+using (person_id = auth.user());
 
-create policy person_role_insert_policy on auth.person_role for insert to administrator --noqa: LT05
+create policy person_role_insert_policy on auth.person_role for insert to admin
 with check (true);
 
 -- Table: live.show
@@ -460,9 +460,8 @@ $$ language plpgsql;
 create function cqrs.person_created_handler(event cqrs.person_created)
 returns void as $$
 begin
-  insert into auth.person (id, email, name)
-  values (event.id, event.email, event.name)
-  on conflict (id) do update set email = excluded.email, name = excluded.name;
+  update auth.person set (email, name) = (event.email, event.name)
+  where id = event.id;
 end;
 $$ language plpgsql;
 
