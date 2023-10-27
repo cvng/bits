@@ -24,20 +24,21 @@ psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
 <<SQL
 \connect $name;
 
-select auth.register('00000000-0000-0000-0000-000000000000', 'admin@test.dev', 'admin');
-select auth.register('00000000-1000-0000-0000-000000000000', 'seller@test.dev', 'seller');
-select auth.register('00000000-2000-0000-0000-000000000000', 'bidder@test.dev', 'bidder');
+insert into auth.person (id, email, role)
+values ('00000000-0000-0000-0000-000000000000', 'admin@test.dev', 'admin');
 
-select auth.login('00000000-1000-0000-0000-000000000000');
-insert into cqrs.event (type, data)
-select (row->>'type')::cqrs.event_type, (row->>'data')::jsonb
-from tmp where row->>'user' = '00000000-1000-0000-0000-000000000000';
+do \$$
+declare
+    event jsonb;
+begin
+for event in select row from tmp loop
+    perform auth.login((event->>'user')::id);
 
-select auth.login('00000000-2000-0000-0000-000000000000');
-insert into cqrs.event (type, data)
-select (row->>'type')::cqrs.event_type, (row->>'data')::jsonb
-from tmp where row->>'user' = '00000000-2000-0000-0000-000000000000';
+    insert into cqrs.event (type, data)
+    values ((event->>'type')::cqrs.event_type, (event->>'data')::jsonb);
+end loop;
+end; \$$;
 
-select auth.login('00000000-0000-0000-0000-000000000000');
+do \$$ begin perform auth.login('00000000-0000-0000-0000-000000000000'); end; \$$;
 select id, created, type, data->>'id' as "data.id" from cqrs.event;
 SQL

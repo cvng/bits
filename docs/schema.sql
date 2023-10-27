@@ -82,7 +82,7 @@ create type cqrs.comment_created as (
 create type cqrs.person_created as (
   id id,
   email email,
-  name text
+  role auth.role
 );
 
 create type cqrs.product_created as (
@@ -119,8 +119,7 @@ create table auth.person (
   created timestamptz not null default clock_timestamp(),
   updated timestamptz,
   email email not null unique,
-  role auth.role not null default 'viewer'::auth.role,
-  name text
+  role auth.role not null default 'viewer'::auth.role
 );
 
 alter table auth.person enable row level security;
@@ -234,14 +233,6 @@ grant insert on shop.product to seller;
 --
 -- Functions
 --
-
-create function auth.register(user_id id, user_email email, user_role auth.role)
-returns void as $$
-begin
-  insert into auth.person (id, email, role)
-  values (user_id, user_email, user_role);
-end;
-$$ language plpgsql;
 
 create function auth.login(user_id id) returns void as $$
 declare
@@ -435,8 +426,8 @@ $$ language plpgsql;
 create function cqrs.person_created_handler(event cqrs.person_created)
 returns void as $$
 begin
-  update auth.person set (email, name) = (event.email, event.name)
-  where id = event.id;
+  insert into auth.person (id, email, role)
+  values (event.id, event.email, event.role);
 end;
 $$ language plpgsql;
 
