@@ -1,5 +1,6 @@
 mod server;
 
+use bits_graphql::Client;
 use bits_graphql::Database;
 use server::Server;
 use std::env;
@@ -17,7 +18,9 @@ async fn main() {
     .await
     .expect("Fail to initialize database connection");
 
-  let schema = bits_graphql::schema(connection)
+  let client = Client::new(connection.clone());
+
+  let schema = bits_graphql::schema(client)
     .finish()
     .expect("Fail to initialize GraphQL schema");
 

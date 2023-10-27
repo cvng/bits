@@ -8,7 +8,6 @@ use bits_core::entities::product;
 use bits_core::entities::show;
 use bits_core::sea_orm;
 use bits_core::Client;
-use bits_core::DatabaseConnection;
 use lazy_static::lazy_static;
 use seaography::register_entities;
 use seaography::Builder;
@@ -21,14 +20,15 @@ lazy_static! {
 pub type Schema = async_graphql::dynamic::Schema;
 
 /// Build the GraphQL schema. TODO: limit depth & complexity
-pub fn schema(connection: DatabaseConnection) -> SchemaBuilder {
-  let context = Client::new(connection.clone());
-
-  let builder = Builder::new(&CONTEXT, connection.clone());
+pub fn schema(client: Client) -> SchemaBuilder {
+  let builder = Builder::new(&CONTEXT, client.connection().clone());
   let builder = register_entities(builder);
   let builder = register_mutations(builder);
 
-  builder.schema_builder().data(connection).data(context)
+  builder
+    .schema_builder()
+    .data(client.connection().clone())
+    .data(client)
 }
 
 fn register_entities(mut builder: Builder) -> Builder {

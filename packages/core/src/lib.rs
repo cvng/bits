@@ -21,4 +21,3 @@ pub use database::db;
 pub use listener::listen;
 pub use sea_orm;
 pub use sea_orm::Database;
-pub use sea_orm::DatabaseConnection;
