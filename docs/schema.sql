@@ -119,20 +119,11 @@ create table auth.person (
   created timestamptz not null default clock_timestamp(),
   updated timestamptz,
   email email not null unique,
+  role auth.role not null default 'viewer'::auth.role,
   name text
 );
 
 alter table auth.person enable row level security;
-
--- Table: auth.person_role
-
-create table auth.person_role (
-  id id not null primary key,
-  person_id id not null references auth.person (id),
-  role auth.role not null default 'viewer'::auth.role
-);
-
-alter table auth.person_role enable row level security;
 
 -- Table: live.show
 
@@ -215,11 +206,6 @@ grant select on auth.person to viewer;
 grant insert on auth.person to admin;
 grant update on auth.person to viewer;
 
--- Table: auth.person_role
-
-grant select on auth.person_role to viewer;
-grant insert on auth.person_role to admin;
-
 -- Table: live.comment
 
 grant select on live.comment to viewer;
@@ -249,14 +235,11 @@ grant insert on shop.product to seller;
 -- Functions
 --
 
-create function auth.register(user_id id, user_role auth.role, user_email email)
+create function auth.register(user_id id, user_email email, user_role auth.role)
 returns void as $$
 begin
-  insert into auth.person (id, email)
-  values (user_id, user_email);
-
-  insert into auth.person_role (id, person_id, role)
-  values (gen_random_uuid(), user_id, user_role);
+  insert into auth.person (id, email, role)
+  values (user_id, user_email, user_role);
 end;
 $$ language plpgsql;
 
@@ -264,7 +247,7 @@ create function auth.login(user_id id) returns void as $$
 declare
   user_role auth.role;
 begin
-  select role into user_role from auth.person_role where person_id = user_id;
+  select role into user_role from auth.person where id = user_id;
 
   perform set_config('role', user_role::text, false);
   perform set_config('auth.user', user_id::text, false);
@@ -305,14 +288,6 @@ with check (true);
 
 create policy person_update_policy on auth.person for update to viewer
 using (id = auth.user());
-
--- Table: auth.person_role
-
-create policy person_role_select_policy on auth.person_role for select to viewer
-using (person_id = auth.user());
-
-create policy person_role_insert_policy on auth.person_role for insert to admin
-with check (true);
 
 -- Table: live.show
 

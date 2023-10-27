@@ -24,9 +24,9 @@ psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
 <<SQL
 \connect $name;
 
-select auth.register('00000000-0000-0000-0000-000000000000', 'admin', 'admin@test.dev');
-select auth.register('00000000-1000-0000-0000-000000000000', 'seller', 'seller@test.dev');
-select auth.register('00000000-2000-0000-0000-000000000000', 'bidder', 'bidder@test.dev');
+select auth.register('00000000-0000-0000-0000-000000000000', 'admin@test.dev', 'admin');
+select auth.register('00000000-1000-0000-0000-000000000000', 'seller@test.dev', 'seller');
+select auth.register('00000000-2000-0000-0000-000000000000', 'bidder@test.dev', 'bidder');
 
 select auth.login('00000000-1000-0000-0000-000000000000');
 insert into cqrs.event (type, data)
