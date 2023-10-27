@@ -203,7 +203,6 @@ grant insert on cqrs.event to viewer;
 
 grant select on auth.person to viewer;
 grant insert on auth.person to admin;
-grant update on auth.person to viewer;
 
 -- Table: live.comment
 
