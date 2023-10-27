@@ -1,8 +1,9 @@
 # https://www.postgresql.org/docs/current/app-psql.html
 
 set -e
+source .env
 
-host="postgres://postgres:password@localhost:5432/bits"
+host="$DATABASE_URL"
 name="bits"
 
 psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \

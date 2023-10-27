@@ -5,7 +5,7 @@ source .env
 
 # Seed data from JSON event "stream" & test permissions
 
-host="postgres://postgres:password@localhost:5432/bits"
+host="$DATABASE_URL"
 name="bits"
 file="tasks/seed.json"
 
@@ -20,7 +20,7 @@ SQL
 jq --compact-output ".[]" "$file" | psql "$host" --no-psqlrc \
     --variable=ON_ERROR_STOP=1 --quiet --command="\copy tmp (row) from stdin;"
 
-psql "$DATABASE_URL" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
+psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
 <<SQL
 \connect $name;
 
