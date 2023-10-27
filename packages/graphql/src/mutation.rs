@@ -6,6 +6,7 @@ use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
 use bits_core::commands;
+use bits_core::Context;
 
 pub struct MutationBuilder {
   pub outputs: Vec<Object>,
@@ -40,11 +41,13 @@ impl MutationBuilder {
         TypeRef::named_nn("BidResult"),
         move |ctx| {
           FieldFuture::new(async move {
+            let context = ctx.data::<Context>()?;
+
             let input = &ctx.args.get("input").unwrap().object()?;
 
             let input = commands::bid::BidInput {
               auction_id: input
-                .get("showId")
+                .get("auctionId")
                 .unwrap()
                 .string()?
                 .parse::<bits_core::AuctionId>()?,
@@ -56,7 +59,7 @@ impl MutationBuilder {
               amount: input.get("amount").unwrap().i64()?.into(),
             };
 
-            let result = commands::bid::bid(input).await?;
+            let result = commands::bid::bid(context, input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -82,6 +85,8 @@ impl MutationBuilder {
         TypeRef::named_nn("CommentResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
+            let context = ctx.data::<Context>()?;
+
             let input = &ctx.args.get("input").unwrap().object()?;
 
             let input = commands::comment::CommentInput {
@@ -98,7 +103,7 @@ impl MutationBuilder {
               text: input.get("text").unwrap().string()?.parse()?,
             };
 
-            let result = commands::comment::comment(input).await?;
+            let result = commands::comment::comment(context, input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -124,6 +129,8 @@ impl MutationBuilder {
         TypeRef::named_nn("CreateProductResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
+            let context = ctx.data::<Context>()?;
+
             let input = &ctx.args.get("input").unwrap().object()?;
 
             let input = commands::create_product::CreateProductInput {
@@ -136,7 +143,7 @@ impl MutationBuilder {
             };
 
             let result =
-              commands::create_product::create_product(input).await?;
+              commands::create_product::create_product(context, input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -162,6 +169,8 @@ impl MutationBuilder {
         TypeRef::named_nn("CreateShowResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
+            let context = ctx.data::<Context>()?;
+
             let input = &ctx.args.get("input").unwrap().object()?;
 
             let input = commands::create_show::CreateShowInput {
@@ -173,7 +182,8 @@ impl MutationBuilder {
               name: input.get("name").unwrap().string()?.parse()?,
             };
 
-            let result = commands::create_show::create_show(input).await?;
+            let result =
+              commands::create_show::create_show(context, input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -199,6 +209,8 @@ impl MutationBuilder {
         TypeRef::named_nn("StartShowResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
+            let context = ctx.data::<Context>()?;
+
             let input = &ctx.args.get("input").unwrap().object()?;
 
             let input = commands::start_show::StartShowInput {
@@ -209,7 +221,8 @@ impl MutationBuilder {
                 .parse::<bits_core::ShowId>()?,
             };
 
-            let result = commands::start_show::start_show(input).await?;
+            let result =
+              commands::start_show::start_show(context, input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
@@ -235,6 +248,8 @@ impl MutationBuilder {
         TypeRef::named_nn("CreateAuctionResult".to_string()),
         move |ctx| {
           FieldFuture::new(async move {
+            let context = ctx.data::<Context>()?;
+
             let input = &ctx.args.get("input").unwrap().object()?;
 
             let input = commands::create_auction::CreateAuctionInput {
@@ -251,7 +266,7 @@ impl MutationBuilder {
             };
 
             let result =
-              commands::create_auction::create_auction(input).await?;
+              commands::create_auction::create_auction(context, input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })

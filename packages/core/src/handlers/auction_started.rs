@@ -1,9 +1,13 @@
 use crate::database;
 use crate::error::Error;
 use crate::error::Result;
+use crate::Context;
 use bits_data::AuctionStarted;
 
-pub fn auction_started(event: AuctionStarted) -> Result<()> {
+pub async fn auction_started(
+  _ctx: &Context,
+  event: AuctionStarted,
+) -> Result<()> {
   database::db()
     .auctions
     .insert(event.auction.id, event.auction.clone())

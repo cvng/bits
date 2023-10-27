@@ -1,9 +1,13 @@
 use crate::database;
 use crate::error::Error;
 use crate::error::Result;
+use crate::Context;
 use bits_data::ProductCreated;
 
-pub fn product_created(event: ProductCreated) -> Result<()> {
+pub async fn product_created(
+  _ctx: &Context,
+  event: ProductCreated,
+) -> Result<()> {
   database::db()
     .products
     .insert(event.product.id, event.product.clone())
