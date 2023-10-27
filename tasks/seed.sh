@@ -9,7 +9,7 @@ host="$DATABASE_URL"
 name="bits"
 file="tasks/seed.json"
 
-psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
+psql "$host" --variable=ON_ERROR_STOP=1 --quiet \
 <<SQL
 \connect $name;
 
@@ -17,10 +17,10 @@ create table if not exists tmp (row jsonb);
 grant select on tmp to public;
 SQL
 
-jq --compact-output ".[]" "$file" | psql "$host" --no-psqlrc \
+jq --compact-output ".[]" "$file" | psql "$host" \
     --variable=ON_ERROR_STOP=1 --quiet --command="\copy tmp (row) from stdin;"
 
-psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
+psql "$host" --variable=ON_ERROR_STOP=1 --quiet \
 <<SQL
 \connect $name;
 

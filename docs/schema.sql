@@ -231,29 +231,30 @@ grant select on shop.product to viewer;
 grant insert on shop.product to seller;
 
 --
--- Functions
+-- Utilities
 --
 
 create function auth.login(user_id id) returns void as $$
 declare
-  user_role auth.role;
+  enabled_role auth.role;
 begin
-  select role into user_role from auth.person where id = user_id;
+  select role into enabled_role from auth.person where id = user_id;
+  assert enabled_role is not null;
 
-  perform set_config('role', user_role::text, false);
+  perform set_config('role', enabled_role::text, false);
   perform set_config('auth.user', user_id::text, false);
+end;
+$$ language plpgsql;
+
+create function auth.role() returns auth.role as $$
+begin
+  return (current_setting('role'))::auth.role;
 end;
 $$ language plpgsql;
 
 create function auth.user() returns id as $$
 begin
   return (current_setting('auth.user'))::id;
-end;
-$$ language plpgsql;
-
-create function auth.role() returns auth.role as $$
-begin
-  return current_role::auth.role;
 end;
 $$ language plpgsql;
 
@@ -272,7 +273,7 @@ with check (true);
 -- Table: auth.person
 
 create policy person_select_policy on auth.person for select to viewer
-using (id = auth.user());
+using (true);
 
 create policy person_insert_policy on auth.person for insert to admin
 with check (true);
