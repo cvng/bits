@@ -278,9 +278,6 @@ using (true);
 create policy person_insert_policy on auth.person for insert to admin
 with check (true);
 
-create policy person_update_policy on auth.person for update to viewer
-using (id = auth.user());
-
 -- Table: live.show
 
 create policy show_select_policy on live.show for select to viewer
