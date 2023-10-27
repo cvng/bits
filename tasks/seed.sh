@@ -13,7 +13,7 @@ psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
 <<SQL
 \connect $name;
 
-alter role authenticator with password 'password';
+alter role administrator with password 'password';
 create table if not exists tmp (row jsonb);
 grant select on tmp to public;
 SQL
@@ -25,20 +25,20 @@ psql "$DATABASE_URL" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
 <<SQL
 \connect $name;
 
-do \$$ begin execute auth.login('seller', '00000000-1000-0000-0000-000000000000'); end \$$;
-insert into cqrs.event (type, data)
-select
-    (row->>'type')::cqrs.event_type,
-    (row->>'data')::jsonb
-from tmp where row->>'role' = 'seller';
+select auth.register('00000000-0000-0000-0000-000000000000', 'administrator');
+select auth.register('00000000-1000-0000-0000-000000000000', 'seller');
+select auth.register('00000000-2000-0000-0000-000000000000', 'bidder');
 
-do \$$ begin execute auth.login('bidder', '00000000-2000-0000-0000-000000000000'); end \$$;
+select auth.login('00000000-1000-0000-0000-000000000000');
 insert into cqrs.event (type, data)
-select
-    (row->>'type')::cqrs.event_type,
-    (row->>'data')::jsonb
-from tmp where row->>'role' = 'bidder';
+select (row->>'type')::cqrs.event_type, (row->>'data')::jsonb
+from tmp where row->>'user' = '00000000-1000-0000-0000-000000000000';
 
-do \$$ begin execute auth.login('administrator', '00000000-0000-0000-0000-000000000000'); end \$$;
+select auth.login('00000000-2000-0000-0000-000000000000');
+insert into cqrs.event (type, data)
+select (row->>'type')::cqrs.event_type, (row->>'data')::jsonb
+from tmp where row->>'user' = '00000000-2000-0000-0000-000000000000';
+
+select auth.login('00000000-0000-0000-0000-000000000000');
 select id, created, type, data->>'id' as "data.id" from cqrs.event;
 SQL

@@ -9,8 +9,7 @@ create schema shop;
 -- Roles
 --
 
-create role administrator;
-create role authenticator noinherit login;
+create role administrator noinherit login;
 create role bidder;
 create role seller;
 create role viewer;
@@ -69,7 +68,8 @@ create type cqrs.comment_created as (
 
 create type cqrs.person_created as (
   id id,
-  email email
+  email email,
+  name text
 );
 
 create type cqrs.product_created as (
@@ -105,10 +105,21 @@ create table auth.person (
   id id not null primary key,
   created timestamptz not null default clock_timestamp(),
   updated timestamptz,
-  email email not null unique
+  email email not null unique,
+  name text
 );
 
 alter table auth.person enable row level security;
+
+-- Table: auth.person_role
+
+create table auth.person_role (
+  id id not null primary key,
+  person_id id not null references auth.person (id),
+  role auth.role not null default 'viewer'::auth.role
+);
+
+alter table auth.person_role enable row level security;
 
 -- Table: live.show
 
@@ -182,14 +193,13 @@ alter table shop.bid enable row level security;
 
 -- Hierarchy
 
-grant viewer to bidder, seller, administrator, authenticator;
+grant viewer to bidder;
 grant bidder to seller;
 grant seller to administrator;
-grant administrator to authenticator;
 
 -- Schema
 
-grant usage on schema auth to viewer, authenticator;
+grant usage on schema auth to viewer;
 grant usage on schema cqrs to viewer;
 grant usage on schema live to bidder;
 grant usage on schema shop to bidder;
@@ -202,7 +212,13 @@ grant insert on cqrs.event to viewer;
 -- Table: auth.person
 
 grant select on auth.person to viewer;
-grant insert on auth.person to viewer;
+grant insert on auth.person to administrator;
+grant update on auth.person to viewer;
+
+-- Table: auth.person_role
+
+grant select on auth.person_role to viewer;
+grant insert on auth.person_role to administrator;
 
 -- Table: live.comment
 
@@ -230,13 +246,27 @@ grant select on shop.product to viewer;
 grant insert on shop.product to seller;
 
 --
--- Policies
+-- Functions
 --
 
-create function auth.login(granted_role auth.role, user_id id)
+create function auth.register(user_id id, user_role auth.role, user_email email)
 returns void as $$
 begin
-  perform set_config('role', granted_role::text, false);
+  insert into auth.person (id, email)
+  values (user_id, user_email);
+
+  insert into auth.person_role (id, person_id, role)
+  values (gen_random_uuid(), user_id, user_role);
+end;
+$$ language plpgsql;
+
+create function auth.login(user_id id) returns void as $$
+declare
+  user_role auth.role;
+begin
+  select role into user_role from auth.person_role where person_id = user_id;
+
+  perform set_config('role', user_role::text, false);
   perform set_config('auth.user', user_id::text, false);
 end;
 $$ language plpgsql;
@@ -253,6 +283,10 @@ begin
 end;
 $$ language plpgsql;
 
+--
+-- Policies
+--
+
 -- Table: cqrs.event
 
 create policy event_select_policy on cqrs.event for select to viewer
@@ -266,8 +300,19 @@ with check (true);
 create policy person_select_policy on auth.person for select to viewer
 using (id = auth.user());
 
-create policy person_insert_policy on auth.person for insert to viewer
-with check (id = auth.user());
+create policy person_insert_policy on auth.person for insert to administrator
+with check (true);
+
+create policy person_update_policy on auth.person for update to viewer
+using (id = auth.user());
+
+-- Table: auth.person_role
+
+create policy person_role_select_policy on auth.person_role for select to viewer
+using (id = auth.user());
+
+create policy person_role_insert_policy on auth.person_role for insert to administrator --noqa: LT05
+with check (true);
 
 -- Table: live.show
 
@@ -415,8 +460,9 @@ $$ language plpgsql;
 create function cqrs.person_created_handler(event cqrs.person_created)
 returns void as $$
 begin
-  insert into auth.person (id, email)
-  values (event.id, event.email);
+  insert into auth.person (id, email, name)
+  values (event.id, event.email, event.name)
+  on conflict (id) do update set email = excluded.email, name = excluded.name;
 end;
 $$ language plpgsql;
 

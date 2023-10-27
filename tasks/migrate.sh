@@ -11,7 +11,6 @@ psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
 
 drop database if exists $name with (force);
 drop role if exists administrator;
-drop role if exists authenticator;
 drop role if exists bidder;
 drop role if exists seller;
 drop role if exists viewer;
