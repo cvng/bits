@@ -238,7 +238,7 @@ create function auth.login(user_id id) returns void as $$
 declare
   enabled_role auth.role;
 begin
-  select role into enabled_role from auth.person where id = user_id;
+  enabled_role := (select role from auth.person where id = user_id);
   assert enabled_role is not null;
 
   perform set_config('role', enabled_role::text, false);
@@ -402,8 +402,8 @@ returns void as $$
 declare
   current_max_amount amount;
 begin
-  select max(amount) into current_max_amount
-  from shop.bid where auction_id = event.auction_id;
+  current_max_amount :=
+    (select max(amount) from shop.bid where auction_id = event.auction_id);
 
   insert into shop.bid (id, auction_id, bidder_id, concurrent_amount, amount)
   values (
