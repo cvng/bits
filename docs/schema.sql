@@ -1,4 +1,8 @@
--- Schema https://github.com/cvng/bits/tree/main/docs/schema.sql (work@cvng.dev)
+-- https://github.com/cvng/bits/tree/main/docs/schema.sql (work@cvng.dev)
+
+--
+-- Schema
+--
 
 create schema auth;
 create schema cqrs;
@@ -13,6 +17,15 @@ create role admin;
 create role bidder;
 create role seller;
 create role viewer noinherit;
+
+grant viewer to bidder;
+grant bidder to seller;
+grant seller to admin;
+
+grant usage on schema auth to viewer;
+grant usage on schema cqrs to viewer;
+grant usage on schema live to bidder;
+grant usage on schema shop to bidder;
 
 --
 -- Domains
@@ -188,21 +201,8 @@ create table shop.bid (
 alter table shop.bid enable row level security;
 
 --
--- Grants
+-- Privileges
 --
-
--- Hierarchy
-
-grant viewer to bidder;
-grant bidder to seller;
-grant seller to admin;
-
--- Schema
-
-grant usage on schema auth to viewer;
-grant usage on schema cqrs to viewer;
-grant usage on schema live to bidder;
-grant usage on schema shop to bidder;
 
 -- Table: cqrs.event
 
