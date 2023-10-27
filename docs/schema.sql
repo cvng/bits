@@ -12,7 +12,7 @@ create schema shop;
 create role admin;
 create role bidder;
 create role seller;
-create role viewer;
+create role viewer noinherit;
 
 --
 -- Domains

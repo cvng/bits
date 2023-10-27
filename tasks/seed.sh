@@ -14,7 +14,7 @@ psql "$host" --no-psqlrc --variable=ON_ERROR_STOP=1 --quiet \
 \connect $name;
 
 create table if not exists tmp (row jsonb);
-grant select on tmp to public; -- TODO
+grant select on tmp to public;
 SQL
 
 jq --compact-output ".[]" "$file" | psql "$host" --no-psqlrc \
