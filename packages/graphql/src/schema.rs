@@ -1,5 +1,4 @@
 use crate::mutation::MutationBuilder;
-use async_graphql::dataloader::DataLoader;
 use async_graphql::dynamic::SchemaBuilder;
 use bits_core::entities::auction;
 use bits_core::entities::bid;
@@ -7,8 +6,9 @@ use bits_core::entities::comment;
 use bits_core::entities::person;
 use bits_core::entities::product;
 use bits_core::entities::show;
+use bits_core::sea_orm;
+use bits_core::Client;
 use lazy_static::lazy_static;
-use sea_orm::DatabaseConnection;
 use seaography::register_entities;
 use seaography::Builder;
 use seaography::BuilderContext;
@@ -19,24 +19,16 @@ lazy_static! {
 
 pub type Schema = async_graphql::dynamic::Schema;
 
-pub struct OrmDataLoader {
-  pub db: DatabaseConnection,
-}
-
 /// Build the GraphQL schema. TODO: limit depth & complexity
-pub fn schema(connection: DatabaseConnection) -> SchemaBuilder {
-  let loader = OrmDataLoader {
-    db: connection.clone(),
-  };
-
-  let dataloader = DataLoader::new(loader, tokio::spawn);
-
-  let builder = Builder::new(&CONTEXT, connection.clone());
-
+pub fn schema(client: Client) -> SchemaBuilder {
+  let builder = Builder::new(&CONTEXT, client.connection().clone());
   let builder = register_entities(builder);
   let builder = register_mutations(builder);
 
-  builder.schema_builder().data(connection).data(dataloader)
+  builder
+    .schema_builder()
+    .data(client.connection().clone())
+    .data(client)
 }
 
 fn register_entities(mut builder: Builder) -> Builder {

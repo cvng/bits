@@ -1,9 +1,13 @@
 use crate::database;
 use crate::error::Error;
 use crate::error::Result;
+use crate::Client;
 use bits_data::CommentCreated;
 
-pub fn comment_created(event: CommentCreated) -> Result<()> {
+pub async fn comment_created(
+  _client: &Client,
+  event: CommentCreated,
+) -> Result<()> {
   database::db()
     .comments
     .insert(event.comment.id, event.comment.clone())

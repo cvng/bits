@@ -1,6 +1,7 @@
 use crate::command::Command;
 use crate::database;
 use crate::dispatcher;
+use crate::Client;
 use async_graphql::dynamic::indexmap::IndexMap;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
@@ -102,6 +103,7 @@ impl Command for CreateAuctionCommand {
 }
 
 pub async fn create_auction(
+  client: &Client,
   input: CreateAuctionInput,
 ) -> Result<CreateAuctionResult, Error> {
   let product = database::db().products.get(&input.product_id).cloned();
@@ -116,12 +118,14 @@ pub async fn create_auction(
     expired: None,
   });
 
-  CreateAuctionCommand { auction, product }
-    .handle(input)
-    .map(dispatcher::dispatch)?
-    .map(CreateAuctionCommand::apply)
-    .map_err(|_| Error::NotCreated)?
-    .ok_or(Error::NotCreated)
+  dispatcher::dispatch(
+    client,
+    CreateAuctionCommand { auction, product }.handle(input)?,
+  )
+  .await
+  .map(CreateAuctionCommand::apply)
+  .map_err(|_| Error::NotCreated)?
+  .ok_or(Error::NotCreated)
 }
 
 #[test]
