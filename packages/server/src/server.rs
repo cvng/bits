@@ -9,9 +9,9 @@ use axum::routing::get;
 use axum::routing::post;
 use axum::Router;
 use bits_graphql::Schema;
+use bits_graphql::UserCredential;
 use http::HeaderMap;
 use tower_http::cors::CorsLayer;
-use bits_graphql::UserCredential;
 
 pub type Server<I, S> = axum::Server<I, S>;
 
