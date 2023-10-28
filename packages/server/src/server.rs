@@ -3,7 +3,7 @@ use async_graphql_axum::GraphQLRequest;
 use async_graphql_axum::GraphQLResponse;
 use async_graphql_axum::GraphQLSubscription;
 use axum::extract::State;
-use axum::response::Html;
+use axum::response;
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::routing::post;
@@ -15,8 +15,8 @@ use tower_http::cors::CorsLayer;
 
 pub type Server<I, S> = axum::Server<I, S>;
 
-async fn graphql_playground() -> impl IntoResponse {
-  Html(
+async fn graphiql() -> impl IntoResponse {
+  response::Html(
     GraphiQLSource::build()
       .endpoint("/graphql")
       .subscription_endpoint("/graphql/ws")
@@ -57,7 +57,7 @@ pub fn app(schema: Schema) -> Router {
   Router::new()
     .route("/graphql", graphql)
     .route_service("/graphql/ws", graphql_subscription)
-    .route("/graphql/playground", get(graphql_playground))
+    .route("/graphql/playground", get(graphiql))
     .with_state(schema)
     .layer(cors)
 }
