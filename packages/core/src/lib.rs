@@ -9,6 +9,7 @@ mod client;
 mod command;
 pub mod commands;
 mod database;
+mod decoder;
 mod dispatcher;
 mod error;
 mod handlers;
