@@ -16,6 +16,7 @@ mod listener;
 
 pub use bits_data::*;
 pub use client::Client;
+pub use client::UserCredential;
 pub use commands::*;
 pub use database::db;
 pub use listener::listen;

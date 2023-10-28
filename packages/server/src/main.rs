@@ -18,7 +18,7 @@ async fn main() {
     .await
     .expect("Fail to initialize database connection");
 
-  let client = Client::new(connection.clone());
+  let client = Client::default().connection(connection.clone());
 
   let schema = bits_graphql::schema(client)
     .finish()

@@ -17,18 +17,21 @@ lazy_static! {
   static ref CONTEXT: BuilderContext = BuilderContext::default();
 }
 
+/// The GraphQL schema.
+///
+/// https://async-graphql.github.io
 pub type Schema = async_graphql::dynamic::Schema;
 
-/// Build the GraphQL schema. TODO: limit depth & complexity
+/// Build the GraphQL schema.
 pub fn schema(client: Client) -> SchemaBuilder {
-  let builder = Builder::new(&CONTEXT, client.connection().clone());
+  let builder = Builder::new(&CONTEXT, client.connection.clone());
   let builder = register_entities(builder);
   let builder = register_mutations(builder);
 
   builder
     .schema_builder()
-    .data(client.connection().clone())
-    .data(client)
+    .data(client.connection.clone())
+    .data(client) // TODO: limit depth & complexity.
 }
 
 fn register_entities(mut builder: Builder) -> Builder {

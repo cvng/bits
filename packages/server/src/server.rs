@@ -1,19 +1,24 @@
 use async_graphql::http::GraphiQLSource;
-use async_graphql_axum::GraphQL;
+use async_graphql_axum::GraphQLRequest;
+use async_graphql_axum::GraphQLResponse;
 use async_graphql_axum::GraphQLSubscription;
-use axum::response;
+use axum::extract::State;
+use axum::response::Html;
 use axum::response::IntoResponse;
 use axum::routing::get;
+use axum::routing::post;
 use axum::Router;
 use bits_graphql::Schema;
-use http::Method;
-use tower_http::cors::Any;
+use http::HeaderMap;
 use tower_http::cors::CorsLayer;
+use bits_graphql::UserCredential;
 
 pub type Server<I, S> = axum::Server<I, S>;
 
-async fn graphiql() -> impl IntoResponse {
-  response::Html(
+pub struct Token(pub String);
+
+async fn graphql_playground() -> impl IntoResponse {
+  Html(
     GraphiQLSource::build()
       .endpoint("/graphql")
       .subscription_endpoint("/graphql/ws")
@@ -21,17 +26,37 @@ async fn graphiql() -> impl IntoResponse {
   )
 }
 
+fn get_token_from_headers(headers: &HeaderMap) -> Option<Token> {
+  // https://github.com/async-graphql/examples/blob/master/axum/token-from-header/src/main.rs
+  headers
+    .get("Authorization")
+    .and_then(|value| value.to_str().map(|s| Token(s.to_string())).ok())
+}
+
+async fn graphql_handler(
+  schema: State<Schema>,
+  headers: HeaderMap,
+  request: GraphQLRequest,
+) -> GraphQLResponse {
+  let mut request = request.into_inner();
+
+  if let Some(token) = get_token_from_headers(&headers) {
+    request = request.data(UserCredential { user: token.0 });
+  }
+
+  schema.execute(request).await.into()
+}
+
 pub fn app(schema: Schema) -> Router {
-  let cors = CorsLayer::new()
-    .allow_methods([Method::GET, Method::POST])
-    .allow_headers(Any)
-    .allow_origin(Any);
+  let cors = CorsLayer::permissive();
+
+  let graphql = post(graphql_handler); // TODO: GraphQL::new(schema.to_owned());
+  let graphql_subscription = GraphQLSubscription::new(schema.to_owned());
 
   Router::new()
-    .route(
-      "/graphql",
-      get(graphiql).post_service(GraphQL::new(schema.to_owned())),
-    )
-    .route_service("/graphql/ws", GraphQLSubscription::new(schema))
+    .route("/graphql", graphql)
+    .route_service("/graphql/ws", graphql_subscription)
+    .route("/graphql/playground", get(graphql_playground))
+    .with_state(schema)
     .layer(cors)
 }
