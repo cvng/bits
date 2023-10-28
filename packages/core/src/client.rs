@@ -1,14 +1,12 @@
 use sea_orm::DatabaseConnection;
 
 #[derive(Clone)]
-pub struct UserCredential {
-  pub user: String, // TODO: UserId,
-}
+pub struct Token(pub String);
 
 #[derive(Default)]
 pub struct Client {
   pub connection: DatabaseConnection,
-  pub credential: Option<UserCredential>,
+  pub token: Option<Token>,
 }
 
 impl Client {
@@ -23,9 +21,9 @@ impl Client {
     Self { connection, ..self }
   }
 
-  pub fn credential(self, credential: UserCredential) -> Self {
+  pub fn token(self, token: Token) -> Self {
     Self {
-      credential: Some(credential),
+      token: Some(token),
       ..self
     }
   }

@@ -18,6 +18,8 @@ pub async fn bid_created(client: &Client, event: BidCreated) -> Result<()> {
 
   let txn = client.connection.begin().await.unwrap();
 
+  let _ = client.token.as_ref().unwrap();
+
   txn
     .execute(Statement::from_string(
       DatabaseBackend::Postgres,

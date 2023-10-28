@@ -9,13 +9,11 @@ use axum::routing::get;
 use axum::routing::post;
 use axum::Router;
 use bits_graphql::Schema;
-use bits_graphql::UserCredential;
+use bits_graphql::Token;
 use http::HeaderMap;
 use tower_http::cors::CorsLayer;
 
 pub type Server<I, S> = axum::Server<I, S>;
-
-pub struct Token(pub String);
 
 async fn graphql_playground() -> impl IntoResponse {
   Html(
@@ -26,13 +24,6 @@ async fn graphql_playground() -> impl IntoResponse {
   )
 }
 
-fn get_token_from_headers(headers: &HeaderMap) -> Option<Token> {
-  // https://github.com/async-graphql/examples/blob/master/axum/token-from-header/src/main.rs
-  headers
-    .get("Authorization")
-    .and_then(|value| value.to_str().map(|s| Token(s.to_string())).ok())
-}
-
 async fn graphql_handler(
   schema: State<Schema>,
   headers: HeaderMap,
@@ -41,10 +32,20 @@ async fn graphql_handler(
   let mut request = request.into_inner();
 
   if let Some(token) = get_token_from_headers(&headers) {
-    request = request.data(UserCredential { user: token.0 });
+    request = request.data(token);
   }
 
   schema.execute(request).await.into()
+}
+
+fn get_token_from_headers(headers: &HeaderMap) -> Option<Token> {
+  headers.get("Authorization").and_then(|value| {
+    value
+      .to_str()
+      .map(|s| s.replace("Bearer ", ""))
+      .map(Token)
+      .ok()
+  })
 }
 
 pub fn app(schema: Schema) -> Router {

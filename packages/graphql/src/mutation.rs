@@ -7,7 +7,7 @@ use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
 use bits_core::commands;
 use bits_core::Client;
-use bits_core::UserCredential;
+use bits_core::Token;
 
 pub struct MutationBuilder {
   pub outputs: Vec<Object>,
@@ -44,7 +44,7 @@ impl MutationBuilder {
           FieldFuture::new(async move {
             let client = Client::default()
               .connection(ctx.data::<Client>()?.connection.clone())
-              .credential(ctx.data::<UserCredential>()?.clone());
+              .token(ctx.data::<Token>()?.clone());
 
             let input = &ctx.args.get("input").unwrap().object()?;
 
