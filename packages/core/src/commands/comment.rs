@@ -2,15 +2,12 @@ use crate::command::Command;
 use crate::database;
 use crate::dispatcher;
 use crate::Client;
-use async_graphql::dynamic::indexmap::IndexMap;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
 use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
-use async_graphql::Name;
-use async_graphql::Value;
 use bits_data::Comment;
 use bits_data::CommentId;
 use bits_data::Event;
@@ -19,7 +16,7 @@ use bits_data::ShowId;
 use bits_data::UserId;
 use thiserror::Error;
 
-#[derive(Clone, Serialize)]
+#[derive(Deserialize)]
 pub struct CommentInput {
   pub user_id: UserId,
   pub show_id: ShowId,
@@ -27,8 +24,12 @@ pub struct CommentInput {
 }
 
 impl CommentInput {
-  pub fn to_input_object() -> InputObject {
-    InputObject::new("CommentInput")
+  pub fn type_name() -> &'static str {
+    "CommentInput"
+  }
+
+  pub fn to_input() -> InputObject {
+    InputObject::new(Self::type_name())
       .field(InputValue::new("userId", TypeRef::named_nn(TypeRef::ID)))
       .field(InputValue::new("showId", TypeRef::named_nn(TypeRef::ID)))
       .field(InputValue::new("text", TypeRef::named_nn(TypeRef::STRING)))
@@ -41,8 +42,12 @@ pub struct CommentResult {
 }
 
 impl CommentResult {
+  pub fn type_name() -> &'static str {
+    "CommentResult"
+  }
+
   pub fn to_object() -> Object {
-    Object::new("CommentResult").field(Field::new(
+    Object::new(Self::type_name()).field(Field::new(
       "id".to_string(),
       TypeRef::named_nn(TypeRef::ID),
       |ctx| {
@@ -51,14 +56,6 @@ impl CommentResult {
         )
       },
     ))
-  }
-}
-
-impl From<CommentResult> for Value {
-  fn from(value: CommentResult) -> Self {
-    let mut map = IndexMap::new();
-    map.insert(Name::new("id"), value.comment.id.to_string().into());
-    Value::Object(map)
   }
 }
 

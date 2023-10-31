@@ -1,5 +1,10 @@
 use crate::config::BuilderContext;
 use crate::mutations::bid_mutation;
+use crate::mutations::comment_mutation;
+use crate::mutations::create_auction_mutation;
+use crate::mutations::create_product_mutation;
+use crate::mutations::create_show_mutation;
+use crate::mutations::start_show_mutation;
 use async_graphql::dynamic::SchemaBuilder;
 use bits_core::entities::auction;
 use bits_core::entities::bid;
@@ -41,10 +46,10 @@ fn register_entities(mut builder: Builder) -> Builder {
 fn register_mutations(mut builder: Builder) -> Builder {
   builder.mutations = Vec::new();
   let builder = bid_mutation::register(builder);
-  // let builder = comment_mutation::register(builder);
-  // let builder = create_auction_mutation::register(builder);
-  // let builder = create_product_mutation::register(builder);
-  // let builder = create_show::register(builder);
-  // let builder = start_show::register(builder);
+  let builder = comment_mutation::register(builder);
+  let builder = create_auction_mutation::register(builder);
+  let builder = create_product_mutation::register(builder);
+  let builder = create_show_mutation::register(builder);
+  let builder = start_show_mutation::register(builder);
   builder
 }
