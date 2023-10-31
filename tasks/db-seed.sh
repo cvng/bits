@@ -1,6 +1,5 @@
 # https://www.postgresql.org/docs/current/app-psql.html
 
-set -e
 source .env
 
 # Seed data from JSON event "stream" & test permissions
@@ -9,7 +8,7 @@ host="$DATABASE_URL"
 name="bits"
 file="tasks/data/events.json"
 
-psql "$host" --variable=ON_ERROR_STOP=1 --quiet \
+psql "$host" \
 <<SQL
 \connect $name;
 
@@ -18,9 +17,9 @@ grant select on tmp to public;
 SQL
 
 jq --compact-output ".[]" "$file" | psql "$host" \
-    --variable=ON_ERROR_STOP=1 --quiet --command="\copy tmp (row) from stdin;"
+    --command="\copy tmp (row) from stdin;"
 
-psql "$host" --variable=ON_ERROR_STOP=1 --quiet \
+psql "$host" \
 <<SQL
 \connect $name;
 

@@ -1,12 +1,11 @@
 # https://www.postgresql.org/docs/current/app-psql.html
 
-set -e
 source .env
 
 host="$DATABASE_URL"
 name="bits"
 
-psql "$host" --variable=ON_ERROR_STOP=1 --quiet \
+psql "$host" \
 <<SQL
 \connect postgres;
 
@@ -19,4 +18,4 @@ drop role if exists viewer;
 create database $name;
 SQL
 
-psql "$host" --variable=ON_ERROR_STOP=1 --quiet --file="docs/schema.sql"
+psql "$host" --file="docs/schema.sql"
