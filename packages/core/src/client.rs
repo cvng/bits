@@ -10,13 +10,6 @@ pub struct Client {
 }
 
 impl Client {
-  pub fn new(connection: DatabaseConnection) -> Self {
-    Self {
-      connection,
-      ..Default::default()
-    }
-  }
-
   pub fn connection(self, connection: DatabaseConnection) -> Self {
     Self { connection, ..self }
   }
