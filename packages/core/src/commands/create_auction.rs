@@ -2,15 +2,12 @@ use crate::command::Command;
 use crate::database;
 use crate::dispatcher;
 use crate::Client;
-use async_graphql::dynamic::indexmap::IndexMap;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
 use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
-use async_graphql::Name;
-use async_graphql::Value;
 use bits_data::Auction;
 use bits_data::AuctionId;
 use bits_data::Event;
@@ -19,26 +16,36 @@ use bits_data::ProductId;
 use bits_data::ShowId;
 use thiserror::Error;
 
+#[derive(Deserialize)]
 pub struct CreateAuctionInput {
   pub show_id: ShowId,
   pub product_id: ProductId,
 }
 
 impl CreateAuctionInput {
-  pub fn to_input_object() -> InputObject {
-    InputObject::new("CreateAuctionInput")
+  pub fn type_name() -> &'static str {
+    "CreateAuctionInput"
+  }
+
+  pub fn to_input() -> InputObject {
+    InputObject::new(Self::type_name())
       .field(InputValue::new("showId", TypeRef::named_nn(TypeRef::ID)))
       .field(InputValue::new("productId", TypeRef::named_nn(TypeRef::ID)))
   }
 }
 
+#[derive(Serialize)]
 pub struct CreateAuctionResult {
   pub auction: Auction,
 }
 
 impl CreateAuctionResult {
+  pub fn type_name() -> &'static str {
+    "CreateAuctionResult"
+  }
+
   pub fn to_object() -> Object {
-    Object::new("CreateAuctionResult").field(Field::new(
+    Object::new(Self::type_name()).field(Field::new(
       "id".to_string(),
       TypeRef::named_nn(TypeRef::ID),
       |ctx| {
@@ -50,13 +57,6 @@ impl CreateAuctionResult {
   }
 }
 
-impl From<CreateAuctionResult> for Value {
-  fn from(value: CreateAuctionResult) -> Self {
-    let mut map = IndexMap::new();
-    map.insert(Name::new("id"), value.auction.id.to_string().into());
-    Value::Object(map)
-  }
-}
 #[derive(Debug, Error)]
 pub enum Error {
   #[error("auction not found: {0}")]

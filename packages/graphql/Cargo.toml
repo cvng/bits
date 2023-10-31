@@ -7,11 +7,15 @@ edition = "2021"
 doctest = false
 
 [dependencies]
-async-graphql = { version = "6.0.7", features = ["chrono", "decimal", "uuid", "dataloader", "dynamic-schema"] }
 bits-core = { path = "../core" }
 futures-util = "0.3.0"
-lazy_static = { version = "1.4.0" }
+lazy_static = "1.4.0"
+serde = "1.0.188"
 tokio = { version = "1.29.1", features = ["macros", "rt-multi-thread"] }
+
+[dependencies.async-graphql]
+version = "6.0.7"
+features = ["chrono", "decimal", "uuid", "dataloader", "dynamic-schema"]
 
 [dependencies.seaography]
 git = "https://github.com/SeaQL/seaography"

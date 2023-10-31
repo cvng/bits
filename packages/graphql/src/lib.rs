@@ -2,7 +2,8 @@
 
 #![warn(missing_docs)]
 
-mod mutation;
+mod config;
+mod mutations;
 mod schema;
 
 pub use bits_core::listen;

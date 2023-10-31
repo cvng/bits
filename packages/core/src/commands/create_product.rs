@@ -1,40 +1,47 @@
 use crate::command::Command;
 use crate::dispatcher;
 use crate::Client;
-use async_graphql::dynamic::indexmap::IndexMap;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
 use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
-use async_graphql::Name;
-use async_graphql::Value;
 use bits_data::Event;
 use bits_data::Product;
 use bits_data::ProductId;
 use bits_data::UserId;
 use thiserror::Error;
 
+#[derive(Deserialize)]
 pub struct CreateProductInput {
   pub creator_id: UserId,
   pub name: String,
 }
 
 impl CreateProductInput {
-  pub fn to_input_object() -> InputObject {
-    InputObject::new("CreateProductInput")
+  pub fn type_name() -> &'static str {
+    "CreateProductInput"
+  }
+
+  pub fn to_input() -> InputObject {
+    InputObject::new(Self::type_name())
       .field(InputValue::new("name", TypeRef::named_nn(TypeRef::STRING)))
   }
 }
 
+#[derive(Serialize)]
 pub struct CreateProductResult {
   pub product: Product,
 }
 
 impl CreateProductResult {
+  pub fn type_name() -> &'static str {
+    "CreateProductResult"
+  }
+
   pub fn to_object() -> Object {
-    Object::new("CreateProductResult").field(Field::new(
+    Object::new(Self::type_name()).field(Field::new(
       "id".to_string(),
       TypeRef::named_nn(TypeRef::ID),
       |ctx| {
@@ -43,14 +50,6 @@ impl CreateProductResult {
         )
       },
     ))
-  }
-}
-
-impl From<CreateProductResult> for Value {
-  fn from(value: CreateProductResult) -> Self {
-    let mut map = IndexMap::new();
-    map.insert(Name::new("id"), value.product.id.to_string().into());
-    Value::Object(map)
   }
 }
 
