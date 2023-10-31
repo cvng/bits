@@ -94,23 +94,11 @@ impl Command for BidCommand {
 
   fn handle(
     &self,
-    input: Self::Input,
+    _input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let auction = self
-      .auction
-      .clone()
-      .ok_or(Error::AuctionNotFound(input.auction_id))?;
-
     let bid = self.bid.clone().ok_or(Error::NotCreated)?;
 
-    auction
-      .started
-      .ok_or(Error::AuctionNotStarted(auction.id))?;
-
-    Ok(vec![
-      Event::bid_created(bid),
-      Event::auction_revived(auction),
-    ])
+    Ok(vec![Event::bid_created(bid)])
   }
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {

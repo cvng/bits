@@ -9,6 +9,7 @@ mod client;
 mod command;
 pub mod commands;
 mod database;
+mod decoder;
 mod dispatcher;
 mod error;
 mod handlers;
@@ -16,6 +17,7 @@ mod listener;
 
 pub use bits_data::*;
 pub use client::Client;
+pub use client::Token;
 pub use commands::*;
 pub use database::db;
 pub use listener::listen;

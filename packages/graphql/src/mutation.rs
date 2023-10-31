@@ -7,6 +7,7 @@ use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
 use bits_core::commands;
 use bits_core::Client;
+use bits_core::Token;
 
 pub struct MutationBuilder {
   pub outputs: Vec<Object>,
@@ -41,7 +42,9 @@ impl MutationBuilder {
         TypeRef::named_nn("BidResult"),
         move |ctx| {
           FieldFuture::new(async move {
-            let client = ctx.data::<Client>()?;
+            let client = Client::default()
+              .connection(ctx.data::<Client>()?.connection.clone())
+              .token(ctx.data::<Token>()?.clone());
 
             let input = &ctx.args.get("input").unwrap().object()?;
 
@@ -59,7 +62,7 @@ impl MutationBuilder {
               amount: input.get("amount").unwrap().i64()?.into(),
             };
 
-            let result = commands::bid::bid(client, input).await?;
+            let result = commands::bid::bid(&client, input).await?;
 
             Ok(Some(FieldValue::value(result)))
           })
