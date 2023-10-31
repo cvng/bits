@@ -1,10 +1,6 @@
 use crate::config::BuilderContext;
 use crate::mutations::bid_mutation;
-use crate::mutations::comment_mutation;
-use crate::mutations::create_auction_mutation;
-use crate::mutations::create_product_mutation;
 use async_graphql::dynamic::SchemaBuilder;
-use bits_core::create_show;
 use bits_core::entities::auction;
 use bits_core::entities::bid;
 use bits_core::entities::comment;
@@ -12,7 +8,6 @@ use bits_core::entities::person;
 use bits_core::entities::product;
 use bits_core::entities::show;
 use bits_core::sea_orm;
-use bits_core::start_show;
 use bits_core::Client;
 use lazy_static::lazy_static;
 use seaography::register_entities;
@@ -42,13 +37,14 @@ fn register_entities(mut builder: Builder) -> Builder {
   builder
 }
 
+#[allow(clippy::let_and_return)]
 fn register_mutations(mut builder: Builder) -> Builder {
   builder.mutations = Vec::new();
   let builder = bid_mutation::register(builder);
-  let builder = comment_mutation::register(builder);
-  let builder = create_auction_mutation::register(builder);
-  let builder = create_product_mutation::register(builder);
-  let builder = create_show::register(builder);
-  let builder = start_show::register(builder);
+  // let builder = comment_mutation::register(builder);
+  // let builder = create_auction_mutation::register(builder);
+  // let builder = create_product_mutation::register(builder);
+  // let builder = create_show::register(builder);
+  // let builder = start_show::register(builder);
   builder
 }

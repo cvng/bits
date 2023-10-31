@@ -2,15 +2,12 @@ use crate::command::Command;
 use crate::database;
 use crate::dispatcher;
 use crate::Client;
-use async_graphql::dynamic::indexmap::IndexMap;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
 use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
-use async_graphql::Name;
-use async_graphql::Value;
 use bits_data::Amount;
 use bits_data::Auction;
 use bits_data::AuctionId;
@@ -21,6 +18,7 @@ use bits_data::ProductId;
 use bits_data::UserId;
 use thiserror::Error;
 
+#[derive(Deserialize)]
 pub struct BidInput {
   pub auction_id: AuctionId,
   pub bidder_id: UserId,
@@ -28,21 +26,30 @@ pub struct BidInput {
 }
 
 impl BidInput {
-  pub fn to_input_object() -> InputObject {
-    InputObject::new("BidInput")
+  pub fn type_name() -> &'static str {
+    "BidInput"
+  }
+
+  pub fn to_input() -> InputObject {
+    InputObject::new(Self::type_name())
       .field(InputValue::new("auctionId", TypeRef::named_nn(TypeRef::ID)))
       .field(InputValue::new("bidderId", TypeRef::named_nn(TypeRef::ID)))
       .field(InputValue::new("amount", TypeRef::named_nn(TypeRef::INT)))
   }
 }
 
+#[derive(Serialize)]
 pub struct BidResult {
   pub bid: Bid,
 }
 
 impl BidResult {
+  pub fn type_name() -> &'static str {
+    "BidResult"
+  }
+
   pub fn to_object() -> Object {
-    Object::new("BidResult").field(Field::new(
+    Object::new(Self::type_name()).field(Field::new(
       "id".to_string(),
       TypeRef::named_nn(TypeRef::ID),
       |ctx| {
@@ -51,14 +58,6 @@ impl BidResult {
         )
       },
     ))
-  }
-}
-
-impl From<BidResult> for Value {
-  fn from(value: BidResult) -> Self {
-    let mut map = IndexMap::new();
-    map.insert(Name::new("id"), value.bid.id.to_string().into());
-    Value::Object(map)
   }
 }
 
