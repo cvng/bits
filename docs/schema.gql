@@ -189,10 +189,10 @@ type Mutation {
   _ping: String
   bid(input: BidInput!): BidResult!
   comment(input: CommentInput!): CommentResult!
+  createAuction(input: CreateAuctionInput!): CreateAuctionResult!
   createProduct(input: CreateProductInput!): CreateProductResult!
   createShow(input: CreateShowInput!): CreateShowResult!
   startShow(input: StartShowInput!): StartShowResult!
-  createAuction(input: CreateAuctionInput!): CreateAuctionResult!
 }
 
 input OffsetInput {
@@ -310,12 +310,12 @@ input ProductOrderInput {
 }
 
 type Query {
-  auction(filters: AuctionFilterInput, orderBy: AuctionOrderInput, pagination: PaginationInput): AuctionConnection!
-  bid(filters: BidFilterInput, orderBy: BidOrderInput, pagination: PaginationInput): BidConnection!
-  comment(filters: CommentFilterInput, orderBy: CommentOrderInput, pagination: PaginationInput): CommentConnection!
-  person(filters: PersonFilterInput, orderBy: PersonOrderInput, pagination: PaginationInput): PersonConnection!
-  product(filters: ProductFilterInput, orderBy: ProductOrderInput, pagination: PaginationInput): ProductConnection!
-  show(filters: ShowFilterInput, orderBy: ShowOrderInput, pagination: PaginationInput): ShowConnection!
+  auctions(filters: AuctionFilterInput, orderBy: AuctionOrderInput, pagination: PaginationInput): AuctionConnection!
+  bids(filters: BidFilterInput, orderBy: BidOrderInput, pagination: PaginationInput): BidConnection!
+  comments(filters: CommentFilterInput, orderBy: CommentOrderInput, pagination: PaginationInput): CommentConnection!
+  persons(filters: PersonFilterInput, orderBy: PersonOrderInput, pagination: PaginationInput): PersonConnection!
+  products(filters: ProductFilterInput, orderBy: ProductOrderInput, pagination: PaginationInput): ProductConnection!
+  shows(filters: ShowFilterInput, orderBy: ShowOrderInput, pagination: PaginationInput): ShowConnection!
 }
 
 type Show {
