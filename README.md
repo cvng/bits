@@ -1,4 +1,4 @@
-# Bits Backend
+# ⚡️ Bits Backend
 
 ## Specifications
 
