@@ -16,5 +16,4 @@ SeaORM automatically generates CRUD Mutations for us; but it's rare that these w
 
 - [Custom Mutations](#1)
 
-Custom mutations enable us to write exactly the business logic we need with access to all of our data all wrapped up in a PostgreSQL function.
-We can even bypass the RLS and GRANT checks, should we so choose, by tagging our function as `security definer`.
+Custom mutations enable us to write exactly the business logic we need with access to all of our data all wrapped up in a custom function.

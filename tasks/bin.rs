@@ -1,8 +1,9 @@
+use anyhow::Result;
 use std::env;
 use xshell::cmd;
 use xshell::Shell;
 
-fn main() -> anyhow::Result<()> {
+fn main() -> Result<()> {
   let sh = Shell::new()?;
 
   let args = env::args().collect::<Vec<_>>();
