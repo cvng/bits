@@ -3,12 +3,12 @@ use async_graphql::dynamic::FieldFuture;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::TypeRef;
 use async_graphql::to_value;
+use bits_core::bid::BidInput;
+use bits_core::bid::BidResult;
 use bits_core::commands;
 use bits_core::Client;
 use bits_core::Token;
 use seaography::Builder;
-use bits_core::bid::BidResult;
-use bits_core::bid::BidInput;
 
 pub struct BidMutation;
 
@@ -27,11 +27,8 @@ impl BidMutation {
             .connection(ctx.data::<Client>()?.connection.clone())
             .token(ctx.data::<Token>()?.clone());
 
-          let input = ctx
-            .args
-            .get("input")
-            .unwrap()
-            .deserialize::<BidInput>()?;
+          let input =
+            ctx.args.get("input").unwrap().deserialize::<BidInput>()?;
 
           let result = commands::bid::bid(&client, input).await?;
 

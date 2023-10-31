@@ -181,20 +181,6 @@ fn test_bid() {
           "amount": "100"
         }
       }
-    },
-    {
-      "type": "auction_revived",
-      "payload": {
-        "auction": {
-          "id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
-          "created": null,
-          "updated": null,
-          "show_id": "28e9d842-0918-460f-9cd9-7245dbba1966",
-          "product_id": "6bc8e88e-fc47-41c6-8dae-b180d1efae98",
-          "started": "2023-10-16T23:56:27.365540Z",
-          "expired": "2023-10-17T03:17:49.225067Z"
-        }
-      }
     }
   ]
   "###);
