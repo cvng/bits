@@ -7,6 +7,8 @@ use bits_core::commands;
 use bits_core::Client;
 use bits_core::Token;
 use seaography::Builder;
+use bits_core::bid::BidResult;
+use bits_core::bid::BidInput;
 
 pub struct BidMutation;
 
@@ -18,7 +20,7 @@ impl BidMutation {
   pub fn to_field() -> Field {
     Field::new(
       Self::type_name(),
-      TypeRef::named_nn(commands::bid::BidResult::type_name()),
+      TypeRef::named_nn(BidResult::type_name()),
       move |ctx| {
         FieldFuture::new(async move {
           let client = Client::default()
@@ -29,7 +31,7 @@ impl BidMutation {
             .args
             .get("input")
             .unwrap()
-            .deserialize::<commands::bid::BidInput>()?;
+            .deserialize::<BidInput>()?;
 
           let result = commands::bid::bid(&client, input).await?;
 
@@ -39,14 +41,14 @@ impl BidMutation {
     )
     .argument(InputValue::new(
       "input",
-      TypeRef::named_nn(commands::bid::BidInput::type_name()),
+      TypeRef::named_nn(BidInput::type_name()),
     ))
   }
 }
 
 pub fn register(mut builder: Builder) -> Builder {
-  builder.inputs.push(commands::bid::BidInput::to_input());
-  builder.outputs.push(commands::bid::BidResult::to_object());
+  builder.inputs.push(BidInput::to_input());
+  builder.outputs.push(BidResult::to_object());
   builder.mutations.push(BidMutation::to_field());
   builder
 }

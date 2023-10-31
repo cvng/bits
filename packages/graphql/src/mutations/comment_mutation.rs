@@ -4,6 +4,8 @@ use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::TypeRef;
 use async_graphql::to_value;
 use bits_core::commands;
+use bits_core::comment::CommentInput;
+use bits_core::comment::CommentResult;
 use bits_core::Client;
 use bits_core::Token;
 use seaography::Builder;
@@ -18,7 +20,7 @@ impl CommentMutation {
   pub fn to_field() -> Field {
     Field::new(
       Self::type_name(),
-      TypeRef::named_nn(commands::comment::CommentResult::type_name()),
+      TypeRef::named_nn(CommentResult::type_name()),
       move |ctx| {
         FieldFuture::new(async move {
           let client = Client::default()
@@ -29,7 +31,7 @@ impl CommentMutation {
             .args
             .get("input")
             .unwrap()
-            .deserialize::<commands::comment::CommentInput>()?;
+            .deserialize::<CommentInput>()?;
 
           let result = commands::comment::comment(&client, input).await?;
 
@@ -39,18 +41,14 @@ impl CommentMutation {
     )
     .argument(InputValue::new(
       "input",
-      TypeRef::named_nn(commands::comment::CommentInput::type_name()),
+      TypeRef::named_nn(CommentInput::type_name()),
     ))
   }
 }
 
 pub fn register(mut builder: Builder) -> Builder {
-  builder
-    .inputs
-    .push(commands::comment::CommentInput::to_input());
-  builder
-    .outputs
-    .push(commands::comment::CommentResult::to_object());
+  builder.inputs.push(CommentInput::to_input());
+  builder.outputs.push(CommentResult::to_object());
   builder.mutations.push(CommentMutation::to_field());
   builder
 }

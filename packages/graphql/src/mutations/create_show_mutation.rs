@@ -4,6 +4,8 @@ use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::TypeRef;
 use async_graphql::to_value;
 use bits_core::commands;
+use bits_core::create_show::CreateShowInput;
+use bits_core::create_show::CreateShowResult;
 use bits_core::Client;
 use bits_core::Token;
 use seaography::Builder;
@@ -18,7 +20,7 @@ impl CreateShowMutation {
   pub fn to_field() -> Field {
     Field::new(
       Self::type_name(),
-      TypeRef::named_nn(commands::create_show::CreateShowResult::type_name()),
+      TypeRef::named_nn(CreateShowResult::type_name()),
       move |ctx| {
         FieldFuture::new(async move {
           let client = Client::default()
@@ -29,8 +31,7 @@ impl CreateShowMutation {
             .args
             .get("input")
             .unwrap()
-            .deserialize::<commands::create_show::CreateShowInput>(
-          )?;
+            .deserialize::<CreateShowInput>()?;
 
           let result =
             commands::create_show::create_show(&client, input).await?;
@@ -41,18 +42,14 @@ impl CreateShowMutation {
     )
     .argument(InputValue::new(
       "input",
-      TypeRef::named_nn(commands::create_show::CreateShowInput::type_name()),
+      TypeRef::named_nn(CreateShowInput::type_name()),
     ))
   }
 }
 
 pub fn register(mut builder: Builder) -> Builder {
-  builder
-    .inputs
-    .push(commands::create_show::CreateShowInput::to_input());
-  builder
-    .outputs
-    .push(commands::create_show::CreateShowResult::to_object());
+  builder.inputs.push(CreateShowInput::to_input());
+  builder.outputs.push(CreateShowResult::to_object());
   builder.mutations.push(CreateShowMutation::to_field());
   builder
 }

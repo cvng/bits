@@ -4,6 +4,8 @@ use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::TypeRef;
 use async_graphql::to_value;
 use bits_core::commands;
+use bits_core::create_product::CreateProductInput;
+use bits_core::create_product::CreateProductResult;
 use bits_core::Client;
 use bits_core::Token;
 use seaography::Builder;
@@ -18,9 +20,7 @@ impl CreateProductMutation {
   pub fn to_field() -> Field {
     Field::new(
       Self::type_name(),
-      TypeRef::named_nn(
-        commands::create_product::CreateProductResult::type_name(),
-      ),
+      TypeRef::named_nn(CreateProductResult::type_name()),
       move |ctx| {
         FieldFuture::new(async move {
           let client = Client::default()
@@ -31,8 +31,7 @@ impl CreateProductMutation {
             .args
             .get("input")
             .unwrap()
-            .deserialize::<commands::create_product::CreateProductInput>(
-          )?;
+            .deserialize::<CreateProductInput>()?;
 
           let result =
             commands::create_product::create_product(&client, input).await?;
@@ -43,20 +42,14 @@ impl CreateProductMutation {
     )
     .argument(InputValue::new(
       "input",
-      TypeRef::named_nn(
-        commands::create_product::CreateProductInput::type_name(),
-      ),
+      TypeRef::named_nn(CreateProductInput::type_name()),
     ))
   }
 }
 
 pub fn register(mut builder: Builder) -> Builder {
-  builder
-    .inputs
-    .push(commands::create_product::CreateProductInput::to_input());
-  builder
-    .outputs
-    .push(commands::create_product::CreateProductResult::to_object());
+  builder.inputs.push(CreateProductInput::to_input());
+  builder.outputs.push(CreateProductResult::to_object());
   builder.mutations.push(CreateProductMutation::to_field());
   builder
 }
