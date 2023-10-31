@@ -2,6 +2,7 @@
 
 #![warn(missing_docs)]
 
+mod config;
 mod mutation;
 mod schema;
 

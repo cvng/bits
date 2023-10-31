@@ -9,6 +9,10 @@ use std::env;
 async fn main() {
   dotenv::dotenv().ok();
 
+  tracing_subscriber::fmt()
+    .with_max_level(tracing::Level::INFO)
+    .init();
+
   let addr = "0.0.0.0:8000".parse().unwrap();
 
   let database_url = env::var("DATABASE_URL")

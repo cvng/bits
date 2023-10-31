@@ -1,3 +1,4 @@
+use crate::config::BuilderContext;
 use crate::mutation::MutationBuilder;
 use async_graphql::dynamic::SchemaBuilder;
 use bits_core::entities::auction;
@@ -11,15 +12,12 @@ use bits_core::Client;
 use lazy_static::lazy_static;
 use seaography::register_entities;
 use seaography::Builder;
-use seaography::BuilderContext;
 
 lazy_static! {
-  static ref CONTEXT: BuilderContext = BuilderContext::default();
+  static ref CONTEXT: seaography::BuilderContext = BuilderContext::custom();
 }
 
 /// The GraphQL schema.
-///
-/// https://async-graphql.github.io
 pub type Schema = async_graphql::dynamic::Schema;
 
 /// Build the GraphQL schema.
