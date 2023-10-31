@@ -7,7 +7,7 @@ source .env
 
 host="$DATABASE_URL"
 name="bits"
-file="tasks/seed.json"
+file="tasks/data/events.json"
 
 psql "$host" --variable=ON_ERROR_STOP=1 --quiet \
 <<SQL
