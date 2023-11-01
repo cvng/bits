@@ -1,5 +1,5 @@
-#!/bin/zsh
-set -o errexit -o nounset -o pipefail
+#!/usr/bin/env bash
+set -eu -o pipefail
 
 cargo --version # > cargo 1.75.0-nightly (8eb8acbb1 2023-10-17)
 rustc --version # > rustc 1.75.0-nightly (0039d739d 2023-10-18)

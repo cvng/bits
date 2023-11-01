@@ -1,5 +1,5 @@
-#!/bin/zsh
-set -o errexit -o nounset -o pipefail
+#!/usr/bin/env bash
+set -eu -o pipefail
 
 # https://github.com/hasura/graphqurl
 
