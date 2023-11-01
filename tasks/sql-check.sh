@@ -1,3 +1,4 @@
+#!/bin/zsh
 set -o errexit -o nounset -o pipefail
 
 # https://squawkhq.com/docs/cli
