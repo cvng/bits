@@ -11,6 +11,7 @@ pub mod commands;
 mod database;
 mod decoder;
 mod dispatcher;
+mod dispatcher2;
 mod error;
 mod handlers;
 mod listener;
