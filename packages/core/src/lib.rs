@@ -1,9 +1,12 @@
 #[macro_use]
+#[cfg(test)]
+extern crate insta;
+
+#[macro_use]
 extern crate serde;
 
 #[macro_use]
-#[cfg(test)]
-extern crate insta;
+extern crate thiserror;
 
 mod client;
 mod command;
