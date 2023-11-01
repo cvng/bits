@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -eu -o pipefail
+
 # https://www.postgresql.org/docs/current/app-psql.html
 
 source .env

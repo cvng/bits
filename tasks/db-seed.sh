@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -eu -o pipefail
+
 # https://www.postgresql.org/docs/current/app-psql.html
 
 source .env
@@ -41,3 +44,5 @@ end; \$$;
 do \$$ begin perform auth.login('00000000-0000-0000-0000-000000000000'); end; \$$;
 select id, created, type, data->>'id' as "data.id" from cqrs.event;
 SQL
+
+psql "$host" --command="drop table tmp;"
