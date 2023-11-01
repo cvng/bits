@@ -186,7 +186,9 @@ create table shop.bid (
   auction_id id not null references shop.auction (id),
   bidder_id id not null references auth.person (id),
   concurrent_amount amount not null default 0,
-  amount amount not null check (amount > concurrent_amount)
+  amount amount not null,
+
+  constraint bid_validity_check check (amount > concurrent_amount)
 );
 
 alter table shop.bid enable row level security;

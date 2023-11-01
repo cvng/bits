@@ -20,7 +20,9 @@ use thiserror::Error;
 
 #[derive(Deserialize)]
 pub struct BidInput {
+  #[serde(rename = "auctionId")]
   pub auction_id: AuctionId,
+  #[serde(rename = "bidderId")]
   pub bidder_id: UserId,
   pub amount: Amount,
 }
