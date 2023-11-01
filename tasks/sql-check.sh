@@ -1,3 +1,5 @@
+set -o errexit -o nounset -o pipefail
+
 # https://squawkhq.com/docs/cli
 
 npx squawk-cli docs/schema.sql

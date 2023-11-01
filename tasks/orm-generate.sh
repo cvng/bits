@@ -1,3 +1,6 @@
+#!/bin/zsh
+set -o errexit -o nounset -o pipefail
+
 # https://www.sea-ql.org/SeaORM/docs/generate-entity/sea-orm-cli
 
 sea-orm-cli generate entity \

@@ -1,3 +1,6 @@
+#!/bin/zsh
+set -o errexit -o nounset -o pipefail
+
 # https://www.postgresql.org/docs/current/app-psql.html
 
 source .env
