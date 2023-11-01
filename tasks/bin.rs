@@ -1,7 +1,7 @@
-use anyhow::Result;
 use std::env;
 use xshell::cmd;
 use xshell::Shell;
+use xshell::Result;
 
 fn main() -> Result<()> {
   let sh = Shell::new()?;
