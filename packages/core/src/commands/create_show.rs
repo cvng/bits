@@ -14,8 +14,8 @@ use bits_data::UserId;
 use thiserror::Error;
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateShowInput {
-  #[serde(rename = "creatorId")]
   pub creator_id: UserId,
   pub name: String,
 }
@@ -84,8 +84,8 @@ impl Command for CreateShowCommand {
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::ShowCreated { payload } => Some(CreateShowResult {
-        show: payload.show.clone(),
+      Event::ShowCreated { data } => Some(CreateShowResult {
+        show: data.show.clone(),
       }),
       _ => None,
     })

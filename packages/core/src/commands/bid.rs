@@ -20,10 +20,9 @@ use sea_orm::EntityTrait;
 use thiserror::Error;
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct BidInput {
-  #[serde(rename = "auctionId")]
   pub auction_id: AuctionId,
-  #[serde(rename = "bidderId")]
   pub bidder_id: UserId,
   pub amount: Amount,
 }
@@ -105,8 +104,8 @@ impl Command for BidCommand {
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::BidCreated { payload } => Some(BidResult {
-        bid: payload.bid.clone(),
+      Event::BidCreated { data } => Some(BidResult {
+        bid: data.bid.clone(),
       }),
       _ => None,
     })

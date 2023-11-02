@@ -14,8 +14,8 @@ use bits_data::UserId;
 use thiserror::Error;
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateProductInput {
-  #[serde(rename = "creatorId")]
   pub creator_id: UserId,
   pub name: String,
 }
@@ -83,8 +83,8 @@ impl Command for CreateProductCommand {
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::ProductCreated { payload } => Some(CreateProductResult {
-        product: payload.product.clone(),
+      Event::ProductCreated { data } => Some(CreateProductResult {
+        product: data.product.clone(),
       }),
       _ => None,
     })
