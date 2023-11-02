@@ -120,9 +120,9 @@ fn test_show() {
   assert_json_snapshot!(events, @r###"
   [
     {
-      "type": "ShowCreated",
+      "type": "show_created",
       "data": {
-        "id": "ea27fbea-99fa-407a-a4c5-b79bfa97b44d",
+        "id": "1e38093f-9939-4199-94aa-e16fcf556973",
         "creator_id": "d9bd7c14-d793-47f3-a644-f97921c862ed",
         "name": "name"
       }

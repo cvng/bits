@@ -118,9 +118,9 @@ fn test_create_product() {
   assert_json_snapshot!(events, @r###"
   [
     {
-      "type": "ProductCreated",
+      "type": "product_created",
       "data": {
-        "id": "ab45f5a4-16cd-4342-86fd-41aa3b7d95ef",
+        "id": "49a3c0eb-0bd6-4954-b464-7f75b2f18b44",
         "creator_id": "abbba031-f122-42b8-b6ff-585ad245aadd",
         "name": "name"
       }

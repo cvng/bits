@@ -141,9 +141,9 @@ fn test_bid() {
   assert_json_snapshot!(events, @r###"
   [
     {
-      "type": "BidCreated",
+      "type": "bid_created",
       "data": {
-        "id": "d971d1f2-986b-4883-bbcc-e318c2060022",
+        "id": "f9881880-7110-442b-aba8-5dc505212547",
         "auction_id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
         "bidder_id": "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68",
         "amount": "100"

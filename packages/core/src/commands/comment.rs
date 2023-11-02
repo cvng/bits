@@ -135,9 +135,9 @@ fn test_comment() {
   assert_json_snapshot!(events, @r###"
   [
     {
-      "type": "CommentCreated",
+      "type": "comment_created",
       "data": {
-        "id": "9fd7eb6e-a813-4a17-bd10-1373d883b3c1",
+        "id": "a724e819-7a10-4343-9dfc-3b56b2c6d7be",
         "author_id": "9ad4e977-8156-450e-ad00-944f9fc730ab",
         "show_id": "f5e84179-7f8d-461b-a1d9-497974de10a6",
         "text": "text"

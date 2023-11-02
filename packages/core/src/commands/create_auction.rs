@@ -139,9 +139,9 @@ fn test_create_auction() {
   assert_json_snapshot!(events, @r###"
   [
     {
-      "type": "AuctionCreated",
+      "type": "auction_created",
       "data": {
-        "id": "0047390f-06fe-4f14-857d-048e89225fe0",
+        "id": "4148738d-3676-48b2-8ba2-1d4cf92d9dcb",
         "show_id": "048b47f4-3010-43ae-84c1-8088ab8488a8",
         "product_id": "2b1af787-2d94-4224-a2fc-1d8d155537c0"
       }
