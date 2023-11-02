@@ -181,7 +181,10 @@ fn test_create_auction() {
           "product_id": "2b1af787-2d94-4224-a2fc-1d8d155537c0",
           "started": null,
           "expired": null
-        }
+        },
+        "id": "177d1966-d688-486e-9b13-8709c0a434a0",
+        "show_id": "048b47f4-3010-43ae-84c1-8088ab8488a8",
+        "product_id": "2b1af787-2d94-4224-a2fc-1d8d155537c0"
       }
     }
   ]
