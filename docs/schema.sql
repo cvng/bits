@@ -106,6 +106,7 @@ create type cqrs.show_created as (
 create table cqrs.event (
   id bigint not null primary key generated always as identity,
   created timestamptz not null default clock_timestamp(),
+  user_id id not null,
   type cqrs.event_type not null,
   data jsonb not null
 );
@@ -240,8 +241,8 @@ begin
   enabled_role := (select role from auth.person where id = user_id);
   assert enabled_role is not null;
 
-  perform set_config('role', enabled_role::text, false);
-  perform set_config('auth.user', user_id::text, false);
+  perform set_config('role', enabled_role::text, true);
+  perform set_config('auth.user', user_id::text, true);
 end;
 $$ language plpgsql;
 
@@ -326,6 +327,8 @@ with check (bidder_id = auth.user());
 
 create function cqrs.event_insert_trigger() returns trigger as $$
 begin
+  perform auth.login(new.user_id);
+
   case new.type
     when 'auction_created' then
       perform cqrs.auction_created_handler(

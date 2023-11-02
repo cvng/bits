@@ -11,9 +11,8 @@ host="$DATABASE_URL"
 name="bits"
 file="tasks/data/events.json"
 
-psql "$host" --set=ON_ERROR_STOP=true --command="create table tmp (row jsonb);"
-
 jq --compact-output ".[]" "$file" | psql "$host" --set=ON_ERROR_STOP=true \
+    --command="create table tmp (row jsonb);" \
     --command="\copy tmp (row) from stdin;"
 
 psql "$host" --set=ON_ERROR_STOP=true \
@@ -26,18 +25,15 @@ declare
     event jsonb;
 begin
     for event in select row from tmp loop
-        perform auth.login((event->>'user')::id);
-
-        insert into cqrs.event (type, data)
-        values ((event->>'type')::cqrs.event_type, (event->>'data')::jsonb);
+        insert into cqrs.event (user_id, type, data)
+        values
+            ((event->>'user_id')::id,
+            (event->>'type')::cqrs.event_type,
+            (event->>'data')::jsonb);
     end loop;
 end; \$$;
 
-do \$$
-begin
-    perform auth.login('00000000-0000-0000-0000-000000000000');
-end; \$$;
-select id, created, type, data->>'id' as "data.id" from cqrs.event;
+select id, created, type, data->>'id' as data_id from cqrs.event;
 SQL
 
 psql "$host" --set=ON_ERROR_STOP=true --command="drop table tmp;"
