@@ -1,5 +1,4 @@
 use crate::command::Command;
-use crate::database;
 use crate::dispatcher;
 use crate::Client;
 use async_graphql::dynamic::Field;
@@ -8,6 +7,7 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
+use bits_data::entities;
 use bits_data::Amount;
 use bits_data::Auction;
 use bits_data::AuctionId;
@@ -16,6 +16,7 @@ use bits_data::BidId;
 use bits_data::Event;
 use bits_data::ProductId;
 use bits_data::UserId;
+use sea_orm::EntityTrait;
 use thiserror::Error;
 
 #[derive(Deserialize)]
@@ -113,7 +114,10 @@ impl Command for BidCommand {
 }
 
 pub async fn bid(client: &Client, input: BidInput) -> Result<BidResult, Error> {
-  let auction = database::db().auctions.get(&input.auction_id).cloned();
+  let auction = entities::prelude::Auction::find_by_id(input.auction_id)
+    .one(&client.connection)
+    .await
+    .map_err(|_| Error::AuctionNotFound(input.auction_id))?;
 
   let bid = Some(Bid {
     id: BidId::new_v4(),
