@@ -1,6 +1,6 @@
-use anyhow::Result;
 use std::env;
 use xshell::cmd;
+use xshell::Result;
 use xshell::Shell;
 
 fn main() -> Result<()> {

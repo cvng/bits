@@ -1,6 +1,6 @@
 use crate::command::Command;
 use crate::database;
-use crate::dispatcher;
+use crate::dispatcher2;
 use crate::Client;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
@@ -20,7 +20,9 @@ use thiserror::Error;
 
 #[derive(Deserialize)]
 pub struct BidInput {
+  #[serde(rename = "auctionId")]
   pub auction_id: AuctionId,
+  #[serde(rename = "bidderId")]
   pub bidder_id: UserId,
   pub amount: Amount,
 }
@@ -123,7 +125,7 @@ pub async fn bid(client: &Client, input: BidInput) -> Result<BidResult, Error> {
     amount: input.amount,
   });
 
-  dispatcher::dispatch(client, BidCommand { auction, bid }.handle(input)?)
+  dispatcher2::dispatch(client, BidCommand { auction, bid }.handle(input)?)
     .await
     .map(BidCommand::apply)
     .map_err(|_| Error::NotCreated)?

@@ -8,5 +8,4 @@ name = "tasks"
 path = "bin.rs"
 
 [dependencies]
-anyhow = "1.0.75"
 xshell = "0.2.5"

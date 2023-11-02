@@ -1,8 +1,12 @@
+use crate::Amount;
 use crate::Auction;
+use crate::AuctionId;
 use crate::Bid;
+use crate::BidId;
 use crate::Comment;
 use crate::Product;
 use crate::Show;
+use crate::UserId;
 
 #[derive(Clone, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -38,7 +42,13 @@ impl Event {
 
   pub fn bid_created(bid: Bid) -> Self {
     Self::BidCreated {
-      payload: BidCreated { bid },
+      payload: BidCreated {
+        bid: bid.clone(),
+        id: bid.id,
+        auction_id: bid.auction_id,
+        bidder_id: bid.bidder_id,
+        amount: bid.amount,
+      },
     }
   }
 
@@ -90,6 +100,11 @@ pub struct AuctionStarted {
 #[derive(Clone, Serialize)]
 pub struct BidCreated {
   pub bid: Bid,
+  //
+  pub id: BidId,
+  pub auction_id: AuctionId,
+  pub bidder_id: UserId,
+  pub amount: Amount,
 }
 
 #[derive(Clone, Serialize)]
