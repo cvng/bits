@@ -84,7 +84,6 @@ pub enum Error {
 #[derive(Default)]
 pub struct BidCommand {
   pub auction: Option<Auction>,
-  pub bid: Option<Bid>,
 }
 
 impl Command for BidCommand {
@@ -95,9 +94,17 @@ impl Command for BidCommand {
 
   fn handle(
     &self,
-    _input: Self::Input,
+    input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let bid = self.bid.clone().ok_or(Error::NotCreated)?;
+    let bid = Bid {
+      id: BidId::new_v4(),
+      created: None,
+      updated: None,
+      auction_id: input.auction_id,
+      bidder_id: input.bidder_id,
+      concurrent_amount: None,
+      amount: input.amount,
+    };
 
     Ok(vec![Event::bid_created(bid)])
   }
@@ -116,19 +123,9 @@ pub async fn bid(client: &Client, input: BidInput) -> Result<BidResult, Error> {
   let auction = entities::prelude::Auction::find_by_id(input.auction_id)
     .one(&client.connection)
     .await
-    .map_err(|_| Error::AuctionNotFound(input.auction_id))?;
+    .unwrap();
 
-  let bid = Some(Bid {
-    id: BidId::new_v4(),
-    created: None,
-    updated: None,
-    auction_id: input.auction_id,
-    bidder_id: input.bidder_id,
-    concurrent_amount: None,
-    amount: input.amount,
-  });
-
-  dispatcher::dispatch(client, BidCommand { auction, bid }.handle(input)?)
+  dispatcher::dispatch(client, BidCommand { auction }.handle(input)?)
     .await
     .map(BidCommand::apply)
     .map_err(|_| Error::NotCreated)?
@@ -159,17 +156,7 @@ fn test_bid() {
     amount: 100.into(),
   };
 
-  let bid = Some(Bid {
-    id: "bcd0ab01-96f0-4469-a3e6-254afe70b74f".parse().unwrap(),
-    created: None,
-    updated: None,
-    auction_id: input.auction_id,
-    bidder_id: input.bidder_id,
-    concurrent_amount: None,
-    amount: input.amount,
-  });
-
-  let events = BidCommand { auction, bid }.handle(input).unwrap();
+  let events = BidCommand { auction }.handle(input).unwrap();
 
   assert_json_snapshot!(events, @r###"
   [

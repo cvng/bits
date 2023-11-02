@@ -70,7 +70,6 @@ pub enum Error {
 }
 
 pub struct CreateAuctionCommand {
-  pub auction: Option<Auction>,
   pub product: Option<Product>,
 }
 
@@ -89,7 +88,15 @@ impl Command for CreateAuctionCommand {
       .clone()
       .ok_or(Error::ProductNotFound(input.product_id))?;
 
-    let auction = self.auction.clone().ok_or(Error::NotCreated)?;
+    let auction = Auction {
+      id: AuctionId::new_v4(),
+      created: None,
+      updated: None,
+      show_id: input.show_id,
+      product_id: input.product_id,
+      started: None,
+      expired: None,
+    };
 
     Ok(vec![Event::auction_created(auction)])
   }
@@ -113,24 +120,11 @@ pub async fn create_auction(
     .await
     .map_err(|_| Error::ProductNotFound(input.product_id))?;
 
-  let auction = Some(Auction {
-    id: AuctionId::new_v4(),
-    created: None,
-    updated: None,
-    show_id: input.show_id,
-    product_id: input.product_id,
-    started: None,
-    expired: None,
-  });
-
-  dispatcher::dispatch(
-    client,
-    CreateAuctionCommand { auction, product }.handle(input)?,
-  )
-  .await
-  .map(CreateAuctionCommand::apply)
-  .map_err(|_| Error::NotCreated)?
-  .ok_or(Error::NotCreated)
+  dispatcher::dispatch(client, CreateAuctionCommand { product }.handle(input)?)
+    .await
+    .map(CreateAuctionCommand::apply)
+    .map_err(|_| Error::NotCreated)?
+    .ok_or(Error::NotCreated)
 }
 
 #[test]
@@ -157,19 +151,7 @@ fn test_create_auction() {
     product_id: product.as_ref().unwrap().id,
   };
 
-  let auction = Some(Auction {
-    id: "177d1966-d688-486e-9b13-8709c0a434a0".parse().unwrap(),
-    created: None,
-    updated: None,
-    show_id: input.show_id,
-    product_id: input.product_id,
-    started: None,
-    expired: None,
-  });
-
-  let events = CreateAuctionCommand { auction, product }
-    .handle(input)
-    .unwrap();
+  let events = CreateAuctionCommand { product }.handle(input).unwrap();
 
   assert_json_snapshot!(events, @r###"
   [

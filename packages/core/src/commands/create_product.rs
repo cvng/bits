@@ -62,9 +62,7 @@ pub enum Error {
   NotFound(ProductId),
 }
 
-pub struct CreateProductCommand {
-  pub product: Option<Product>,
-}
+pub struct CreateProductCommand {}
 
 impl Command for CreateProductCommand {
   type Error = Error;
@@ -74,9 +72,15 @@ impl Command for CreateProductCommand {
 
   fn handle(
     &self,
-    _input: Self::Input,
+    input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let product = self.product.clone().ok_or(Error::NotCreated)?;
+    let product = Product {
+      id: ProductId::new_v4(),
+      created: None,
+      updated: None,
+      creator_id: input.creator_id,
+      name: input.name.clone(),
+    };
 
     Ok(vec![Event::product_created(product)])
   }
@@ -95,15 +99,7 @@ pub async fn create_product(
   client: &Client,
   input: CreateProductInput,
 ) -> Result<CreateProductResult, Error> {
-  let product = Some(Product {
-    id: ProductId::new_v4(),
-    created: None,
-    updated: None,
-    creator_id: input.creator_id,
-    name: input.name.clone(),
-  });
-
-  dispatcher::dispatch(client, CreateProductCommand { product }.handle(input)?)
+  dispatcher::dispatch(client, CreateProductCommand {}.handle(input)?)
     .await
     .map(CreateProductCommand::apply)
     .map_err(|_| Error::NotCreated)?
@@ -125,7 +121,7 @@ fn test_create_product() {
     name: input.name.clone(),
   });
 
-  let events = CreateProductCommand { product }.handle(input).unwrap();
+  let events = CreateProductCommand {}.handle(input).unwrap();
 
   assert_json_snapshot!(events, @r###"
   [

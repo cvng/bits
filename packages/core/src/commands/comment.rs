@@ -72,7 +72,6 @@ pub enum Error {
 #[derive(Default)]
 pub struct CommentCommand {
   pub show: Option<Show>,
-  pub comment: Option<Comment>,
 }
 
 impl Command for CommentCommand {
@@ -90,7 +89,14 @@ impl Command for CommentCommand {
       .clone()
       .ok_or(Error::ShowNotFound(input.show_id))?;
 
-    let comment = self.comment.clone().ok_or(Error::NotCreated)?;
+    let comment = Comment {
+      id: CommentId::new_v4(),
+      created: None,
+      updated: None,
+      author_id: input.user_id,
+      show_id: input.show_id,
+      text: input.text.clone(),
+    };
 
     Ok(vec![Event::comment_created(comment)])
   }
@@ -112,18 +118,9 @@ pub async fn comment(
   let show = entities::prelude::Show::find_by_id(input.show_id)
     .one(&client.connection)
     .await
-    .map_err(|_| Error::ShowNotFound(input.show_id))?;
+    .unwrap();
 
-  let comment = Some(Comment {
-    id: CommentId::new_v4(),
-    created: None,
-    updated: None,
-    author_id: input.user_id,
-    show_id: input.show_id,
-    text: input.text.clone(),
-  });
-
-  dispatcher::dispatch(client, CommentCommand { show, comment }.handle(input)?)
+  dispatcher::dispatch(client, CommentCommand { show }.handle(input)?)
     .await
     .map(CommentCommand::apply)
     .map_err(|_| Error::NotCreated)?
@@ -147,16 +144,7 @@ fn test_comment() {
     text: "text".parse().unwrap(),
   };
 
-  let comment = Some(Comment {
-    id: "7cc32b32-c5c6-4034-89f9-8363d856ebb4".parse().unwrap(),
-    created: None,
-    updated: None,
-    author_id: input.user_id,
-    show_id: input.show_id,
-    text: input.text.clone(),
-  });
-
-  let events = CommentCommand { show, comment }.handle(input).unwrap();
+  let events = CommentCommand { show }.handle(input).unwrap();
 
   assert_json_snapshot!(events, @r###"
   [

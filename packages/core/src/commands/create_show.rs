@@ -63,9 +63,7 @@ pub enum Error {
   NotFound(ShowId),
 }
 
-pub struct CreateShowCommand {
-  pub show: Option<Show>,
-}
+pub struct CreateShowCommand {}
 
 impl Command for CreateShowCommand {
   type Error = Error;
@@ -75,9 +73,16 @@ impl Command for CreateShowCommand {
 
   fn handle(
     &self,
-    _input: Self::Input,
+    input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let show = self.show.clone().ok_or(Error::NotCreated)?;
+    let show = Show {
+      id: ShowId::new_v4(),
+      created: None,
+      updated: None,
+      creator_id: input.creator_id,
+      name: input.name.clone(),
+      started: None,
+    };
 
     Ok(vec![Event::show_created(show)])
   }
@@ -96,16 +101,7 @@ pub async fn create_show(
   client: &Client,
   input: CreateShowInput,
 ) -> Result<CreateShowResult, Error> {
-  let show = Some(Show {
-    id: ShowId::new_v4(),
-    created: None,
-    updated: None,
-    creator_id: input.creator_id,
-    name: input.name.clone(),
-    started: None,
-  });
-
-  dispatcher::dispatch(client, CreateShowCommand { show }.handle(input)?)
+  dispatcher::dispatch(client, CreateShowCommand {}.handle(input)?)
     .await
     .map(CreateShowCommand::apply)
     .map_err(|_| Error::NotCreated)?
@@ -119,16 +115,7 @@ fn test_show() {
     name: "name".parse().unwrap(),
   };
 
-  let show = Some(Show {
-    id: "15f4491c-c0ab-437e-bdfd-60a62ad8c857".parse().unwrap(),
-    created: None,
-    updated: None,
-    creator_id: input.creator_id,
-    name: input.name.clone(),
-    started: None,
-  });
-
-  let events = CreateShowCommand { show }.handle(input).unwrap();
+  let events = CreateShowCommand {}.handle(input).unwrap();
 
   assert_json_snapshot!(events, @r###"
   [
