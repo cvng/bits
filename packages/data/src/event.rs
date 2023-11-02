@@ -4,39 +4,33 @@ use crate::AuctionId;
 use crate::Bid;
 use crate::BidId;
 use crate::Comment;
+use crate::CommentId;
 use crate::Product;
+use crate::ProductId;
 use crate::Show;
+use crate::ShowId;
 use crate::UserId;
 
 #[derive(Clone, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Event {
   AuctionCreated { payload: AuctionCreated },
-  AuctionRevived { payload: AuctionRevived },
-  AuctionStarted { payload: AuctionStarted },
   BidCreated { payload: BidCreated },
   CommentCreated { payload: CommentCreated },
+  PersonCreated { payload: PersonCreated },
   ProductCreated { payload: ProductCreated },
   ShowCreated { payload: ShowCreated },
-  ShowStarted { payload: ShowStarted },
 }
 
 impl Event {
   pub fn auction_created(auction: Auction) -> Self {
     Self::AuctionCreated {
-      payload: AuctionCreated { auction },
-    }
-  }
-
-  pub fn auction_revived(auction: Auction) -> Self {
-    Self::AuctionRevived {
-      payload: AuctionRevived { auction },
-    }
-  }
-
-  pub fn auction_started(auction: Auction) -> Self {
-    Self::AuctionStarted {
-      payload: AuctionStarted { auction },
+      payload: AuctionCreated {
+        auction: auction.clone(),
+        id: auction.id,
+        show_id: auction.show_id,
+        product_id: auction.product_id,
+      },
     }
   }
 
@@ -54,47 +48,52 @@ impl Event {
 
   pub fn comment_created(comment: Comment) -> Self {
     Self::CommentCreated {
-      payload: CommentCreated { comment },
+      payload: CommentCreated {
+        comment: comment.clone(),
+        id: comment.id,
+        author_id: comment.author_id,
+        show_id: comment.show_id,
+        text: comment.text,
+      },
+    }
+  }
+
+  pub fn person_created(id: UserId, email: String, role: String) -> Self {
+    Self::PersonCreated {
+      payload: PersonCreated { id, email, role },
     }
   }
 
   pub fn product_created(product: Product) -> Self {
     Self::ProductCreated {
-      payload: ProductCreated { product },
+      payload: ProductCreated {
+        product: product.clone(),
+        id: product.id,
+        creator_id: product.creator_id,
+        name: product.name,
+      },
     }
   }
 
   pub fn show_created(show: Show) -> Self {
     Self::ShowCreated {
-      payload: ShowCreated { show },
+      payload: ShowCreated {
+        show: show.clone(),
+        id: show.id,
+        creator_id: show.creator_id,
+        name: show.name,
+      },
     }
   }
-
-  pub fn show_started(show: Show) -> Self {
-    Self::ShowStarted {
-      payload: ShowStarted { show },
-    }
-  }
-}
-
-#[derive(Clone, Serialize)]
-pub struct AuctionMarkedReady {
-  pub auction: Auction,
 }
 
 #[derive(Clone, Serialize)]
 pub struct AuctionCreated {
   pub auction: Auction,
-}
-
-#[derive(Clone, Serialize)]
-pub struct AuctionRevived {
-  pub auction: Auction,
-}
-
-#[derive(Clone, Serialize)]
-pub struct AuctionStarted {
-  pub auction: Auction,
+  //
+  pub id: AuctionId,
+  pub show_id: ShowId,
+  pub product_id: ProductId,
 }
 
 #[derive(Clone, Serialize)]
@@ -110,19 +109,34 @@ pub struct BidCreated {
 #[derive(Clone, Serialize)]
 pub struct CommentCreated {
   pub comment: Comment,
+  //
+  pub id: CommentId,
+  pub author_id: UserId,
+  pub show_id: ShowId,
+  pub text: String,
+}
+
+#[derive(Clone, Serialize)]
+pub struct PersonCreated {
+  pub id: UserId,
+  pub email: String,
+  pub role: String,
 }
 
 #[derive(Clone, Serialize)]
 pub struct ProductCreated {
   pub product: Product,
+  //
+  pub id: ProductId,
+  pub creator_id: UserId,
+  pub name: String,
 }
 
 #[derive(Clone, Serialize)]
 pub struct ShowCreated {
   pub show: Show,
-}
-
-#[derive(Clone, Serialize)]
-pub struct ShowStarted {
-  pub show: Show,
+  //
+  pub id: ShowId,
+  pub creator_id: UserId,
+  pub name: String,
 }
