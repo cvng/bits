@@ -52,7 +52,7 @@ pub async fn dispatch(
     let event = serde_json::to_value(event)?;
     let event_type = event.get("type").unwrap().as_str().unwrap();
     let event_data =
-      to_string(event.get("payload").unwrap().as_object().unwrap()).unwrap();
+      to_string(event.get("data").unwrap().as_object().unwrap()).unwrap();
 
     txn
       .execute(Statement::from_sql_and_values(

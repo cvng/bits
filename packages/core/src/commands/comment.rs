@@ -162,7 +162,7 @@ fn test_comment() {
   [
     {
       "type": "comment_created",
-      "payload": {
+      "data": {
         "comment": {
           "id": "7cc32b32-c5c6-4034-89f9-8363d856ebb4",
           "created": null,

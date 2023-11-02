@@ -131,7 +131,7 @@ fn test_create_product() {
   [
     {
       "type": "product_created",
-      "payload": {
+      "data": {
         "product": {
           "id": "f9f1436d-6ed5-4644-8e9e-7e14deffa2ec",
           "created": null,

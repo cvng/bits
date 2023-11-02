@@ -175,7 +175,7 @@ fn test_create_auction() {
   [
     {
       "type": "auction_created",
-      "payload": {
+      "data": {
         "auction": {
           "id": "177d1966-d688-486e-9b13-8709c0a434a0",
           "created": null,

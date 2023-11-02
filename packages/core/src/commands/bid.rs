@@ -175,7 +175,7 @@ fn test_bid() {
   [
     {
       "type": "bid_created",
-      "payload": {
+      "data": {
         "bid": {
           "id": "bcd0ab01-96f0-4469-a3e6-254afe70b74f",
           "created": null,

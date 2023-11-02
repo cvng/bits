@@ -134,7 +134,7 @@ fn test_show() {
   [
     {
       "type": "show_created",
-      "payload": {
+      "data": {
         "show": {
           "id": "15f4491c-c0ab-437e-bdfd-60a62ad8c857",
           "created": null,
