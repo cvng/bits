@@ -5,11 +5,11 @@ set -eu -o pipefail
 
 source .env
 
-# Seed data from JSON event "stream" & test permissions
-
 host="$DATABASE_URL"
 name="bits"
 file="tasks/data/events.json"
+
+# Seed data from JSON event "stream" & test permissions
 
 jq --compact-output ".[]" "$file" | psql "$host" --set=ON_ERROR_STOP=true \
     --command="create table tmp (row jsonb);" \
