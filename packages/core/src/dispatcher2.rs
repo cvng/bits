@@ -10,10 +10,9 @@ use sea_orm::TransactionTrait;
 use sqlx::error::DatabaseError;
 use uuid::Uuid;
 
-const AUTH_LOGIN_QUERY: &str = "select auth.login($1);";
-
-const CQRS_EVENT_QUERY: &str =
-  "insert into cqrs.event (type, data) values ($1::cqrs.event_type, $2::jsonb)";
+const CQRS_EVENT_QUERY: &str = "
+  insert into cqrs.event (user_id, type, data)
+  values ($1::id, $2::cqrs.event_type, $3::jsonb)";
 
 #[derive(Debug, Error)]
 pub enum ConstraintError {
@@ -42,30 +41,21 @@ pub async fn dispatch(
     .as_ref()
     .map(|token| insecure_get_token_sub::<Uuid>(&token.0))
     .transpose()?
-    .flatten();
+    .flatten()
+    .unwrap();
 
   let txn = client.connection.begin().await?;
-
-  if let Some(user_id) = user_id {
-    txn
-      .execute(Statement::from_sql_and_values(
-        DatabaseBackend::Postgres,
-        AUTH_LOGIN_QUERY,
-        [user_id.into()],
-      ))
-      .await?;
-  }
 
   for event in &events {
     let event = serde_json::to_value(event)?;
     let event_type = event.get("type").unwrap().as_str().unwrap();
-    let event_payload = event.get("payload").unwrap().as_str().unwrap();
+    let event_data = event.get("payload").unwrap().as_str().unwrap();
 
     let res = txn
       .execute(Statement::from_sql_and_values(
         DatabaseBackend::Postgres,
         CQRS_EVENT_QUERY,
-        [event_type.into(), event_payload.into()],
+        [user_id.into(), event_type.into(), event_data.into()],
       ))
       .await;
 
