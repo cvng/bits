@@ -101,7 +101,9 @@ pub async fn create_show(
   client: &Client,
   input: CreateShowInput,
 ) -> Result<CreateShowResult, Error> {
-  dispatcher::dispatch(client, CreateShowCommand {}.handle(input)?)
+  let events = CreateShowCommand {}.handle(input)?;
+
+  dispatcher::dispatch(client, events)
     .await
     .map(CreateShowCommand::apply)
     .map_err(|_| Error::NotCreated)?

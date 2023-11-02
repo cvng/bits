@@ -105,7 +105,9 @@ impl Command for BidCommand {
 }
 
 pub async fn bid(client: &Client, input: BidInput) -> Result<BidResult, Error> {
-  dispatcher::dispatch(client, BidCommand {}.handle(input)?)
+  let events = BidCommand {}.handle(input)?;
+
+  dispatcher::dispatch(client, events)
     .await
     .map(BidCommand::apply)
     .map_err(|_| Error::NotCreated)?

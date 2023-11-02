@@ -103,7 +103,9 @@ pub async fn create_auction(
   client: &Client,
   input: CreateAuctionInput,
 ) -> Result<CreateAuctionResult, Error> {
-  dispatcher::dispatch(client, CreateAuctionCommand {}.handle(input)?)
+  let events = CreateAuctionCommand {}.handle(input)?;
+
+  dispatcher::dispatch(client, events)
     .await
     .map(CreateAuctionCommand::apply)
     .map_err(|_| Error::NotCreated)?

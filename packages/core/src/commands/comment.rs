@@ -106,7 +106,9 @@ pub async fn comment(
   client: &Client,
   input: CommentInput,
 ) -> Result<CommentResult, Error> {
-  dispatcher::dispatch(client, CommentCommand {}.handle(input)?)
+  let events = CommentCommand {}.handle(input)?;
+
+  dispatcher::dispatch(client, events)
     .await
     .map(CommentCommand::apply)
     .map_err(|_| Error::NotCreated)?
@@ -115,7 +117,7 @@ pub async fn comment(
 
 #[test]
 fn test_comment() {
-   let input = CommentInput {
+  let input = CommentInput {
     author_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
     show_id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
     text: "text".to_string(),

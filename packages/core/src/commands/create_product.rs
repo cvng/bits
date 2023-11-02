@@ -99,7 +99,9 @@ pub async fn create_product(
   client: &Client,
   input: CreateProductInput,
 ) -> Result<CreateProductResult, Error> {
-  dispatcher::dispatch(client, CreateProductCommand {}.handle(input)?)
+  let events = CreateProductCommand {}.handle(input)?;
+
+  dispatcher::dispatch(client, events)
     .await
     .map(CreateProductCommand::apply)
     .map_err(|_| Error::NotCreated)?
