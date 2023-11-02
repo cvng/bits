@@ -15,6 +15,7 @@ use thiserror::Error;
 
 #[derive(Deserialize)]
 pub struct CreateProductInput {
+  #[serde(rename = "creatorId")]
   pub creator_id: UserId,
   pub name: String,
 }

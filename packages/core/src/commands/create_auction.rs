@@ -18,7 +18,9 @@ use thiserror::Error;
 
 #[derive(Deserialize)]
 pub struct CreateAuctionInput {
+  #[serde(rename = "showId")]
   pub show_id: ShowId,
+  #[serde(rename = "productId")]
   pub product_id: ProductId,
 }
 

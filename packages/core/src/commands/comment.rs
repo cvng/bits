@@ -18,7 +18,9 @@ use thiserror::Error;
 
 #[derive(Deserialize)]
 pub struct CommentInput {
+  #[serde(rename = "userId")]
   pub user_id: UserId,
+  #[serde(rename = "showId")]
   pub show_id: ShowId,
   pub text: String,
 }

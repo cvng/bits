@@ -1,6 +1,6 @@
 use crate::command::Command;
 use crate::database;
-use crate::dispatcher2;
+use crate::dispatcher;
 use crate::Client;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
@@ -125,7 +125,7 @@ pub async fn bid(client: &Client, input: BidInput) -> Result<BidResult, Error> {
     amount: input.amount,
   });
 
-  dispatcher2::dispatch(client, BidCommand { auction, bid }.handle(input)?)
+  dispatcher::dispatch(client, BidCommand { auction, bid }.handle(input)?)
     .await
     .map(BidCommand::apply)
     .map_err(|_| Error::NotCreated)?
