@@ -105,7 +105,15 @@ impl Command for BidCommand {
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
       Event::BidCreated { payload } => Some(BidResult {
-        bid: payload.bid.clone(),
+        bid: Bid {
+          id: payload.id,
+          created: None,
+          updated: None,
+          auction_id: payload.auction_id,
+          bidder_id: payload.bidder_id,
+          concurrent_amount: None,
+          amount: payload.amount,
+        },
       }),
       _ => None,
     })

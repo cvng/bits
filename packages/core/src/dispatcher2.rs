@@ -1,12 +1,14 @@
+#![allow(dead_code)]
+
 use crate::decoder::insecure_get_token_sub;
 use crate::Client;
 use bits_data::Event;
 use sea_orm::ConnectionTrait;
 use sea_orm::DatabaseBackend;
 use sea_orm::DbErr;
-use sea_orm::RuntimeErr;
 use sea_orm::Statement;
 use sea_orm::TransactionTrait;
+use serde_json::to_string;
 use sqlx::error::DatabaseError;
 use uuid::Uuid;
 
@@ -49,25 +51,16 @@ pub async fn dispatch(
   for event in &events {
     let event = serde_json::to_value(event)?;
     let event_type = event.get("type").unwrap().as_str().unwrap();
-    let event_data = event.get("payload").unwrap().as_str().unwrap();
+    let event_data =
+      to_string(event.get("payload").unwrap().as_object().unwrap()).unwrap();
 
-    let res = txn
+    txn
       .execute(Statement::from_sql_and_values(
         DatabaseBackend::Postgres,
         CQRS_EVENT_QUERY,
         [user_id.into(), event_type.into(), event_data.into()],
       ))
-      .await;
-
-    if let Err(DbErr::Exec(RuntimeErr::SqlxError(
-      sqlx::error::Error::Database(e),
-    ))) = res
-    {
-      match to_constraint_err(e) {
-        Some(err) => return Err(DispatchError::Constraint(err)),
-        None => unimplemented!(), // TODO: return Err(DispatchError::Database(res.err().unwrap())),
-      }
-    }
+      .await?;
   }
 
   txn.commit().await?;
