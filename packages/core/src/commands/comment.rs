@@ -7,20 +7,17 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
-use bits_data::entities;
 use bits_data::Comment;
 use bits_data::CommentId;
 use bits_data::Event;
-use bits_data::Show;
 use bits_data::ShowId;
 use bits_data::UserId;
-use sea_orm::EntityTrait;
 use thiserror::Error;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CommentInput {
-  pub user_id: UserId,
+  pub author_id: UserId,
   pub show_id: ShowId,
   pub text: String,
 }
@@ -65,15 +62,10 @@ impl CommentResult {
 pub enum Error {
   #[error("comment not created")]
   NotCreated,
-  #[error("show not found: {0}")]
-  ShowNotFound(ShowId),
 }
 
 #[derive(Default)]
-pub struct CommentCommand {
-  pub show: Option<Show>,
-  pub comment: Option<Comment>,
-}
+pub struct CommentCommand {}
 
 impl Command for CommentCommand {
   type Error = Error;
@@ -85,20 +77,25 @@ impl Command for CommentCommand {
     &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    self
-      .show
-      .clone()
-      .ok_or(Error::ShowNotFound(input.show_id))?;
-
-    let comment = self.comment.clone().ok_or(Error::NotCreated)?;
-
-    Ok(vec![Event::comment_created(comment)])
+    Ok(vec![Event::comment_created(
+      CommentId::new_v4(),
+      input.author_id,
+      input.show_id,
+      input.text,
+    )])
   }
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::CommentCreated { data } => Some(CommentResult {
-        comment: data.comment.clone(),
+      Event::CommentCreated { data, .. } => Some(CommentResult {
+        comment: Comment {
+          id: data.id,
+          created: None,
+          updated: None,
+          author_id: data.author_id,
+          show_id: data.show_id,
+          text: data.text.clone(),
+        },
       }),
       _ => None,
     })
@@ -109,21 +106,9 @@ pub async fn comment(
   client: &Client,
   input: CommentInput,
 ) -> Result<CommentResult, Error> {
-  let show = entities::prelude::Show::find_by_id(input.show_id)
-    .one(&client.connection)
-    .await
-    .map_err(|_| Error::ShowNotFound(input.show_id))?;
+  let events = CommentCommand {}.handle(input)?;
 
-  let comment = Some(Comment {
-    id: CommentId::new_v4(),
-    created: None,
-    updated: None,
-    author_id: input.user_id,
-    show_id: input.show_id,
-    text: input.text.clone(),
-  });
-
-  dispatcher::dispatch(client, CommentCommand { show, comment }.handle(input)?)
+  dispatcher::dispatch(client, events)
     .await
     .map(CommentCommand::apply)
     .map_err(|_| Error::NotCreated)?
@@ -132,46 +117,20 @@ pub async fn comment(
 
 #[test]
 fn test_comment() {
-  let show = Some(bits_data::Show {
-    id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
-    created: None,
-    updated: None,
-    creator_id: UserId::new_v4(),
-    name: "name".parse().unwrap(),
-    started: None,
-  });
-
   let input = CommentInput {
-    user_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
-    show_id: show.as_ref().unwrap().id,
-    text: "text".parse().unwrap(),
+    author_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
+    show_id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
+    text: "text".to_string(),
   };
 
-  let comment = Some(Comment {
-    id: "7cc32b32-c5c6-4034-89f9-8363d856ebb4".parse().unwrap(),
-    created: None,
-    updated: None,
-    author_id: input.user_id,
-    show_id: input.show_id,
-    text: input.text.clone(),
-  });
+  let events = CommentCommand {}.handle(input).unwrap();
 
-  let events = CommentCommand { show, comment }.handle(input).unwrap();
-
-  assert_json_snapshot!(events, @r###"
+  assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
   [
     {
       "type": "comment_created",
       "data": {
-        "comment": {
-          "id": "7cc32b32-c5c6-4034-89f9-8363d856ebb4",
-          "created": null,
-          "updated": null,
-          "author_id": "9ad4e977-8156-450e-ad00-944f9fc730ab",
-          "show_id": "f5e84179-7f8d-461b-a1d9-497974de10a6",
-          "text": "text"
-        },
-        "id": "7cc32b32-c5c6-4034-89f9-8363d856ebb4",
+        "id": "[uuid]",
         "author_id": "9ad4e977-8156-450e-ad00-944f9fc730ab",
         "show_id": "f5e84179-7f8d-461b-a1d9-497974de10a6",
         "text": "text"

@@ -58,13 +58,9 @@ impl CreateProductResult {
 pub enum Error {
   #[error("product not created")]
   NotCreated,
-  #[error("not found: {0}")]
-  NotFound(ProductId),
 }
 
-pub struct CreateProductCommand {
-  pub product: Option<Product>,
-}
+pub struct CreateProductCommand {}
 
 impl Command for CreateProductCommand {
   type Error = Error;
@@ -74,17 +70,25 @@ impl Command for CreateProductCommand {
 
   fn handle(
     &self,
-    _input: Self::Input,
+    input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let product = self.product.clone().ok_or(Error::NotCreated)?;
-
-    Ok(vec![Event::product_created(product)])
+    Ok(vec![Event::product_created(
+      ProductId::new_v4(),
+      input.creator_id,
+      input.name,
+    )])
   }
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::ProductCreated { data } => Some(CreateProductResult {
-        product: data.product.clone(),
+      Event::ProductCreated { data, .. } => Some(CreateProductResult {
+        product: Product {
+          id: data.id,
+          created: None,
+          updated: None,
+          creator_id: data.creator_id,
+          name: data.name.clone(),
+        },
       }),
       _ => None,
     })
@@ -95,15 +99,9 @@ pub async fn create_product(
   client: &Client,
   input: CreateProductInput,
 ) -> Result<CreateProductResult, Error> {
-  let product = Some(Product {
-    id: ProductId::new_v4(),
-    created: None,
-    updated: None,
-    creator_id: input.creator_id,
-    name: input.name.clone(),
-  });
+  let events = CreateProductCommand {}.handle(input)?;
 
-  dispatcher::dispatch(client, CreateProductCommand { product }.handle(input)?)
+  dispatcher::dispatch(client, events)
     .await
     .map(CreateProductCommand::apply)
     .map_err(|_| Error::NotCreated)?
@@ -114,32 +112,17 @@ pub async fn create_product(
 fn test_create_product() {
   let input = CreateProductInput {
     creator_id: "abbba031-f122-42b8-b6ff-585ad245aadd".parse().unwrap(),
-    name: "name".parse().unwrap(),
+    name: "name".to_string(),
   };
 
-  let product = Some(Product {
-    id: "f9f1436d-6ed5-4644-8e9e-7e14deffa2ec".parse().unwrap(),
-    created: None,
-    updated: None,
-    creator_id: input.creator_id,
-    name: input.name.clone(),
-  });
+  let events = CreateProductCommand {}.handle(input).unwrap();
 
-  let events = CreateProductCommand { product }.handle(input).unwrap();
-
-  assert_json_snapshot!(events, @r###"
+  assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" },  @r###"
   [
     {
       "type": "product_created",
       "data": {
-        "product": {
-          "id": "f9f1436d-6ed5-4644-8e9e-7e14deffa2ec",
-          "created": null,
-          "updated": null,
-          "creator_id": "abbba031-f122-42b8-b6ff-585ad245aadd",
-          "name": "name"
-        },
-        "id": "f9f1436d-6ed5-4644-8e9e-7e14deffa2ec",
+        "id": "[uuid]",
         "creator_id": "abbba031-f122-42b8-b6ff-585ad245aadd",
         "name": "name"
       }

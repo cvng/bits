@@ -7,16 +7,12 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
-use bits_data::entities;
 use bits_data::Amount;
-use bits_data::Auction;
 use bits_data::AuctionId;
 use bits_data::Bid;
 use bits_data::BidId;
 use bits_data::Event;
-use bits_data::ProductId;
 use bits_data::UserId;
-use sea_orm::EntityTrait;
 use thiserror::Error;
 
 #[derive(Deserialize)]
@@ -65,27 +61,12 @@ impl BidResult {
 
 #[derive(Debug, Error)]
 pub enum Error {
-  #[error("auction not found: {0}")]
-  AuctionNotFound(AuctionId),
-  #[error("auction not ready: {0}")]
-  AuctionNotReady(AuctionId),
-  #[error("auction not started: {0}")]
-  AuctionNotStarted(AuctionId),
-  #[error("auction expired: {0}")]
-  AuctionExpired(AuctionId),
-  #[error("invalid bid amount: {0}")]
-  InvalidAmount(Amount),
   #[error("bid not created")]
   NotCreated,
-  #[error("product not found: {0}")]
-  ProductNotFound(ProductId),
 }
 
 #[derive(Default)]
-pub struct BidCommand {
-  pub auction: Option<Auction>,
-  pub bid: Option<Bid>,
-}
+pub struct BidCommand {}
 
 impl Command for BidCommand {
   type Error = Error;
@@ -95,17 +76,28 @@ impl Command for BidCommand {
 
   fn handle(
     &self,
-    _input: Self::Input,
+    input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let bid = self.bid.clone().ok_or(Error::NotCreated)?;
-
-    Ok(vec![Event::bid_created(bid)])
+    Ok(vec![Event::bid_created(
+      BidId::new_v4(),
+      input.auction_id,
+      input.bidder_id,
+      input.amount,
+    )])
   }
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::BidCreated { data } => Some(BidResult {
-        bid: data.bid.clone(),
+      Event::BidCreated { data, .. } => Some(BidResult {
+        bid: Bid {
+          id: data.id,
+          created: None,
+          updated: None,
+          auction_id: data.auction_id,
+          bidder_id: data.bidder_id,
+          concurrent_amount: None,
+          amount: data.amount,
+        },
       }),
       _ => None,
     })
@@ -113,22 +105,9 @@ impl Command for BidCommand {
 }
 
 pub async fn bid(client: &Client, input: BidInput) -> Result<BidResult, Error> {
-  let auction = entities::prelude::Auction::find_by_id(input.auction_id)
-    .one(&client.connection)
-    .await
-    .map_err(|_| Error::AuctionNotFound(input.auction_id))?;
+  let events = BidCommand {}.handle(input)?;
 
-  let bid = Some(Bid {
-    id: BidId::new_v4(),
-    created: None,
-    updated: None,
-    auction_id: input.auction_id,
-    bidder_id: input.bidder_id,
-    concurrent_amount: None,
-    amount: input.amount,
-  });
-
-  dispatcher::dispatch(client, BidCommand { auction, bid }.handle(input)?)
+  dispatcher::dispatch(client, events)
     .await
     .map(BidCommand::apply)
     .map_err(|_| Error::NotCreated)?
@@ -137,55 +116,20 @@ pub async fn bid(client: &Client, input: BidInput) -> Result<BidResult, Error> {
 
 #[test]
 fn test_bid() {
-  let now = "2023-10-17T03:16:49.225067Z"
-    .parse::<bits_data::DateTime>()
-    .unwrap();
-
-  let auction = Some(Auction {
-    id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
-    created: None,
-    updated: None,
-    show_id: "28e9d842-0918-460f-9cd9-7245dbba1966".parse().unwrap(),
-    product_id: "6bc8e88e-fc47-41c6-8dae-b180d1efae98".parse().unwrap(),
-    started: Some("2023-10-16T23:56:27.365540Z".parse().unwrap()),
-    expired: Some(
-      now + bits_data::Duration::seconds(bits_data::AUCTION_TIMEOUT_SECS),
-    ),
-  });
-
   let input = BidInput {
-    auction_id: auction.as_ref().unwrap().id,
+    auction_id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
     bidder_id: "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68".parse().unwrap(),
     amount: 100.into(),
   };
 
-  let bid = Some(Bid {
-    id: "bcd0ab01-96f0-4469-a3e6-254afe70b74f".parse().unwrap(),
-    created: None,
-    updated: None,
-    auction_id: input.auction_id,
-    bidder_id: input.bidder_id,
-    concurrent_amount: None,
-    amount: input.amount,
-  });
+  let events = BidCommand {}.handle(input).unwrap();
 
-  let events = BidCommand { auction, bid }.handle(input).unwrap();
-
-  assert_json_snapshot!(events, @r###"
+  assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
   [
     {
       "type": "bid_created",
       "data": {
-        "bid": {
-          "id": "bcd0ab01-96f0-4469-a3e6-254afe70b74f",
-          "created": null,
-          "updated": null,
-          "auction_id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
-          "bidder_id": "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68",
-          "concurrent_amount": null,
-          "amount": "100"
-        },
-        "id": "bcd0ab01-96f0-4469-a3e6-254afe70b74f",
+        "id": "[uuid]",
         "auction_id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
         "bidder_id": "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68",
         "amount": "100"

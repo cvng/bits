@@ -59,13 +59,9 @@ impl CreateShowResult {
 pub enum Error {
   #[error("show not created")]
   NotCreated,
-  #[error("not found: {0}")]
-  NotFound(ShowId),
 }
 
-pub struct CreateShowCommand {
-  pub show: Option<Show>,
-}
+pub struct CreateShowCommand {}
 
 impl Command for CreateShowCommand {
   type Error = Error;
@@ -75,17 +71,26 @@ impl Command for CreateShowCommand {
 
   fn handle(
     &self,
-    _input: Self::Input,
+    input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let show = self.show.clone().ok_or(Error::NotCreated)?;
-
-    Ok(vec![Event::show_created(show)])
+    Ok(vec![Event::show_created(
+      ShowId::new_v4(),
+      input.creator_id,
+      input.name,
+    )])
   }
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::ShowCreated { data } => Some(CreateShowResult {
-        show: data.show.clone(),
+      Event::ShowCreated { data, .. } => Some(CreateShowResult {
+        show: Show {
+          id: data.id,
+          created: None,
+          updated: None,
+          creator_id: data.creator_id,
+          name: data.name.clone(),
+          started: None,
+        },
       }),
       _ => None,
     })
@@ -96,16 +101,9 @@ pub async fn create_show(
   client: &Client,
   input: CreateShowInput,
 ) -> Result<CreateShowResult, Error> {
-  let show = Some(Show {
-    id: ShowId::new_v4(),
-    created: None,
-    updated: None,
-    creator_id: input.creator_id,
-    name: input.name.clone(),
-    started: None,
-  });
+  let events = CreateShowCommand {}.handle(input)?;
 
-  dispatcher::dispatch(client, CreateShowCommand { show }.handle(input)?)
+  dispatcher::dispatch(client, events)
     .await
     .map(CreateShowCommand::apply)
     .map_err(|_| Error::NotCreated)?
@@ -116,34 +114,17 @@ pub async fn create_show(
 fn test_show() {
   let input = CreateShowInput {
     creator_id: "d9bd7c14-d793-47f3-a644-f97921c862ed".parse().unwrap(),
-    name: "name".parse().unwrap(),
+    name: "name".to_string(),
   };
 
-  let show = Some(Show {
-    id: "15f4491c-c0ab-437e-bdfd-60a62ad8c857".parse().unwrap(),
-    created: None,
-    updated: None,
-    creator_id: input.creator_id,
-    name: input.name.clone(),
-    started: None,
-  });
+  let events = CreateShowCommand {}.handle(input).unwrap();
 
-  let events = CreateShowCommand { show }.handle(input).unwrap();
-
-  assert_json_snapshot!(events, @r###"
+  assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
   [
     {
       "type": "show_created",
       "data": {
-        "show": {
-          "id": "15f4491c-c0ab-437e-bdfd-60a62ad8c857",
-          "created": null,
-          "updated": null,
-          "creator_id": "d9bd7c14-d793-47f3-a644-f97921c862ed",
-          "name": "name",
-          "started": null
-        },
-        "id": "15f4491c-c0ab-437e-bdfd-60a62ad8c857",
+        "id": "[uuid]",
         "creator_id": "d9bd7c14-d793-47f3-a644-f97921c862ed",
         "name": "name"
       }
