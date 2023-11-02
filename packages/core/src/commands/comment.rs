@@ -18,10 +18,9 @@ use sea_orm::EntityTrait;
 use thiserror::Error;
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CommentInput {
-  #[serde(rename = "userId")]
   pub user_id: UserId,
-  #[serde(rename = "showId")]
   pub show_id: ShowId,
   pub text: String,
 }
@@ -98,8 +97,8 @@ impl Command for CommentCommand {
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::CommentCreated { payload } => Some(CommentResult {
-        comment: payload.comment.clone(),
+      Event::CommentCreated { data } => Some(CommentResult {
+        comment: data.comment.clone(),
       }),
       _ => None,
     })
@@ -163,7 +162,7 @@ fn test_comment() {
   [
     {
       "type": "comment_created",
-      "payload": {
+      "data": {
         "comment": {
           "id": "7cc32b32-c5c6-4034-89f9-8363d856ebb4",
           "created": null,

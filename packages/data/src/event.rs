@@ -14,18 +14,18 @@ use crate::UserId;
 #[derive(Clone, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Event {
-  AuctionCreated { payload: AuctionCreated },
-  BidCreated { payload: BidCreated },
-  CommentCreated { payload: CommentCreated },
-  PersonCreated { payload: PersonCreated },
-  ProductCreated { payload: ProductCreated },
-  ShowCreated { payload: ShowCreated },
+  AuctionCreated { data: AuctionCreated },
+  BidCreated { data: BidCreated },
+  CommentCreated { data: CommentCreated },
+  PersonCreated { data: PersonCreated },
+  ProductCreated { data: ProductCreated },
+  ShowCreated { data: ShowCreated },
 }
 
 impl Event {
   pub fn auction_created(auction: Auction) -> Self {
     Self::AuctionCreated {
-      payload: AuctionCreated {
+      data: AuctionCreated {
         auction: auction.clone(),
         id: auction.id,
         show_id: auction.show_id,
@@ -36,7 +36,7 @@ impl Event {
 
   pub fn bid_created(bid: Bid) -> Self {
     Self::BidCreated {
-      payload: BidCreated {
+      data: BidCreated {
         bid: bid.clone(),
         id: bid.id,
         auction_id: bid.auction_id,
@@ -48,7 +48,7 @@ impl Event {
 
   pub fn comment_created(comment: Comment) -> Self {
     Self::CommentCreated {
-      payload: CommentCreated {
+      data: CommentCreated {
         comment: comment.clone(),
         id: comment.id,
         author_id: comment.author_id,
@@ -60,13 +60,13 @@ impl Event {
 
   pub fn person_created(id: UserId, email: String, role: String) -> Self {
     Self::PersonCreated {
-      payload: PersonCreated { id, email, role },
+      data: PersonCreated { id, email, role },
     }
   }
 
   pub fn product_created(product: Product) -> Self {
     Self::ProductCreated {
-      payload: ProductCreated {
+      data: ProductCreated {
         product: product.clone(),
         id: product.id,
         creator_id: product.creator_id,
@@ -77,7 +77,7 @@ impl Event {
 
   pub fn show_created(show: Show) -> Self {
     Self::ShowCreated {
-      payload: ShowCreated {
+      data: ShowCreated {
         show: show.clone(),
         id: show.id,
         creator_id: show.creator_id,

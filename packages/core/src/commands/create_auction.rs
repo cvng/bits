@@ -18,10 +18,9 @@ use sea_orm::EntityTrait;
 use thiserror::Error;
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateAuctionInput {
-  #[serde(rename = "showId")]
   pub show_id: ShowId,
-  #[serde(rename = "productId")]
   pub product_id: ProductId,
 }
 
@@ -97,8 +96,8 @@ impl Command for CreateAuctionCommand {
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::AuctionCreated { payload } => Some(CreateAuctionResult {
-        auction: payload.auction.clone(),
+      Event::AuctionCreated { data } => Some(CreateAuctionResult {
+        auction: data.auction.clone(),
       }),
       _ => None,
     })
@@ -176,7 +175,7 @@ fn test_create_auction() {
   [
     {
       "type": "auction_created",
-      "payload": {
+      "data": {
         "auction": {
           "id": "177d1966-d688-486e-9b13-8709c0a434a0",
           "created": null,
