@@ -59,8 +59,6 @@ impl CreateShowResult {
 pub enum Error {
   #[error("show not created")]
   NotCreated,
-  #[error("not found: {0}")]
-  NotFound(ShowId),
 }
 
 pub struct CreateShowCommand {}
@@ -75,22 +73,24 @@ impl Command for CreateShowCommand {
     &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let show = Show {
-      id: ShowId::new_v4(),
-      created: None,
-      updated: None,
-      creator_id: input.creator_id,
-      name: input.name.clone(),
-      started: None,
-    };
-
-    Ok(vec![Event::show_created(show)])
+    Ok(vec![Event::show_created(
+      ShowId::new_v4(),
+      input.creator_id,
+      input.name,
+    )])
   }
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::ShowCreated { data } => Some(CreateShowResult {
-        show: data.show.clone(),
+      Event::ShowCreated { data, .. } => Some(CreateShowResult {
+        show: Show {
+          id: data.id,
+          created: None,
+          updated: None,
+          creator_id: data.creator_id,
+          name: data.name.clone(),
+          started: None,
+        },
       }),
       _ => None,
     })
@@ -120,17 +120,9 @@ fn test_show() {
   assert_json_snapshot!(events, @r###"
   [
     {
-      "type": "show_created",
+      "type": "ShowCreated",
       "data": {
-        "show": {
-          "id": "15f4491c-c0ab-437e-bdfd-60a62ad8c857",
-          "created": null,
-          "updated": null,
-          "creator_id": "d9bd7c14-d793-47f3-a644-f97921c862ed",
-          "name": "name",
-          "started": null
-        },
-        "id": "15f4491c-c0ab-437e-bdfd-60a62ad8c857",
+        "id": "ea27fbea-99fa-407a-a4c5-b79bfa97b44d",
         "creator_id": "d9bd7c14-d793-47f3-a644-f97921c862ed",
         "name": "name"
       }

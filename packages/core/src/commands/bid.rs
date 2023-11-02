@@ -7,16 +7,12 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
-use bits_data::entities;
 use bits_data::Amount;
-use bits_data::Auction;
 use bits_data::AuctionId;
 use bits_data::Bid;
 use bits_data::BidId;
 use bits_data::Event;
-use bits_data::ProductId;
 use bits_data::UserId;
-use sea_orm::EntityTrait;
 use thiserror::Error;
 
 #[derive(Deserialize)]
@@ -65,26 +61,12 @@ impl BidResult {
 
 #[derive(Debug, Error)]
 pub enum Error {
-  #[error("auction not found: {0}")]
-  AuctionNotFound(AuctionId),
-  #[error("auction not ready: {0}")]
-  AuctionNotReady(AuctionId),
-  #[error("auction not started: {0}")]
-  AuctionNotStarted(AuctionId),
-  #[error("auction expired: {0}")]
-  AuctionExpired(AuctionId),
-  #[error("invalid bid amount: {0}")]
-  InvalidAmount(Amount),
   #[error("bid not created")]
   NotCreated,
-  #[error("product not found: {0}")]
-  ProductNotFound(ProductId),
 }
 
 #[derive(Default)]
-pub struct BidCommand {
-  pub auction: Option<Auction>,
-}
+pub struct BidCommand {}
 
 impl Command for BidCommand {
   type Error = Error;
@@ -96,23 +78,26 @@ impl Command for BidCommand {
     &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let bid = Bid {
-      id: BidId::new_v4(),
-      created: None,
-      updated: None,
-      auction_id: input.auction_id,
-      bidder_id: input.bidder_id,
-      concurrent_amount: None,
-      amount: input.amount,
-    };
-
-    Ok(vec![Event::bid_created(bid)])
+    Ok(vec![Event::bid_created(
+      BidId::new_v4(),
+      input.auction_id,
+      input.bidder_id,
+      input.amount,
+    )])
   }
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::BidCreated { data } => Some(BidResult {
-        bid: data.bid.clone(),
+      Event::BidCreated { data, .. } => Some(BidResult {
+        bid: Bid {
+          id: data.id,
+          created: None,
+          updated: None,
+          auction_id: data.auction_id,
+          bidder_id: data.bidder_id,
+          concurrent_amount: None,
+          amount: data.amount,
+        },
       }),
       _ => None,
     })
@@ -120,12 +105,7 @@ impl Command for BidCommand {
 }
 
 pub async fn bid(client: &Client, input: BidInput) -> Result<BidResult, Error> {
-  let auction = entities::prelude::Auction::find_by_id(input.auction_id)
-    .one(&client.connection)
-    .await
-    .unwrap();
-
-  dispatcher::dispatch(client, BidCommand { auction }.handle(input)?)
+  dispatcher::dispatch(client, BidCommand {}.handle(input)?)
     .await
     .map(BidCommand::apply)
     .map_err(|_| Error::NotCreated)?
@@ -138,7 +118,7 @@ fn test_bid() {
     .parse::<bits_data::DateTime>()
     .unwrap();
 
-  let auction = Some(Auction {
+  let auction = bits_data::Auction {
     id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
     created: None,
     updated: None,
@@ -148,31 +128,22 @@ fn test_bid() {
     expired: Some(
       now + bits_data::Duration::seconds(bits_data::AUCTION_TIMEOUT_SECS),
     ),
-  });
+  };
 
   let input = BidInput {
-    auction_id: auction.as_ref().unwrap().id,
+    auction_id: auction.id,
     bidder_id: "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68".parse().unwrap(),
     amount: 100.into(),
   };
 
-  let events = BidCommand { auction }.handle(input).unwrap();
+  let events = BidCommand {}.handle(input).unwrap();
 
   assert_json_snapshot!(events, @r###"
   [
     {
-      "type": "bid_created",
+      "type": "BidCreated",
       "data": {
-        "bid": {
-          "id": "bcd0ab01-96f0-4469-a3e6-254afe70b74f",
-          "created": null,
-          "updated": null,
-          "auction_id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
-          "bidder_id": "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68",
-          "concurrent_amount": null,
-          "amount": "100"
-        },
-        "id": "bcd0ab01-96f0-4469-a3e6-254afe70b74f",
+        "id": "d971d1f2-986b-4883-bbcc-e318c2060022",
         "auction_id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
         "bidder_id": "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68",
         "amount": "100"

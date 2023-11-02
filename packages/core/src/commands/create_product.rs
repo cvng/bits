@@ -58,8 +58,6 @@ impl CreateProductResult {
 pub enum Error {
   #[error("product not created")]
   NotCreated,
-  #[error("not found: {0}")]
-  NotFound(ProductId),
 }
 
 pub struct CreateProductCommand {}
@@ -74,21 +72,23 @@ impl Command for CreateProductCommand {
     &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    let product = Product {
-      id: ProductId::new_v4(),
-      created: None,
-      updated: None,
-      creator_id: input.creator_id,
-      name: input.name.clone(),
-    };
-
-    Ok(vec![Event::product_created(product)])
+    Ok(vec![Event::product_created(
+      ProductId::new_v4(),
+      input.creator_id,
+      input.name,
+    )])
   }
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::ProductCreated { data } => Some(CreateProductResult {
-        product: data.product.clone(),
+      Event::ProductCreated { data, .. } => Some(CreateProductResult {
+        product: Product {
+          id: data.id,
+          created: None,
+          updated: None,
+          creator_id: data.creator_id,
+          name: data.name.clone(),
+        },
       }),
       _ => None,
     })
@@ -113,29 +113,14 @@ fn test_create_product() {
     name: "name".parse().unwrap(),
   };
 
-  let product = Some(Product {
-    id: "f9f1436d-6ed5-4644-8e9e-7e14deffa2ec".parse().unwrap(),
-    created: None,
-    updated: None,
-    creator_id: input.creator_id,
-    name: input.name.clone(),
-  });
-
   let events = CreateProductCommand {}.handle(input).unwrap();
 
   assert_json_snapshot!(events, @r###"
   [
     {
-      "type": "product_created",
+      "type": "ProductCreated",
       "data": {
-        "product": {
-          "id": "f9f1436d-6ed5-4644-8e9e-7e14deffa2ec",
-          "created": null,
-          "updated": null,
-          "creator_id": "abbba031-f122-42b8-b6ff-585ad245aadd",
-          "name": "name"
-        },
-        "id": "f9f1436d-6ed5-4644-8e9e-7e14deffa2ec",
+        "id": "ab45f5a4-16cd-4342-86fd-41aa3b7d95ef",
         "creator_id": "abbba031-f122-42b8-b6ff-585ad245aadd",
         "name": "name"
       }
