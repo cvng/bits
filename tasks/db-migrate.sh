@@ -8,7 +8,7 @@ source .env
 host="$DATABASE_URL"
 name="bits"
 
-psql "$host" \
+psql "$host" --set=ON_ERROR_STOP=true \
 <<SQL
 \connect postgres;
 
@@ -21,4 +21,4 @@ drop role if exists viewer;
 create database $name;
 SQL
 
-psql "$host" --file="docs/schema.sql"
+psql "$host" --set=ON_ERROR_STOP=true --file="docs/schema.sql"
