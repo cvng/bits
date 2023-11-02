@@ -43,6 +43,7 @@ impl Event {
   pub fn bid_created(bid: Bid) -> Self {
     Self::BidCreated {
       payload: BidCreated {
+        bid: bid.clone(),
         id: bid.id,
         auction_id: bid.auction_id,
         bidder_id: bid.bidder_id,
@@ -98,6 +99,8 @@ pub struct AuctionStarted {
 
 #[derive(Clone, Serialize)]
 pub struct BidCreated {
+  pub bid: Bid,
+  //
   pub id: BidId,
   pub auction_id: AuctionId,
   pub bidder_id: UserId,
