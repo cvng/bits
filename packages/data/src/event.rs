@@ -1,4 +1,3 @@
-use crate::entities::sea_orm_active_enums::EventType;
 use crate::Amount;
 use crate::AuctionId;
 use crate::BidId;
@@ -8,32 +7,14 @@ use crate::ShowId;
 use crate::UserId;
 
 #[derive(Clone, Serialize)]
-#[serde(untagged, rename_all = "snake_case")]
+#[serde(tag = "type", rename_all = "snake_case")]
 pub enum Event {
-  AuctionCreated {
-    r#type: EventType,
-    data: AuctionCreated,
-  },
-  BidCreated {
-    r#type: EventType,
-    data: BidCreated,
-  },
-  CommentCreated {
-    r#type: EventType,
-    data: CommentCreated,
-  },
-  PersonCreated {
-    r#type: EventType,
-    data: PersonCreated,
-  },
-  ProductCreated {
-    r#type: EventType,
-    data: ProductCreated,
-  },
-  ShowCreated {
-    r#type: EventType,
-    data: ShowCreated,
-  },
+  AuctionCreated { data: AuctionCreated },
+  BidCreated { data: BidCreated },
+  CommentCreated { data: CommentCreated },
+  PersonCreated { data: PersonCreated },
+  ProductCreated { data: ProductCreated },
+  ShowCreated { data: ShowCreated },
 }
 
 impl Event {
@@ -43,7 +24,6 @@ impl Event {
     product_id: ProductId,
   ) -> Self {
     Self::AuctionCreated {
-      r#type: EventType::AuctionCreated,
       data: AuctionCreated {
         id,
         show_id,
@@ -59,7 +39,6 @@ impl Event {
     amount: Amount,
   ) -> Self {
     Self::BidCreated {
-      r#type: EventType::BidCreated,
       data: BidCreated {
         id,
         auction_id,
@@ -76,7 +55,6 @@ impl Event {
     text: String,
   ) -> Self {
     Self::CommentCreated {
-      r#type: EventType::CommentCreated,
       data: CommentCreated {
         id,
         author_id,
@@ -88,7 +66,6 @@ impl Event {
 
   pub fn person_created(id: UserId, email: String, role: String) -> Self {
     Self::PersonCreated {
-      r#type: EventType::PersonCreated,
       data: PersonCreated { id, email, role },
     }
   }
@@ -99,7 +76,6 @@ impl Event {
     name: String,
   ) -> Self {
     Self::ProductCreated {
-      r#type: EventType::ProductCreated,
       data: ProductCreated {
         id,
         creator_id,
@@ -110,7 +86,6 @@ impl Event {
 
   pub fn show_created(id: ShowId, creator_id: UserId, name: String) -> Self {
     Self::ShowCreated {
-      r#type: EventType::ShowCreated,
       data: ShowCreated {
         id,
         creator_id,
