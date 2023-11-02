@@ -20,18 +20,12 @@ psql "$host" --set=ON_ERROR_STOP=true \
 insert into auth.person (id, email, role)
 values ('00000000-0000-0000-0000-000000000000', 'admin@test.dev', 'admin');
 
-do \$$
-declare
-    event jsonb;
-begin
-    for event in select row from tmp loop
-        insert into cqrs.event (user_id, type, data)
-        values
-            ((event->>'user_id')::id,
-            (event->>'type')::cqrs.event_type,
-            (event->>'data')::jsonb);
-    end loop;
-end; \$$;
+insert into cqrs.event (user_id, type, data)
+select
+    (row->>'user_id')::id,
+    (row->>'type')::cqrs.event_type,
+    (row->>'data')::jsonb
+from tmp;
 
 select id, created, type, data->>'id' as data_id from cqrs.event;
 SQL
