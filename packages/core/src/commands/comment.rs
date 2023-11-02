@@ -1,5 +1,4 @@
 use crate::command::Command;
-use crate::database;
 use crate::dispatcher;
 use crate::Client;
 use async_graphql::dynamic::Field;
@@ -8,12 +7,14 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
+use bits_data::entities;
 use bits_data::Comment;
 use bits_data::CommentId;
 use bits_data::Event;
 use bits_data::Show;
 use bits_data::ShowId;
 use bits_data::UserId;
+use sea_orm::EntityTrait;
 use thiserror::Error;
 
 #[derive(Deserialize)]
@@ -109,7 +110,10 @@ pub async fn comment(
   client: &Client,
   input: CommentInput,
 ) -> Result<CommentResult, Error> {
-  let show = database::db().shows.get(&input.show_id).cloned();
+  let show = entities::prelude::Show::find_by_id(input.show_id)
+    .one(&client.connection)
+    .await
+    .map_err(|_| Error::ShowNotFound(input.show_id))?;
 
   let comment = Some(Comment {
     id: CommentId::new_v4(),

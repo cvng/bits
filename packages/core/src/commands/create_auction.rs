@@ -1,5 +1,4 @@
 use crate::command::Command;
-use crate::database;
 use crate::dispatcher;
 use crate::Client;
 use async_graphql::dynamic::Field;
@@ -8,12 +7,14 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
+use bits_data::entities;
 use bits_data::Auction;
 use bits_data::AuctionId;
 use bits_data::Event;
 use bits_data::Product;
 use bits_data::ProductId;
 use bits_data::ShowId;
+use sea_orm::EntityTrait;
 use thiserror::Error;
 
 #[derive(Deserialize)]
@@ -108,7 +109,10 @@ pub async fn create_auction(
   client: &Client,
   input: CreateAuctionInput,
 ) -> Result<CreateAuctionResult, Error> {
-  let product = database::db().products.get(&input.product_id).cloned();
+  let product = entities::prelude::Product::find_by_id(input.product_id)
+    .one(&client.connection)
+    .await
+    .map_err(|_| Error::ProductNotFound(input.product_id))?;
 
   let auction = Some(Auction {
     id: AuctionId::new_v4(),
