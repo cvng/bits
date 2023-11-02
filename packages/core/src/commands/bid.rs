@@ -114,24 +114,8 @@ pub async fn bid(client: &Client, input: BidInput) -> Result<BidResult, Error> {
 
 #[test]
 fn test_bid() {
-  let now = "2023-10-17T03:16:49.225067Z"
-    .parse::<bits_data::DateTime>()
-    .unwrap();
-
-  let auction = bits_data::Auction {
-    id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
-    created: None,
-    updated: None,
-    show_id: "28e9d842-0918-460f-9cd9-7245dbba1966".parse().unwrap(),
-    product_id: "6bc8e88e-fc47-41c6-8dae-b180d1efae98".parse().unwrap(),
-    started: Some("2023-10-16T23:56:27.365540Z".parse().unwrap()),
-    expired: Some(
-      now + bits_data::Duration::seconds(bits_data::AUCTION_TIMEOUT_SECS),
-    ),
-  };
-
   let input = BidInput {
-    auction_id: auction.id,
+    auction_id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
     bidder_id: "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68".parse().unwrap(),
     amount: 100.into(),
   };

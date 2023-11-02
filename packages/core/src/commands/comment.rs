@@ -115,18 +115,9 @@ pub async fn comment(
 
 #[test]
 fn test_comment() {
-  let show = bits_data::Show {
-    id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
-    created: None,
-    updated: None,
-    creator_id: UserId::new_v4(),
-    name: "name".to_string(),
-    started: None,
-  };
-
-  let input = CommentInput {
+   let input = CommentInput {
     author_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
-    show_id: show.id,
+    show_id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
     text: "text".to_string(),
   };
 

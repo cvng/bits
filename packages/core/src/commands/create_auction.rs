@@ -112,26 +112,9 @@ pub async fn create_auction(
 
 #[test]
 fn test_create_auction() {
-  let show = bits_data::Show {
-    id: "048b47f4-3010-43ae-84c1-8088ab8488a8".parse().unwrap(),
-    created: None,
-    updated: None,
-    creator_id: bits_data::UserId::new_v4(),
-    name: "name".to_string(),
-    started: None,
-  };
-
-  let product = bits_data::Product {
-    id: "2b1af787-2d94-4224-a2fc-1d8d155537c0".parse().unwrap(),
-    created: None,
-    updated: None,
-    creator_id: bits_data::UserId::new_v4(),
-    name: "name".to_string(),
-  };
-
   let input = CreateAuctionInput {
-    show_id: show.id,
-    product_id: product.id,
+    show_id: "048b47f4-3010-43ae-84c1-8088ab8488a8".parse().unwrap(),
+    product_id: "2b1af787-2d94-4224-a2fc-1d8d155537c0".parse().unwrap(),
   };
 
   let events = CreateAuctionCommand {}.handle(input).unwrap();
