@@ -120,24 +120,24 @@ fn test_comment() {
     created: None,
     updated: None,
     creator_id: UserId::new_v4(),
-    name: "name".parse().unwrap(),
+    name: "name".to_string(),
     started: None,
   };
 
   let input = CommentInput {
     author_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
     show_id: show.id,
-    text: "text".parse().unwrap(),
+    text: "text".to_string(),
   };
 
   let events = CommentCommand {}.handle(input).unwrap();
 
-  assert_json_snapshot!(events, @r###"
+  assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
   [
     {
       "type": "comment_created",
       "data": {
-        "id": "a724e819-7a10-4343-9dfc-3b56b2c6d7be",
+        "id": "[uuid]",
         "author_id": "9ad4e977-8156-450e-ad00-944f9fc730ab",
         "show_id": "f5e84179-7f8d-461b-a1d9-497974de10a6",
         "text": "text"

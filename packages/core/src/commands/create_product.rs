@@ -110,17 +110,17 @@ pub async fn create_product(
 fn test_create_product() {
   let input = CreateProductInput {
     creator_id: "abbba031-f122-42b8-b6ff-585ad245aadd".parse().unwrap(),
-    name: "name".parse().unwrap(),
+    name: "name".to_string(),
   };
 
   let events = CreateProductCommand {}.handle(input).unwrap();
 
-  assert_json_snapshot!(events, @r###"
+  assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" },  @r###"
   [
     {
       "type": "product_created",
       "data": {
-        "id": "49a3c0eb-0bd6-4954-b464-7f75b2f18b44",
+        "id": "[uuid]",
         "creator_id": "abbba031-f122-42b8-b6ff-585ad245aadd",
         "name": "name"
       }

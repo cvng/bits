@@ -117,7 +117,7 @@ fn test_create_auction() {
     created: None,
     updated: None,
     creator_id: bits_data::UserId::new_v4(),
-    name: "name".parse().unwrap(),
+    name: "name".to_string(),
     started: None,
   };
 
@@ -126,7 +126,7 @@ fn test_create_auction() {
     created: None,
     updated: None,
     creator_id: bits_data::UserId::new_v4(),
-    name: "name".parse().unwrap(),
+    name: "name".to_string(),
   };
 
   let input = CreateAuctionInput {
@@ -136,12 +136,12 @@ fn test_create_auction() {
 
   let events = CreateAuctionCommand {}.handle(input).unwrap();
 
-  assert_json_snapshot!(events, @r###"
+  assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" },  @r###"
   [
     {
       "type": "auction_created",
       "data": {
-        "id": "4148738d-3676-48b2-8ba2-1d4cf92d9dcb",
+        "id": "[uuid]",
         "show_id": "048b47f4-3010-43ae-84c1-8088ab8488a8",
         "product_id": "2b1af787-2d94-4224-a2fc-1d8d155537c0"
       }

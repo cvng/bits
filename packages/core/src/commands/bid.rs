@@ -138,12 +138,12 @@ fn test_bid() {
 
   let events = BidCommand {}.handle(input).unwrap();
 
-  assert_json_snapshot!(events, @r###"
+  assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
   [
     {
       "type": "bid_created",
       "data": {
-        "id": "f9881880-7110-442b-aba8-5dc505212547",
+        "id": "[uuid]",
         "auction_id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
         "bidder_id": "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68",
         "amount": "100"
