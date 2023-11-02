@@ -15,6 +15,7 @@ use thiserror::Error;
 
 #[derive(Deserialize)]
 pub struct CreateProductInput {
+  #[serde(rename = "creatorId")]
   pub creator_id: UserId,
   pub name: String,
 }
@@ -137,7 +138,10 @@ fn test_create_product() {
           "updated": null,
           "creator_id": "abbba031-f122-42b8-b6ff-585ad245aadd",
           "name": "name"
-        }
+        },
+        "id": "f9f1436d-6ed5-4644-8e9e-7e14deffa2ec",
+        "creator_id": "abbba031-f122-42b8-b6ff-585ad245aadd",
+        "name": "name"
       }
     }
   ]

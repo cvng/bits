@@ -18,7 +18,9 @@ use thiserror::Error;
 
 #[derive(Deserialize)]
 pub struct CommentInput {
+  #[serde(rename = "userId")]
   pub user_id: UserId,
+  #[serde(rename = "showId")]
   pub show_id: ShowId,
   pub text: String,
 }
@@ -165,7 +167,11 @@ fn test_comment() {
           "author_id": "9ad4e977-8156-450e-ad00-944f9fc730ab",
           "show_id": "f5e84179-7f8d-461b-a1d9-497974de10a6",
           "text": "text"
-        }
+        },
+        "id": "7cc32b32-c5c6-4034-89f9-8363d856ebb4",
+        "author_id": "9ad4e977-8156-450e-ad00-944f9fc730ab",
+        "show_id": "f5e84179-7f8d-461b-a1d9-497974de10a6",
+        "text": "text"
       }
     }
   ]
