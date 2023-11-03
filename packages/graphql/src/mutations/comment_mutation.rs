@@ -1,8 +1,8 @@
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
+use async_graphql::dynamic::FieldValue;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::TypeRef;
-use async_graphql::to_value;
 use bits_core::commands;
 use bits_core::comment::CommentInput;
 use bits_core::comment::CommentResult;
@@ -35,7 +35,7 @@ impl CommentMutation {
 
           let result = commands::comment::comment(&client, input).await?;
 
-          Ok(Some(to_value(result)?))
+          Ok(Some(FieldValue::owned_any(result)))
         })
       },
     )

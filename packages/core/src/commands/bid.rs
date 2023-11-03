@@ -56,7 +56,7 @@ impl BidResult {
           Ok(Some(FieldValue::owned_any(
             ctx
               .parent_value
-              .try_downcast_ref::<BidResult>()
+              .try_downcast_ref::<Self>()
               .cloned()
               .unwrap()
               .bid,
