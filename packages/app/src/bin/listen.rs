@@ -1,6 +1,7 @@
 use std::env;
+use tokio::main;
 
-#[tokio::main]
+#[main]
 pub async fn main() {
   dotenv::dotenv().ok();
 
