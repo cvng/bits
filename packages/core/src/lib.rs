@@ -1,5 +1,4 @@
 mod client;
-mod command;
 mod commands;
 mod decoder;
 mod dispatcher;

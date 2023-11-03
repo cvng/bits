@@ -1,4 +1,4 @@
-use crate::command::Command;
+use super::Command;
 use crate::dispatcher;
 use crate::Client;
 use async_graphql::dynamic::Field;
