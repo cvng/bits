@@ -107,6 +107,10 @@ input BidOrderInput {
   amount: OrderByEnum
 }
 
+type BidResult {
+  bid: BidBasic!
+}
+
 type Comment {
   id: String!
   created: String!
@@ -193,7 +197,7 @@ input CursorInput {
 
 type Mutation {
   _ping: String
-  bid(input: BidInput!): BidBasic!
+  bid(input: BidInput!): BidResult!
   comment(input: CommentInput!): CommentResult!
   createAuction(input: CreateAuctionInput!): CreateAuctionResult!
   createProduct(input: CreateProductInput!): CreateProductResult!

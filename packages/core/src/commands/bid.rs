@@ -7,14 +7,14 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
-use async_graphql::Value;
+use async_graphql::InputType;
 use bits_data::Amount;
 use bits_data::AuctionId;
+use bits_data::Bid;
 use bits_data::BidId;
 use bits_data::Event;
 use bits_data::UserId;
 use thiserror::Error;
-use bits_data::Bid;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -39,13 +39,7 @@ impl BidInput {
 
 #[derive(Serialize)]
 pub struct BidResult {
-  pub id: BidId,
-  pub created: Option<String>,
-  pub updated: Option<String>,
-  pub auction_id: AuctionId,
-  pub bidder_id: UserId,
-  pub concurrent_amount: Option<Amount>,
-  pub amount: Amount,
+  pub bid: Bid,
 }
 
 impl BidResult {
@@ -55,24 +49,20 @@ impl BidResult {
 
   pub fn to_object() -> Object {
     Object::new(Self::type_name()).field(Field::new(
-      "id".to_string(),
-      TypeRef::named_nn(TypeRef::ID),
+      "bid".to_string(),
+      TypeRef::named_nn("BidBasic"),
       |ctx| {
-        FieldFuture::new(async move {
-          Ok(Some(Value::from(
-            ctx
-              .parent_value
-              .as_value()
-              .cloned()
-              .unwrap()
-              .into_json()
-              .unwrap()
-              .get("id")
-              .unwrap()
-              .as_str()
-              .unwrap(),
-          )))
-        })
+        let object = ctx
+          .parent_value
+          .as_value()
+          .cloned()
+          .unwrap()
+          .into_json()
+          .unwrap();
+
+        let value = object.get("bid").unwrap().to_value();
+
+        FieldFuture::new(async move { Ok(Some(value)) })
       },
     ))
   }
@@ -91,7 +81,7 @@ impl Command for BidCommand {
   type Error = Error;
   type Event = Event;
   type Input = BidInput;
-  type Result = Bid;
+  type Result = BidResult;
 
   fn handle(
     &self,
@@ -107,21 +97,23 @@ impl Command for BidCommand {
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::BidCreated { data, .. } => Some(Bid {
-        id: data.id,
-        created: None,
-        updated: None,
-        auction_id: data.auction_id,
-        bidder_id: data.bidder_id,
-        concurrent_amount: None,
-        amount: data.amount,
+      Event::BidCreated { data, .. } => Some(BidResult {
+        bid: Bid {
+          id: data.id,
+          created: None,
+          updated: None,
+          auction_id: data.auction_id,
+          bidder_id: data.bidder_id,
+          concurrent_amount: None,
+          amount: data.amount,
+        },
       }),
       _ => None,
     })
   }
 }
 
-pub async fn bid(client: &Client, input: BidInput) -> Result<Bid, Error> {
+pub async fn bid(client: &Client, input: BidInput) -> Result<BidResult, Error> {
   let events = BidCommand {}.handle(input)?;
 
   dispatcher::dispatch(client, events)

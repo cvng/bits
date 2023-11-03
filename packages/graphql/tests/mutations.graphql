@@ -1,5 +1,7 @@
 mutation BidMutation($input: BidInput!) {
   bid(input: $input) {
-    id
+    bid {
+      id
+    }
   }
 }
