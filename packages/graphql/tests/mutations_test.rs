@@ -2,7 +2,6 @@ mod setup;
 
 use crate::setup::try_into_request;
 use graphql_client::GraphQLQuery;
-use insta::assert_json_snapshot;
 use tokio::test;
 
 #[derive(GraphQLQuery)]
@@ -30,7 +29,7 @@ async fn test_bid_mutation() {
 
   let response = schema.execute(request).await.into_result().unwrap();
 
-  assert_json_snapshot!(response, { ".data.bid.bid.id" => "[uuid]" }, @r###"
+  insta::assert_json_snapshot!(response, { ".data.bid.bid.id" => "[uuid]" }, @r###"
   {
     "data": {
       "bid": {

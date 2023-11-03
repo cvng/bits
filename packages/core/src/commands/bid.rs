@@ -134,7 +134,7 @@ fn test_bid() {
 
   let events = BidCommand {}.handle(input).unwrap();
 
-  assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
+  insta::assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
   [
     {
       "type": "bid_created",

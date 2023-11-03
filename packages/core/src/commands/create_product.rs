@@ -127,7 +127,7 @@ fn test_create_product() {
 
   let events = CreateProductCommand {}.handle(input).unwrap();
 
-  assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" },  @r###"
+  insta::assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" },  @r###"
   [
     {
       "type": "product_created",

@@ -131,7 +131,7 @@ fn test_create_auction() {
 
   let events = CreateAuctionCommand {}.handle(input).unwrap();
 
-  assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" },  @r###"
+  insta::assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" },  @r###"
   [
     {
       "type": "auction_created",

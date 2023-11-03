@@ -135,7 +135,7 @@ fn test_comment() {
 
   let events = CommentCommand {}.handle(input).unwrap();
 
-  assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
+  insta::assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
   [
     {
       "type": "comment_created",
