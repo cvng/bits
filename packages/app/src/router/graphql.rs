@@ -9,6 +9,7 @@ use axum::routing::get;
 use axum::Router;
 use bits_graphql::Schema;
 use bits_graphql::Token;
+use http::header;
 use http::HeaderMap;
 
 async fn graphiql_handler() -> impl IntoResponse {
@@ -35,7 +36,7 @@ async fn graphql_handler(
 }
 
 fn get_token_from_headers(headers: &HeaderMap) -> Option<Token> {
-  headers.get("Authorization").and_then(|value| {
+  headers.get(header::AUTHORIZATION).and_then(|value| {
     value
       .to_str()
       .map(|s| s.replace("Bearer ", ""))
