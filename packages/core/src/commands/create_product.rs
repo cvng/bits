@@ -45,7 +45,7 @@ impl CreateProductResult {
   pub fn to_object() -> Object {
     Object::new(Self::type_name()).field(Field::new(
       "product",
-      TypeRef::named_nn("ProductBasic"),
+      TypeRef::named_nn("Product"),
       |ctx| {
         FieldFuture::new(async move {
           Ok(Some(FieldValue::owned_any(

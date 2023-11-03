@@ -49,7 +49,7 @@ impl CommentResult {
   pub fn to_object() -> Object {
     Object::new(Self::type_name()).field(Field::new(
       "comment",
-      TypeRef::named_nn("CommentBasic"),
+      TypeRef::named_nn("Comment"),
       |ctx| {
         FieldFuture::new(async move {
           Ok(Some(FieldValue::owned_any(

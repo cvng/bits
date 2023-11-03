@@ -57,16 +57,6 @@ type Bid {
   person: Person
 }
 
-type BidBasic {
-  id: String!
-  created: String!
-  updated: String
-  auctionId: String!
-  bidderId: String!
-  concurrentAmount: String!
-  amount: String!
-}
-
 type BidConnection {
   pageInfo: PageInfo!
   paginationInfo: PaginationInfo
@@ -108,7 +98,7 @@ input BidOrderInput {
 }
 
 type BidResult {
-  bid: BidBasic!
+  bid: Bid!
 }
 
 type Comment {
@@ -161,7 +151,7 @@ input CommentOrderInput {
 }
 
 type CommentResult {
-  id: ID!
+  comment: Comment!
 }
 
 input CreateAuctionInput {
@@ -170,7 +160,7 @@ input CreateAuctionInput {
 }
 
 type CreateAuctionResult {
-  id: ID!
+  auction: Auction!
 }
 
 input CreateProductInput {
@@ -178,7 +168,7 @@ input CreateProductInput {
 }
 
 type CreateProductResult {
-  id: ID!
+  product: Product!
 }
 
 input CreateShowInput {
@@ -187,7 +177,7 @@ input CreateShowInput {
 }
 
 type CreateShowResult {
-  id: ID!
+  show: Show!
 }
 
 input CursorInput {

@@ -50,7 +50,7 @@ impl BidResult {
   pub fn to_object() -> Object {
     Object::new(Self::type_name()).field(Field::new(
       "bid",
-      TypeRef::named_nn("BidBasic"),
+      TypeRef::named_nn("Bid"),
       |ctx| {
         FieldFuture::new(async move {
           Ok(Some(FieldValue::owned_any(

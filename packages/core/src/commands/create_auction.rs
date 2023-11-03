@@ -47,7 +47,7 @@ impl CreateAuctionResult {
   pub fn to_object() -> Object {
     Object::new(Self::type_name()).field(Field::new(
       "auction",
-      TypeRef::named_nn("AuctionBasic"),
+      TypeRef::named_nn("Auction"),
       |ctx| {
         FieldFuture::new(async move {
           Ok(Some(FieldValue::owned_any(
