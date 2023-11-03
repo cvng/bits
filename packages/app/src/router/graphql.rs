@@ -50,6 +50,6 @@ pub fn router(schema: Schema) -> Router {
   Router::new()
     .route("/", post(graphql_handler))
     .route("/playground", get(graphiql_handler))
-    .route_service("/ws", GraphQLSubscription::new(schema.to_owned()))
+    .route_service("/ws", GraphQLSubscription::new(schema.clone()))
     .with_state(schema)
 }
