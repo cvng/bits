@@ -37,7 +37,7 @@ impl BidInput {
   }
 }
 
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Serialize)]
 pub struct BidResult {
   pub bid: Bid,
 }
