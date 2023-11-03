@@ -8,7 +8,6 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
-use async_graphql::InputType;
 use bits_data::Amount;
 use bits_data::AuctionId;
 use bits_data::Bid;
@@ -38,7 +37,7 @@ impl BidInput {
   }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct BidResult {
   pub bid: Bid,
 }
@@ -53,22 +52,15 @@ impl BidResult {
       "bid",
       TypeRef::named_nn("BidBasic"),
       |ctx| {
-        dbg!(&ctx.parent_value.try_downcast_ref::<BidResult>().unwrap());
-
-        let value = Bid {
-          id: BidId::new_v4(),
-          created: None,
-          updated: None,
-          auction_id: AuctionId::new_v4(),
-          bidder_id: UserId::new_v4(),
-          concurrent_amount: None,
-          amount: 999.into(),
-        };
-
-        // let value = object.get("bid").unwrap().to_value();
-
         FieldFuture::new(async move {
-          Ok(Some(FieldValue::owned_any(value)))
+          Ok(Some(FieldValue::owned_any(
+            ctx
+              .parent_value
+              .try_downcast_ref::<BidResult>()
+              .cloned()
+              .unwrap()
+              .bid,
+          )))
         })
       },
     ))

@@ -36,7 +36,7 @@ async fn test_bid_mutation() {
       "bid": {
         "bid": {
           "id": "[uuid]",
-          "amount": "999"
+          "amount": "1000"
         }
       }
     }
