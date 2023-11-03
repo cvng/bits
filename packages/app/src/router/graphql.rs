@@ -46,8 +46,8 @@ fn get_token_from_headers(headers: &HeaderMap) -> Option<Token> {
 
 pub fn router(schema: Schema) -> Router {
   Router::new()
-    .route("/graphql", get(graphql_handler))
-    .route("/graphql/playground", get(graphiql_handler))
-    .route_service("/graphql/ws", GraphQLSubscription::new(schema.to_owned()))
+    .route("/", get(graphql_handler))
+    .route("/playground", get(graphiql_handler))
+    .route_service("/ws", GraphQLSubscription::new(schema.to_owned()))
     .with_state(schema)
 }
