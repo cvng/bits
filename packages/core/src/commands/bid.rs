@@ -7,6 +7,7 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
+use async_graphql::Value;
 use bits_data::Amount;
 use bits_data::AuctionId;
 use bits_data::BidId;
@@ -53,12 +54,24 @@ impl BidResult {
 
   pub fn to_object() -> Object {
     Object::new(Self::type_name()).field(Field::new(
-      "bid".to_string(),
+      "id".to_string(),
       TypeRef::named_nn(TypeRef::ID),
       |ctx| {
-        FieldFuture::new(
-          async move { Ok(ctx.parent_value.as_value().cloned()) },
-        )
+        FieldFuture::new(async move {
+          Ok(Some(Value::from(
+            ctx
+              .parent_value
+              .as_value()
+              .cloned()
+              .unwrap()
+              .into_json()
+              .unwrap()
+              .get("id")
+              .unwrap()
+              .as_str()
+              .unwrap(),
+          )))
+        })
       },
     ))
   }

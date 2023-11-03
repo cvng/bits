@@ -98,7 +98,7 @@ input BidOrderInput {
 }
 
 type BidResult {
-  bid: ID!
+  id: ID!
 }
 
 type Comment {
