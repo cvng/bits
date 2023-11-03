@@ -1,13 +1,15 @@
+//! Bits app. https://github.com/cvng/bits
+
 #[macro_use]
 extern crate thiserror;
 
-mod server;
+mod router;
 
 use async_graphql::dynamic::SchemaError;
+use axum::Server;
 use bits_graphql::Client;
 use bits_graphql::Database;
 use bits_graphql::DbErr;
-use server::Server;
 use std::env;
 use tokio::main;
 use tracing::Level;
@@ -47,7 +49,7 @@ async fn main() {
     .map_err(Error::Schema)
     .unwrap();
 
-  let router = server::app(schema);
+  let router = router::router(schema);
 
   println!("GraphiQL IDE: http://{addr}/graphql");
 

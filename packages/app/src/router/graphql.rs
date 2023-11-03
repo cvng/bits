@@ -3,20 +3,16 @@ use async_graphql_axum::GraphQLRequest;
 use async_graphql_axum::GraphQLResponse;
 use async_graphql_axum::GraphQLSubscription;
 use axum::extract::State;
-use axum::response;
+use axum::response::Html;
 use axum::response::IntoResponse;
 use axum::routing::get;
-use axum::routing::post;
 use axum::Router;
 use bits_graphql::Schema;
 use bits_graphql::Token;
 use http::HeaderMap;
-use tower_http::cors::CorsLayer;
 
-pub type Server<I, S> = axum::Server<I, S>;
-
-async fn graphiql() -> impl IntoResponse {
-  response::Html(
+async fn graphiql_handler() -> impl IntoResponse {
+  Html(
     GraphiQLSource::build()
       .endpoint("/graphql")
       .subscription_endpoint("/graphql/ws")
@@ -48,16 +44,10 @@ fn get_token_from_headers(headers: &HeaderMap) -> Option<Token> {
   })
 }
 
-pub fn app(schema: Schema) -> Router {
-  let cors = CorsLayer::permissive();
-
-  let graphql = post(graphql_handler); // TODO: GraphQL::new(schema.to_owned());
-  let graphql_subscription = GraphQLSubscription::new(schema.to_owned());
-
+pub fn router(schema: Schema) -> Router {
   Router::new()
-    .route("/graphql", graphql)
-    .route_service("/graphql/ws", graphql_subscription)
-    .route("/graphql/playground", get(graphiql))
+    .route("/graphql", get(graphql_handler))
+    .route("/graphql/playground", get(graphiql_handler))
+    .route_service("/graphql/ws", GraphQLSubscription::new(schema.to_owned()))
     .with_state(schema)
-    .layer(cors)
 }
