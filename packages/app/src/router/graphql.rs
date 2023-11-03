@@ -11,6 +11,7 @@ use bits_graphql::Schema;
 use bits_graphql::Token;
 use http::header;
 use http::HeaderMap;
+use axum::routing::post;
 
 async fn graphiql_handler() -> impl IntoResponse {
   Html(
@@ -47,7 +48,7 @@ fn get_token_from_headers(headers: &HeaderMap) -> Option<Token> {
 
 pub fn router(schema: Schema) -> Router {
   Router::new()
-    .route("/", get(graphql_handler))
+    .route("/", post(graphql_handler))
     .route("/playground", get(graphiql_handler))
     .route_service("/ws", GraphQLSubscription::new(schema.to_owned()))
     .with_state(schema)
