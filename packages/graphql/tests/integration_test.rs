@@ -30,11 +30,14 @@ async fn test_bid_mutation() {
 
   let response = schema.execute(request).await.into_result().unwrap();
 
-  assert_json_snapshot!(response, { ".data.bid.id" => "[uuid]" }, @r###"
+  assert_json_snapshot!(response, { ".data.bid.bid.id" => "[uuid]" }, @r###"
   {
     "data": {
       "bid": {
-        "id": "[uuid]"
+        "bid": {
+          "id": "[uuid]",
+          "amount": "999"
+        }
       }
     }
   }

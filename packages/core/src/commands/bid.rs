@@ -3,6 +3,7 @@ use crate::dispatcher;
 use crate::Client;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
+use async_graphql::dynamic::FieldValue;
 use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
@@ -37,7 +38,7 @@ impl BidInput {
   }
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct BidResult {
   pub bid: Bid,
 }
@@ -49,20 +50,26 @@ impl BidResult {
 
   pub fn to_object() -> Object {
     Object::new(Self::type_name()).field(Field::new(
-      "bid".to_string(),
+      "bid",
       TypeRef::named_nn("BidBasic"),
       |ctx| {
-        let object = ctx
-          .parent_value
-          .as_value()
-          .cloned()
-          .unwrap()
-          .into_json()
-          .unwrap();
+        dbg!(&ctx.parent_value.try_downcast_ref::<BidResult>().unwrap());
 
-        let value = object.get("bid").unwrap().to_value();
+        let value = Bid {
+          id: BidId::new_v4(),
+          created: None,
+          updated: None,
+          auction_id: AuctionId::new_v4(),
+          bidder_id: UserId::new_v4(),
+          concurrent_amount: None,
+          amount: 999.into(),
+        };
 
-        FieldFuture::new(async move { Ok(Some(value)) })
+        // let value = object.get("bid").unwrap().to_value();
+
+        FieldFuture::new(async move {
+          Ok(Some(FieldValue::owned_any(value)))
+        })
       },
     ))
   }
