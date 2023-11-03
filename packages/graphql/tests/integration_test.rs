@@ -1,0 +1,52 @@
+mod setup;
+
+use crate::setup::try_into_request;
+use graphql_client::GraphQLQuery;
+use insta::assert_json_snapshot;
+use tokio::test;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+  schema_path = "../../docs/schema.gql",
+  query_path = "tests/mutations.graphql"
+)]
+pub struct BidMutation;
+
+#[test]
+async fn test_seller_can_create_show() {
+  let (schema, client, token) = setup::setup().await;
+
+  let request =
+    try_into_request(BidMutation::build_query(bid_mutation::Variables {
+      input: bid_mutation::BidInput {
+        auction_id: "00000000-0000-0000-0000-000000000000".parse().unwrap(),
+        bidder_id: "00000000-2000-0000-0000-000000000000".parse().unwrap(),
+        amount: 1000,
+      },
+    }))
+    .unwrap()
+    .data(client)
+    .data(token);
+
+  let response = schema.execute(request).await.into_result().unwrap();
+
+  assert_json_snapshot!(response, { ".data.bid.id.bid.id" => "[uuid]" }, @r###"
+  {
+    "data": {
+      "bid": {
+        "id": {
+          "bid": {
+            "id": "[uuid]",
+            "created": null,
+            "updated": null,
+            "auction_id": "00000000-0000-0000-0000-000000000000",
+            "bidder_id": "00000000-2000-0000-0000-000000000000",
+            "concurrent_amount": null,
+            "amount": "1000"
+          }
+        }
+      }
+    }
+  }
+  "###);
+}
