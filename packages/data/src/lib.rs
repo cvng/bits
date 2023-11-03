@@ -1,25 +1,40 @@
-#[macro_use]
-extern crate serde;
-
-pub mod entities;
-mod event;
+mod events;
+mod models;
 mod scalars;
+mod types;
 
-pub use entities::auction::Model as Auction;
-pub use entities::bid::Model as Bid;
-pub use entities::comment::Model as Comment;
-pub use entities::person::Model as User;
-pub use entities::product::Model as Product;
-pub use entities::show::Model as Show;
-pub use event::*;
-pub use scalars::*;
+pub use chrono;
+pub use sea_orm;
+pub use seaography;
+pub use uuid;
 
-pub type ProductId = Uuid;
-pub type AuctionId = Uuid;
-pub type UserId = Uuid;
-pub type CommentId = Uuid;
-pub type BidId = Uuid;
-pub type ShowId = Uuid;
+pub use models::auction;
+pub use models::bid;
+pub use models::comment;
+pub use models::person;
+pub use models::product;
+pub use models::show;
 
-pub const AUCTION_TIMEOUT_SECS: i64 = 60;
-pub const AUCTION_REFRESH_SECS: i64 = 15;
+pub use events::AuctionCreated;
+pub use events::BidCreated;
+pub use events::CommentCreated;
+pub use events::Event;
+pub use events::PersonCreated;
+pub use events::ProductCreated;
+pub use events::ShowCreated;
+pub use models::auction::Model as Auction;
+pub use models::bid::Model as Bid;
+pub use models::comment::Model as Comment;
+pub use models::person::Model as Person;
+pub use models::product::Model as Product;
+pub use models::sea_orm_active_enums::EventType;
+pub use models::show::Model as Show;
+pub use scalars::amount::Amount;
+pub use scalars::datetime::DateTime;
+pub use scalars::text::Text;
+pub use types::AuctionId;
+pub use types::BidId;
+pub use types::CommentId;
+pub use types::PersonId;
+pub use types::ProductId;
+pub use types::ShowId;

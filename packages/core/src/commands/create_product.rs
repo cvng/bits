@@ -9,15 +9,17 @@ use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
 use bits_data::Event;
+use bits_data::PersonId;
 use bits_data::Product;
 use bits_data::ProductId;
-use bits_data::UserId;
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateProductInput {
-  pub creator_id: UserId,
+  pub creator_id: PersonId,
   pub name: String,
 }
 

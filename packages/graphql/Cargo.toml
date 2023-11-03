@@ -12,7 +12,6 @@ bits-core = { path = "../core" }
 dotenv = "0.15.0"
 futures-util = "0.3.0"
 lazy_static = "1.4.0"
-seaography = { git = "https://github.com/SeaQL/seaography", rev = "9c43f72", features = ["with-chrono", "with-decimal", "with-uuid"] }
 serde = "1.0.188"
 serde_json = "1.0.107"
 tokio = { version = "1.29.1", features = ["macros", "rt-multi-thread"] }

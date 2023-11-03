@@ -6,12 +6,12 @@ use axum::extract::State;
 use axum::response::Html;
 use axum::response::IntoResponse;
 use axum::routing::get;
+use axum::routing::post;
 use axum::Router;
-use bits_graphql::Schema;
 use bits_graphql::core::Token;
+use bits_graphql::Schema;
 use http::header;
 use http::HeaderMap;
-use axum::routing::post;
 
 async fn graphiql_handler() -> impl IntoResponse {
   Html(

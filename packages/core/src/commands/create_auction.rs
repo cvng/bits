@@ -13,6 +13,8 @@ use bits_data::AuctionId;
 use bits_data::Event;
 use bits_data::ProductId;
 use bits_data::ShowId;
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
 
 #[derive(Deserialize)]

@@ -3,12 +3,12 @@ use async_graphql::dynamic::FieldFuture;
 use async_graphql::dynamic::FieldValue;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::TypeRef;
-use bits_core::commands::bid::BidInput;
-use bits_core::commands::bid::BidResult;
-use bits_core::commands;
+use bits_core::bid;
+use bits_core::bid::BidInput;
+use bits_core::bid::BidResult;
+use bits_core::data::seaography::Builder;
 use bits_core::Client;
 use bits_core::Token;
-use seaography::Builder;
 
 pub struct BidMutation;
 
@@ -30,7 +30,7 @@ impl BidMutation {
           let input =
             ctx.args.get("input").unwrap().deserialize::<BidInput>()?;
 
-          let result = commands::bid::bid(&client, input).await?;
+          let result = bid::bid(&client, input).await?;
 
           Ok(Some(FieldValue::owned_any(result)))
         })

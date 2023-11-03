@@ -1,6 +1,7 @@
 use jsonwebtoken::Algorithm;
 use jsonwebtoken::DecodingKey;
 use jsonwebtoken::Validation;
+use serde::Deserialize;
 use std::collections::HashSet;
 use std::str::FromStr;
 

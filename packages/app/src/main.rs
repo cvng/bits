@@ -1,8 +1,3 @@
-//! # Bits app. https://github.com/cvng/bits
-
-#[macro_use]
-extern crate thiserror;
-
 mod router;
 
 use async_graphql::dynamic::SchemaError;
@@ -11,6 +6,7 @@ use bits_graphql::core::Client;
 use bits_graphql::core::Database;
 use bits_graphql::core::DbErr;
 use std::env;
+use thiserror::Error;
 use tokio::main;
 use tracing::Level;
 

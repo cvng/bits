@@ -1,5 +1,3 @@
-pub use uuid::Uuid;
-
 #[macro_export]
 macro_rules! id {
   ($t:ident) => {

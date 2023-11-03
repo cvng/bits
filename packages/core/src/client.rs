@@ -1,4 +1,4 @@
-use sea_orm::DatabaseConnection;
+use bits_data::sea_orm::DatabaseConnection;
 
 #[derive(Clone)]
 pub struct Token(pub String);

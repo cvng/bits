@@ -3,12 +3,12 @@ use async_graphql::dynamic::FieldFuture;
 use async_graphql::dynamic::FieldValue;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::TypeRef;
-use bits_core::commands;
-use bits_core::commands::create_show::CreateShowInput;
-use bits_core::commands::create_show::CreateShowResult;
+use bits_core::create_show;
+use bits_core::create_show::CreateShowInput;
+use bits_core::create_show::CreateShowResult;
+use bits_core::data::seaography::Builder;
 use bits_core::Client;
 use bits_core::Token;
-use seaography::Builder;
 
 pub struct CreateShowMutation;
 
@@ -33,8 +33,7 @@ impl CreateShowMutation {
             .unwrap()
             .deserialize::<CreateShowInput>()?;
 
-          let result =
-            commands::create_show::create_show(&client, input).await?;
+          let result = create_show::create_show(&client, input).await?;
 
           Ok(Some(FieldValue::owned_any(result)))
         })
