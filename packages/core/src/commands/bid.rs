@@ -14,6 +14,7 @@ use bits_data::BidId;
 use bits_data::Event;
 use bits_data::UserId;
 use thiserror::Error;
+use bits_data::Bid;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -90,7 +91,7 @@ impl Command for BidCommand {
   type Error = Error;
   type Event = Event;
   type Input = BidInput;
-  type Result = BidResult;
+  type Result = Bid;
 
   fn handle(
     &self,
@@ -106,7 +107,7 @@ impl Command for BidCommand {
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::BidCreated { data, .. } => Some(BidResult {
+      Event::BidCreated { data, .. } => Some(Bid {
         id: data.id,
         created: None,
         updated: None,
@@ -120,7 +121,7 @@ impl Command for BidCommand {
   }
 }
 
-pub async fn bid(client: &Client, input: BidInput) -> Result<BidResult, Error> {
+pub async fn bid(client: &Client, input: BidInput) -> Result<Bid, Error> {
   let events = BidCommand {}.handle(input)?;
 
   dispatcher::dispatch(client, events)
