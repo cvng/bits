@@ -13,7 +13,7 @@ use tokio::test;
 pub struct BidMutation;
 
 #[test]
-async fn test_seller_can_create_show() {
+async fn test_bid_mutation() {
   let (schema, client, token) = setup::setup().await;
 
   let request =
