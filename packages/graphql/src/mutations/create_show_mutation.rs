@@ -1,8 +1,8 @@
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
+use async_graphql::dynamic::FieldValue;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::TypeRef;
-use async_graphql::to_value;
 use bits_core::commands;
 use bits_core::create_show::CreateShowInput;
 use bits_core::create_show::CreateShowResult;
@@ -21,7 +21,7 @@ impl CreateShowMutation {
     Field::new(
       Self::type_name(),
       TypeRef::named_nn(CreateShowResult::type_name()),
-      move |ctx| {
+      |ctx| {
         FieldFuture::new(async move {
           let client = Client::default()
             .connection(ctx.data::<Client>()?.connection.clone())
@@ -36,7 +36,7 @@ impl CreateShowMutation {
           let result =
             commands::create_show::create_show(&client, input).await?;
 
-          Ok(Some(to_value(result)?))
+          Ok(Some(FieldValue::owned_any(result)))
         })
       },
     )

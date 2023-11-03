@@ -98,7 +98,7 @@ input BidOrderInput {
 }
 
 type BidResult {
-  id: ID!
+  bid: Bid!
 }
 
 type Comment {
@@ -151,7 +151,7 @@ input CommentOrderInput {
 }
 
 type CommentResult {
-  id: ID!
+  comment: Comment!
 }
 
 input CreateAuctionInput {
@@ -160,7 +160,7 @@ input CreateAuctionInput {
 }
 
 type CreateAuctionResult {
-  id: ID!
+  auction: Auction!
 }
 
 input CreateProductInput {
@@ -168,7 +168,7 @@ input CreateProductInput {
 }
 
 type CreateProductResult {
-  id: ID!
+  product: Product!
 }
 
 input CreateShowInput {
@@ -177,7 +177,7 @@ input CreateShowInput {
 }
 
 type CreateShowResult {
-  id: ID!
+  show: Show!
 }
 
 input CursorInput {
@@ -192,7 +192,6 @@ type Mutation {
   createAuction(input: CreateAuctionInput!): CreateAuctionResult!
   createProduct(input: CreateProductInput!): CreateProductResult!
   createShow(input: CreateShowInput!): CreateShowResult!
-  startShow(input: StartShowInput!): StartShowResult!
 }
 
 input OffsetInput {
@@ -360,14 +359,6 @@ input ShowOrderInput {
   creatorId: OrderByEnum
   name: OrderByEnum
   started: OrderByEnum
-}
-
-input StartShowInput {
-  id: ID!
-}
-
-type StartShowResult {
-  id: ID!
 }
 
 input StringFilterInput {

@@ -3,6 +3,7 @@ use crate::dispatcher;
 use crate::Client;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
+use async_graphql::dynamic::FieldValue;
 use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
@@ -32,7 +33,7 @@ impl CreateShowInput {
   }
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 pub struct CreateShowResult {
   pub show: Show,
 }
@@ -44,12 +45,19 @@ impl CreateShowResult {
 
   pub fn to_object() -> Object {
     Object::new(Self::type_name()).field(Field::new(
-      "id".to_string(),
-      TypeRef::named_nn(TypeRef::ID),
+      "show",
+      TypeRef::named_nn("Show"),
       |ctx| {
-        FieldFuture::new(
-          async move { Ok(ctx.parent_value.as_value().cloned()) },
-        )
+        FieldFuture::new(async move {
+          Ok(Some(FieldValue::owned_any(
+            ctx
+              .parent_value
+              .try_downcast_ref::<Self>()
+              .cloned()
+              .unwrap()
+              .show,
+          )))
+        })
       },
     ))
   }

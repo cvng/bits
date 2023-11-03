@@ -1,0 +1,10 @@
+mutation BidMutation($input: BidInput!) {
+  bid(input: $input) {
+    bid {
+      id
+      auctionId
+      bidderId
+      amount
+    }
+  }
+}

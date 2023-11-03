@@ -1,8 +1,8 @@
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
+use async_graphql::dynamic::FieldValue;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::TypeRef;
-use async_graphql::to_value;
 use bits_core::commands;
 use bits_core::create_auction::CreateAuctionInput;
 use bits_core::create_auction::CreateAuctionResult;
@@ -21,7 +21,7 @@ impl CreateAuctionMutation {
     Field::new(
       Self::type_name(),
       TypeRef::named_nn(CreateAuctionResult::type_name()),
-      move |ctx| {
+      |ctx| {
         FieldFuture::new(async move {
           let client = Client::default()
             .connection(ctx.data::<Client>()?.connection.clone())
@@ -36,7 +36,7 @@ impl CreateAuctionMutation {
           let result =
             commands::create_auction::create_auction(&client, input).await?;
 
-          Ok(Some(to_value(result)?))
+          Ok(Some(FieldValue::owned_any(result)))
         })
       },
     )
