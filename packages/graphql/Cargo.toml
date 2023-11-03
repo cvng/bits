@@ -9,11 +9,9 @@ doctest = false
 [dependencies]
 bits-core = { path = "../core" }
 dotenv = "0.15.0"
-fake = { version = "2.9", features = ["derive", "uuid", "rust_decimal"] }
 futures-util = "0.3.0"
 lazy_static = "1.4.0"
 serde = "1.0.188"
-serde_json = "1.0.107"
 tokio = { version = "1.29.1", features = ["macros", "rt-multi-thread"] }
 
 [dependencies.async-graphql]
