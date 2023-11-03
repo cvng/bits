@@ -8,7 +8,7 @@ use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::Router;
 use bits_graphql::Schema;
-use bits_graphql::Token;
+use bits_graphql::core::Token;
 use http::header;
 use http::HeaderMap;
 use axum::routing::post;

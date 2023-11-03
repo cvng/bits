@@ -15,10 +15,9 @@ mod decoder;
 mod dispatcher;
 mod listener;
 
-pub use bits_data::*;
+pub use bits_data::entities;
 pub use client::Client;
 pub use client::Token;
-pub use commands::*;
 pub use listener::listen;
 pub use sea_orm;
 pub use sea_orm::Database;
