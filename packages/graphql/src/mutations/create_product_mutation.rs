@@ -21,7 +21,7 @@ impl CreateProductMutation {
     Field::new(
       Self::type_name(),
       TypeRef::named_nn(CreateProductResult::type_name()),
-      move |ctx| {
+      |ctx| {
         FieldFuture::new(async move {
           let client = Client::default()
             .connection(ctx.data::<Client>()?.connection.clone())
