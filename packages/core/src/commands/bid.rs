@@ -9,7 +9,6 @@ use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
 use bits_data::Amount;
 use bits_data::AuctionId;
-use bits_data::Bid;
 use bits_data::BidId;
 use bits_data::Event;
 use bits_data::UserId;
@@ -38,7 +37,13 @@ impl BidInput {
 
 #[derive(Serialize)]
 pub struct BidResult {
-  pub bid: Bid,
+  pub id: BidId,
+  pub created: Option<String>,
+  pub updated: Option<String>,
+  pub auction_id: AuctionId,
+  pub bidder_id: UserId,
+  pub concurrent_amount: Option<Amount>,
+  pub amount: Amount,
 }
 
 impl BidResult {
@@ -48,7 +53,7 @@ impl BidResult {
 
   pub fn to_object() -> Object {
     Object::new(Self::type_name()).field(Field::new(
-      "id".to_string(),
+      "bid".to_string(),
       TypeRef::named_nn(TypeRef::ID),
       |ctx| {
         FieldFuture::new(
@@ -89,15 +94,13 @@ impl Command for BidCommand {
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
       Event::BidCreated { data, .. } => Some(BidResult {
-        bid: Bid {
-          id: data.id,
-          created: None,
-          updated: None,
-          auction_id: data.auction_id,
-          bidder_id: data.bidder_id,
-          concurrent_amount: None,
-          amount: data.amount,
-        },
+        id: data.id,
+        created: None,
+        updated: None,
+        auction_id: data.auction_id,
+        bidder_id: data.bidder_id,
+        concurrent_amount: None,
+        amount: data.amount,
       }),
       _ => None,
     })

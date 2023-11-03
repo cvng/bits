@@ -98,7 +98,7 @@ input BidOrderInput {
 }
 
 type BidResult {
-  id: ID!
+  bid: ID!
 }
 
 type Comment {
@@ -192,7 +192,6 @@ type Mutation {
   createAuction(input: CreateAuctionInput!): CreateAuctionResult!
   createProduct(input: CreateProductInput!): CreateProductResult!
   createShow(input: CreateShowInput!): CreateShowResult!
-  startShow(input: StartShowInput!): StartShowResult!
 }
 
 input OffsetInput {
@@ -360,14 +359,6 @@ input ShowOrderInput {
   creatorId: OrderByEnum
   name: OrderByEnum
   started: OrderByEnum
-}
-
-input StartShowInput {
-  id: ID!
-}
-
-type StartShowResult {
-  id: ID!
 }
 
 input StringFilterInput {
