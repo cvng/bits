@@ -1,14 +1,10 @@
-//! # Bits GraphQL schema library.
-
-#![warn(missing_docs)]
-
 mod config;
 mod mutations;
 mod schema;
 
-pub use bits_core::listen;
-pub use bits_core::Client;
-pub use bits_core::Database;
-pub use bits_core::Token;
+pub use async_graphql::dynamic::SchemaError;
+pub use async_graphql::http::GraphiQLSource;
+pub use bits_core as core;
+
 pub use schema::schema;
 pub use schema::Schema;

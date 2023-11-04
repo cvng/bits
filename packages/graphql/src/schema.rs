@@ -5,17 +5,18 @@ use crate::mutations::create_auction_mutation;
 use crate::mutations::create_product_mutation;
 use crate::mutations::create_show_mutation;
 use async_graphql::dynamic::SchemaBuilder;
-use bits_core::entities::auction;
-use bits_core::entities::bid;
-use bits_core::entities::comment;
-use bits_core::entities::person;
-use bits_core::entities::product;
-use bits_core::entities::show;
+use bits_core::data::auction;
+use bits_core::data::bid;
+use bits_core::data::comment;
+use bits_core::data::person;
+use bits_core::data::product;
+use bits_core::data::show;
 use bits_core::sea_orm;
+use bits_core::seaography;
+use bits_core::seaography::register_entities;
+use bits_core::seaography::Builder;
 use bits_core::Client;
 use lazy_static::lazy_static;
-use seaography::register_entities;
-use seaography::Builder;
 
 lazy_static! {
   static ref CONTEXT: seaography::BuilderContext = BuilderContext::custom();
@@ -25,7 +26,7 @@ lazy_static! {
 pub type Schema = async_graphql::dynamic::Schema;
 
 /// Build the GraphQL schema.
-pub fn schema(client: Client) -> SchemaBuilder {
+pub fn schema(client: &Client) -> SchemaBuilder {
   let builder = Builder::new(&CONTEXT, client.connection.clone());
   let builder = register_entities(builder);
   let builder = register_mutations(builder);
@@ -33,7 +34,7 @@ pub fn schema(client: Client) -> SchemaBuilder {
   builder
     .schema_builder()
     .data(client.connection.clone())
-    .data(client) // TODO: limit depth & complexity.
+    .data(client.clone()) // TODO: limit depth & complexity.
 }
 
 fn register_entities(mut builder: Builder) -> Builder {

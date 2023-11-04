@@ -1,22 +1,20 @@
-use async_graphql::http::GraphiQLSource;
 use async_graphql_axum::GraphQLRequest;
 use async_graphql_axum::GraphQLResponse;
 use async_graphql_axum::GraphQLSubscription;
 use axum::extract::State;
-use axum::response;
+use axum::response::Html;
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::routing::post;
 use axum::Router;
+use bits_graphql::core::Token;
+use bits_graphql::GraphiQLSource;
 use bits_graphql::Schema;
-use bits_graphql::Token;
+use http::header;
 use http::HeaderMap;
-use tower_http::cors::CorsLayer;
 
-pub type Server<I, S> = axum::Server<I, S>;
-
-async fn graphiql() -> impl IntoResponse {
-  response::Html(
+async fn graphiql_handler() -> impl IntoResponse {
+  Html(
     GraphiQLSource::build()
       .endpoint("/graphql")
       .subscription_endpoint("/graphql/ws")
@@ -39,7 +37,7 @@ async fn graphql_handler(
 }
 
 fn get_token_from_headers(headers: &HeaderMap) -> Option<Token> {
-  headers.get("Authorization").and_then(|value| {
+  headers.get(header::AUTHORIZATION).and_then(|value| {
     value
       .to_str()
       .map(|s| s.replace("Bearer ", ""))
@@ -48,16 +46,10 @@ fn get_token_from_headers(headers: &HeaderMap) -> Option<Token> {
   })
 }
 
-pub fn app(schema: Schema) -> Router {
-  let cors = CorsLayer::permissive();
-
-  let graphql = post(graphql_handler); // TODO: GraphQL::new(schema.to_owned());
-  let graphql_subscription = GraphQLSubscription::new(schema.to_owned());
-
+pub fn router(schema: Schema) -> Router {
   Router::new()
-    .route("/graphql", graphql)
-    .route_service("/graphql/ws", graphql_subscription)
-    .route("/graphql/playground", get(graphiql))
+    .route("/", post(graphql_handler))
+    .route("/playground", get(graphiql_handler))
+    .route_service("/ws", GraphQLSubscription::new(schema.clone()))
     .with_state(schema)
-    .layer(cors)
 }

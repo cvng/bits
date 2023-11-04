@@ -3,12 +3,12 @@ use async_graphql::dynamic::FieldFuture;
 use async_graphql::dynamic::FieldValue;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::TypeRef;
-use bits_core::commands;
+use bits_core::comment;
 use bits_core::comment::CommentInput;
 use bits_core::comment::CommentResult;
+use bits_core::seaography::Builder;
 use bits_core::Client;
 use bits_core::Token;
-use seaography::Builder;
 
 pub struct CommentMutation;
 
@@ -24,7 +24,7 @@ impl CommentMutation {
       |ctx| {
         FieldFuture::new(async move {
           let client = Client::default()
-            .connection(ctx.data::<Client>()?.connection.clone())
+            .connection(&ctx.data::<Client>()?.connection)
             .token(ctx.data::<Token>()?.clone());
 
           let input = ctx
@@ -33,7 +33,7 @@ impl CommentMutation {
             .unwrap()
             .deserialize::<CommentInput>()?;
 
-          let result = commands::comment::comment(&client, input).await?;
+          let result = comment::comment(&client, input).await?;
 
           Ok(Some(FieldValue::owned_any(result)))
         })

@@ -3,12 +3,12 @@ use async_graphql::dynamic::FieldFuture;
 use async_graphql::dynamic::FieldValue;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::TypeRef;
-use bits_core::commands;
+use bits_core::create_product;
 use bits_core::create_product::CreateProductInput;
 use bits_core::create_product::CreateProductResult;
+use bits_core::seaography::Builder;
 use bits_core::Client;
 use bits_core::Token;
-use seaography::Builder;
 
 pub struct CreateProductMutation;
 
@@ -24,7 +24,7 @@ impl CreateProductMutation {
       |ctx| {
         FieldFuture::new(async move {
           let client = Client::default()
-            .connection(ctx.data::<Client>()?.connection.clone())
+            .connection(&ctx.data::<Client>()?.connection)
             .token(ctx.data::<Token>()?.clone());
 
           let input = ctx
@@ -33,8 +33,7 @@ impl CreateProductMutation {
             .unwrap()
             .deserialize::<CreateProductInput>()?;
 
-          let result =
-            commands::create_product::create_product(&client, input).await?;
+          let result = create_product::create_product(&client, input).await?;
 
           Ok(Some(FieldValue::owned_any(result)))
         })

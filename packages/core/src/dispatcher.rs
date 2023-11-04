@@ -2,15 +2,16 @@
 
 use crate::decoder::insecure_get_token_sub;
 use crate::Client;
+use bits_data::sea_orm::ConnectionTrait;
+use bits_data::sea_orm::DatabaseBackend;
+use bits_data::sea_orm::DbErr;
+use bits_data::sea_orm::Statement;
+use bits_data::sea_orm::TransactionTrait;
+use bits_data::uuid::Uuid;
 use bits_data::Event;
-use sea_orm::ConnectionTrait;
-use sea_orm::DatabaseBackend;
-use sea_orm::DbErr;
-use sea_orm::Statement;
-use sea_orm::TransactionTrait;
 use serde_json::to_string;
 use sqlx::error::DatabaseError;
-use uuid::Uuid;
+use thiserror::Error;
 
 const CQRS_EVENT_QUERY: &str = "
   insert into cqrs.event (user_id, type, data)

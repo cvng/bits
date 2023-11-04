@@ -1,10 +1,11 @@
-use crate::Amount;
-use crate::AuctionId;
-use crate::BidId;
-use crate::CommentId;
-use crate::ProductId;
-use crate::ShowId;
-use crate::UserId;
+use crate::scalars::amount::Amount;
+use crate::types::AuctionId;
+use crate::types::BidId;
+use crate::types::CommentId;
+use crate::types::PersonId;
+use crate::types::ProductId;
+use crate::types::ShowId;
+use serde::Serialize;
 
 #[derive(Clone, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -35,7 +36,7 @@ impl Event {
   pub fn bid_created(
     id: BidId,
     auction_id: AuctionId,
-    bidder_id: UserId,
+    bidder_id: PersonId,
     amount: Amount,
   ) -> Self {
     Self::BidCreated {
@@ -50,7 +51,7 @@ impl Event {
 
   pub fn comment_created(
     id: CommentId,
-    author_id: UserId,
+    author_id: PersonId,
     show_id: ShowId,
     text: String,
   ) -> Self {
@@ -64,7 +65,7 @@ impl Event {
     }
   }
 
-  pub fn person_created(id: UserId, email: String, role: String) -> Self {
+  pub fn person_created(id: PersonId, email: String, role: String) -> Self {
     Self::PersonCreated {
       data: PersonCreated { id, email, role },
     }
@@ -72,7 +73,7 @@ impl Event {
 
   pub fn product_created(
     id: ProductId,
-    creator_id: UserId,
+    creator_id: PersonId,
     name: String,
   ) -> Self {
     Self::ProductCreated {
@@ -84,7 +85,7 @@ impl Event {
     }
   }
 
-  pub fn show_created(id: ShowId, creator_id: UserId, name: String) -> Self {
+  pub fn show_created(id: ShowId, creator_id: PersonId, name: String) -> Self {
     Self::ShowCreated {
       data: ShowCreated {
         id,
@@ -106,21 +107,21 @@ pub struct AuctionCreated {
 pub struct BidCreated {
   pub id: BidId,
   pub auction_id: AuctionId,
-  pub bidder_id: UserId,
+  pub bidder_id: PersonId,
   pub amount: Amount,
 }
 
 #[derive(Clone, Serialize)]
 pub struct CommentCreated {
   pub id: CommentId,
-  pub author_id: UserId,
+  pub author_id: PersonId,
   pub show_id: ShowId,
   pub text: String,
 }
 
 #[derive(Clone, Serialize)]
 pub struct PersonCreated {
-  pub id: UserId,
+  pub id: PersonId,
   pub email: String,
   pub role: String,
 }
@@ -128,13 +129,13 @@ pub struct PersonCreated {
 #[derive(Clone, Serialize)]
 pub struct ProductCreated {
   pub id: ProductId,
-  pub creator_id: UserId,
+  pub creator_id: PersonId,
   pub name: String,
 }
 
 #[derive(Clone, Serialize)]
 pub struct ShowCreated {
   pub id: ShowId,
-  pub creator_id: UserId,
+  pub creator_id: PersonId,
   pub name: String,
 }

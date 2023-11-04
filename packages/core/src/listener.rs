@@ -1,5 +1,6 @@
 // https://github.com/launchbadge/sqlx/tree/main/examples/postgres/listen
 
+use serde::Deserialize;
 use serde_json::Value;
 use sqlx::postgres::PgListener;
 use sqlx::postgres::PgNotification;

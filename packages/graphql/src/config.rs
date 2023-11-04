@@ -1,5 +1,6 @@
-use seaography::heck::ToLowerCamelCase;
-use seaography::EntityQueryFieldConfig;
+use bits_core::seaography;
+use bits_core::seaography::heck::ToLowerCamelCase;
+use bits_core::seaography::EntityQueryFieldConfig;
 
 /// Configuration object for the generated GraphQL schema.
 pub struct BuilderContext;

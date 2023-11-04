@@ -1,4 +1,4 @@
-use crate::command::Command;
+use super::Command;
 use crate::dispatcher;
 use crate::Client;
 use async_graphql::dynamic::Field;
@@ -13,6 +13,8 @@ use bits_data::AuctionId;
 use bits_data::Event;
 use bits_data::ProductId;
 use bits_data::ShowId;
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
 
 #[derive(Deserialize)]
@@ -129,7 +131,7 @@ fn test_create_auction() {
 
   let events = CreateAuctionCommand {}.handle(input).unwrap();
 
-  assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" },  @r###"
+  insta::assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" },  @r###"
   [
     {
       "type": "auction_created",

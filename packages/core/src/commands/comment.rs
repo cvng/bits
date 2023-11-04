@@ -1,4 +1,4 @@
-use crate::command::Command;
+use super::Command;
 use crate::dispatcher;
 use crate::Client;
 use async_graphql::dynamic::Field;
@@ -11,14 +11,16 @@ use async_graphql::dynamic::TypeRef;
 use bits_data::Comment;
 use bits_data::CommentId;
 use bits_data::Event;
+use bits_data::PersonId;
 use bits_data::ShowId;
-use bits_data::UserId;
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CommentInput {
-  pub author_id: UserId,
+  pub author_id: PersonId,
   pub show_id: ShowId,
   pub text: String,
 }
@@ -133,7 +135,7 @@ fn test_comment() {
 
   let events = CommentCommand {}.handle(input).unwrap();
 
-  assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
+  insta::assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
   [
     {
       "type": "comment_created",

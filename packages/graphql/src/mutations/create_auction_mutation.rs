@@ -3,12 +3,12 @@ use async_graphql::dynamic::FieldFuture;
 use async_graphql::dynamic::FieldValue;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::TypeRef;
-use bits_core::commands;
+use bits_core::create_auction;
 use bits_core::create_auction::CreateAuctionInput;
 use bits_core::create_auction::CreateAuctionResult;
+use bits_core::seaography::Builder;
 use bits_core::Client;
 use bits_core::Token;
-use seaography::Builder;
 
 pub struct CreateAuctionMutation;
 
@@ -24,7 +24,7 @@ impl CreateAuctionMutation {
       |ctx| {
         FieldFuture::new(async move {
           let client = Client::default()
-            .connection(ctx.data::<Client>()?.connection.clone())
+            .connection(&ctx.data::<Client>()?.connection)
             .token(ctx.data::<Token>()?.clone());
 
           let input = ctx
@@ -33,8 +33,7 @@ impl CreateAuctionMutation {
             .unwrap()
             .deserialize::<CreateAuctionInput>()?;
 
-          let result =
-            commands::create_auction::create_auction(&client, input).await?;
+          let result = create_auction::create_auction(&client, input).await?;
 
           Ok(Some(FieldValue::owned_any(result)))
         })

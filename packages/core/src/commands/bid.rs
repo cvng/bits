@@ -1,4 +1,4 @@
-use crate::command::Command;
+use super::Command;
 use crate::dispatcher;
 use crate::Client;
 use async_graphql::dynamic::Field;
@@ -13,14 +13,16 @@ use bits_data::AuctionId;
 use bits_data::Bid;
 use bits_data::BidId;
 use bits_data::Event;
-use bits_data::UserId;
+use bits_data::PersonId;
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BidInput {
   pub auction_id: AuctionId,
-  pub bidder_id: UserId,
+  pub bidder_id: PersonId,
   pub amount: Amount,
 }
 
@@ -132,7 +134,7 @@ fn test_bid() {
 
   let events = BidCommand {}.handle(input).unwrap();
 
-  assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
+  insta::assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
   [
     {
       "type": "bid_created",

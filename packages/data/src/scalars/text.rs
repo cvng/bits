@@ -1,6 +1,8 @@
 use arrayvec::ArrayString;
 use arrayvec::CapacityError;
 use async_graphql::scalar;
+use serde::Deserialize;
+use serde::Serialize;
 
 #[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct Text(ArrayString<64>);
