@@ -7,11 +7,11 @@ use bits_data::sea_orm::DatabaseBackend;
 use bits_data::sea_orm::DbErr;
 use bits_data::sea_orm::Statement;
 use bits_data::sea_orm::TransactionTrait;
+use bits_data::uuid::Uuid;
 use bits_data::Event;
 use serde_json::to_string;
 use sqlx::error::DatabaseError;
 use thiserror::Error;
-use uuid::Uuid;
 
 const CQRS_EVENT_QUERY: &str = "
   insert into cqrs.event (user_id, type, data)

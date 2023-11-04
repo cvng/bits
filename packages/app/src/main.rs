@@ -16,7 +16,7 @@ enum Error {
   #[error("failed to connect database")]
   Database(#[from] core::DbErr),
   #[error("failed to build GraphQL schema")]
-  Schema(#[from] async_graphql::dynamic::SchemaError),
+  Schema(#[from] bits_graphql::SchemaError),
   #[error("failed to start web server")]
   Server(#[from] hyper::Error),
 }

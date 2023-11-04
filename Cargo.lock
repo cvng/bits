@@ -369,7 +369,6 @@ dependencies = [
 name = "bits"
 version = "0.1.0"
 dependencies = [
- "async-graphql",
  "async-graphql-axum",
  "axum",
  "bits-graphql",
@@ -388,7 +387,6 @@ version = "0.1.0"
 dependencies = [
  "async-graphql",
  "bits-data",
- "futures",
  "insta",
  "jsonwebtoken",
  "serde",
@@ -396,7 +394,6 @@ dependencies = [
  "sqlx",
  "thiserror",
  "tokio",
- "uuid",
 ]
 
 [[package]]
@@ -420,7 +417,6 @@ dependencies = [
  "async-graphql",
  "bits-core",
  "dotenv",
- "futures-util",
  "graphql_client",
  "insta",
  "lazy_static",
@@ -898,7 +894,6 @@ checksum = "23342abe12aba583913b2e62f22225ff9c950774065e4bfb61a19cd9770fec40"
 dependencies = [
  "futures-channel",
  "futures-core",
- "futures-executor",
  "futures-io",
  "futures-sink",
  "futures-task",

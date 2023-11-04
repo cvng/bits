@@ -1,4 +1,3 @@
-use async_graphql::http::GraphiQLSource;
 use async_graphql_axum::GraphQLRequest;
 use async_graphql_axum::GraphQLResponse;
 use async_graphql_axum::GraphQLSubscription;
@@ -9,6 +8,7 @@ use axum::routing::get;
 use axum::routing::post;
 use axum::Router;
 use bits_graphql::core::Token;
+use bits_graphql::GraphiQLSource;
 use bits_graphql::Schema;
 use http::header;
 use http::HeaderMap;
