@@ -4,7 +4,7 @@
 dev = "watch --clear --exec run"
 lint = "clippy"
 snap = "insta review"
-task = "run --bin tasks --quiet --release --"
+task = "run --bin task --quiet --release --"
 
 [build]
 target-dir = ".build"

@@ -7,7 +7,7 @@ source .env
 
 host="$DATABASE_URL"
 name="bits"
-file="tasks/data/events.json"
+file="scripts/data/events.json"
 
 # Seed data from JSON event "stream" & test permissions
 

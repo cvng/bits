@@ -1,11 +1,11 @@
 [package]
-name = "tasks"
+name = "task"
 version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "tasks"
-path = "bin.rs"
+name = "task"
+path = "task.rs"
 
 [dependencies]
 xshell = "0.2.5"
