@@ -21,13 +21,13 @@ pub async fn setup() -> Setup {
 
   let token = Token(token_str);
 
-  let client = Client::default().connection(connection.clone());
+  let client = Client::default().connection(&connection);
 
-  let schema = bits_graphql::schema(client)
+  let schema = bits_graphql::schema(&client)
     .finish()
     .expect("Fail to initialize GraphQL schema");
 
-  let client = Client::default().connection(connection);
+  let client = Client::default().connection(&connection);
 
   (schema, client, token)
 }
