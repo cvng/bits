@@ -1,7 +1,7 @@
 # https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [workspace]
-members = ["packages/*", "tasks"]
+members = ["packages/*", "scripts"]
 resolver = "2"
 
 [workspace.dependencies]
