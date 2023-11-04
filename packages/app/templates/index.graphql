@@ -1,0 +1,12 @@
+query IndexQuery {
+  shows {
+    nodes {
+      id
+      created
+      updated
+      creatorId
+      name
+      started
+    }
+  }
+}

@@ -1,0 +1,7 @@
+base.title: "Bits"
+
+index.title: "Shows"
+index.table.id: "ID"
+index.table.created: "Created"
+index.table.creator_id: "Creator ID"
+index.table.name: "Name"

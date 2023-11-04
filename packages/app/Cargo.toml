@@ -5,12 +5,18 @@ edition = "2021"
 default-run = "bits"
 
 [dependencies]
+askama = { version = "0.12.1", features = ["with-axum"] }
+askama_axum = "0.3.0"
 async-graphql-axum = "6.0.7"
 axum = { version = "0.6.20", features = ["ws", "headers"] }
 bits-graphql = { path = "../graphql" }
 dotenv = "0.15.0"
+graphql_client = "0.13.0"
 http = "0.2.9"
 hyper = "0.14.27"
+rust-i18n = "2.2.1"
+serde = { workspace = true }
+serde_json = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = "0.1.37"

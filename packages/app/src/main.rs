@@ -1,9 +1,11 @@
+mod filters;
 mod router;
 
 use axum::Server;
 use bits_graphql::core;
 use bits_graphql::core::Client;
 use bits_graphql::core::Database;
+use rust_i18n::i18n;
 use std::env;
 use thiserror::Error;
 use tokio::main;
@@ -20,6 +22,8 @@ enum Error {
   #[error("failed to start web server")]
   Server(#[from] hyper::Error),
 }
+
+i18n!();
 
 #[main]
 async fn main() {
