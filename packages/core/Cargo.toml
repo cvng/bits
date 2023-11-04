@@ -7,7 +7,7 @@ edition = "2021"
 doctest = false
 
 [dependencies]
-async-graphql = "6.0.7"
+async-graphql = { workspace = true }
 bits-data = { path = "../data" }
 jsonwebtoken = "9.1.0"
 serde = { workspace = true }

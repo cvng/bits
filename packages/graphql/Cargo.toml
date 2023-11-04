@@ -7,7 +7,7 @@ edition = "2021"
 doctest = false
 
 [dependencies]
-async-graphql = { version = "6.0.7", features = ["chrono", "decimal", "uuid", "dataloader", "dynamic-schema"] }
+async-graphql = { workspace = true }
 bits-core = { path = "../core" }
 lazy_static = "1.4.0"
 serde =  { workspace = true }
