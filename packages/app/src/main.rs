@@ -23,7 +23,7 @@ enum Error {
   Server(#[from] hyper::Error),
 }
 
-i18n!();
+i18n!("locales", fallback = "en");
 
 #[main]
 async fn main() {
