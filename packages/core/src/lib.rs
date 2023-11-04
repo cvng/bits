@@ -8,6 +8,7 @@ pub use bits_data as data;
 pub use bits_data::sea_orm;
 pub use bits_data::sea_orm::Database;
 pub use bits_data::sea_orm::DbErr;
+pub use bits_data::seaography;
 
 pub use client::Client;
 pub use client::Token;

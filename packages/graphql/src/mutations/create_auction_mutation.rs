@@ -6,7 +6,7 @@ use async_graphql::dynamic::TypeRef;
 use bits_core::create_auction;
 use bits_core::create_auction::CreateAuctionInput;
 use bits_core::create_auction::CreateAuctionResult;
-use bits_core::data::seaography::Builder;
+use bits_core::seaography::Builder;
 use bits_core::Client;
 use bits_core::Token;
 

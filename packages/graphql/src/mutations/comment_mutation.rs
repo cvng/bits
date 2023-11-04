@@ -6,7 +6,7 @@ use async_graphql::dynamic::TypeRef;
 use bits_core::comment;
 use bits_core::comment::CommentInput;
 use bits_core::comment::CommentResult;
-use bits_core::data::seaography::Builder;
+use bits_core::seaography::Builder;
 use bits_core::Client;
 use bits_core::Token;
 

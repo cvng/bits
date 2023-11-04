@@ -6,7 +6,7 @@ use async_graphql::dynamic::TypeRef;
 use bits_core::create_product;
 use bits_core::create_product::CreateProductInput;
 use bits_core::create_product::CreateProductResult;
-use bits_core::data::seaography::Builder;
+use bits_core::seaography::Builder;
 use bits_core::Client;
 use bits_core::Token;
 

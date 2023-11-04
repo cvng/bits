@@ -5,23 +5,21 @@ use crate::mutations::create_auction_mutation;
 use crate::mutations::create_product_mutation;
 use crate::mutations::create_show_mutation;
 use async_graphql::dynamic::SchemaBuilder;
-use bits_core::data;
 use bits_core::data::auction;
 use bits_core::data::bid;
 use bits_core::data::comment;
 use bits_core::data::person;
 use bits_core::data::product;
-use bits_core::data::seaography;
-use bits_core::data::seaography::register_entities;
-use bits_core::data::seaography::Builder;
 use bits_core::data::show;
 use bits_core::sea_orm;
+use bits_core::seaography;
+use bits_core::seaography::register_entities;
+use bits_core::seaography::Builder;
 use bits_core::Client;
 use lazy_static::lazy_static;
 
 lazy_static! {
-  static ref CONTEXT: data::seaography::BuilderContext =
-    BuilderContext::custom();
+  static ref CONTEXT: seaography::BuilderContext = BuilderContext::custom();
 }
 
 /// The GraphQL schema.
