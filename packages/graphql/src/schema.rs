@@ -28,7 +28,7 @@ lazy_static! {
 pub type Schema = async_graphql::dynamic::Schema;
 
 /// Build the GraphQL schema.
-pub fn schema(client: Client) -> SchemaBuilder {
+pub fn schema(client: &Client) -> SchemaBuilder {
   let builder = Builder::new(&CONTEXT, client.connection.clone());
   let builder = register_entities(builder);
   let builder = register_mutations(builder);
@@ -36,7 +36,7 @@ pub fn schema(client: Client) -> SchemaBuilder {
   builder
     .schema_builder()
     .data(client.connection.clone())
-    .data(client) // TODO: limit depth & complexity.
+    .data(client.clone()) // TODO: limit depth & complexity.
 }
 
 fn register_entities(mut builder: Builder) -> Builder {

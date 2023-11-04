@@ -24,7 +24,7 @@ impl CreateProductMutation {
       |ctx| {
         FieldFuture::new(async move {
           let client = Client::default()
-            .connection(ctx.data::<Client>()?.connection.clone())
+            .connection(&ctx.data::<Client>()?.connection)
             .token(ctx.data::<Token>()?.clone());
 
           let input = ctx
