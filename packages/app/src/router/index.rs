@@ -20,8 +20,6 @@ struct IndexTemplate {
 }
 
 pub async fn handler(schema: State<Schema>) -> impl IntoResponse {
-  let _ftl_string = "hello-world = Hello, world!".to_owned();
-
   IndexTemplate {
     data: schema
       .execute(IndexQuery::build_query(index_query::Variables {}).query)
