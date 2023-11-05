@@ -8,7 +8,7 @@ use bits_graphql::Schema;
 pub fn router(schema: &Schema) -> Router {
   Router::new()
     .nest_service("/graphql", graphql::router(schema.clone()))
-    .route("/", get(index::index_handler))
-    .route("/:name", get(index::show_handler))
+    .route("/", get(index::IndexTemplate::handler))
+    .route("/:name", get(index::ShowTemplate::handler))
     .with_state(schema.clone())
 }

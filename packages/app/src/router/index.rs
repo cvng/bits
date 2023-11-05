@@ -16,20 +16,22 @@ struct IndexQuery;
 
 #[derive(Template)]
 #[template(path = "pages/index.html")]
-struct IndexTemplate {
+pub struct IndexTemplate {
   data: index_query::ResponseData,
 }
 
-pub async fn index_handler(schema: State<Schema>) -> impl IntoResponse {
-  IndexTemplate {
-    data: schema
-      .execute(IndexQuery::build_query(index_query::Variables {}).query)
-      .await
-      .data
-      .into_json()
-      .map(from_value::<index_query::ResponseData>)
-      .unwrap()
-      .unwrap(),
+impl IndexTemplate {
+  pub async fn handler(schema: State<Schema>) -> impl IntoResponse {
+    Self {
+      data: schema
+        .execute(IndexQuery::build_query(index_query::Variables {}).query)
+        .await
+        .data
+        .into_json()
+        .map(from_value::<index_query::ResponseData>)
+        .unwrap()
+        .unwrap(),
+    }
   }
 }
 
@@ -42,22 +44,24 @@ struct ShowQuery;
 
 #[derive(Template)]
 #[template(path = "pages/show.html")]
-struct ShowTemplate {
+pub struct ShowTemplate {
   data: show_query::ResponseData,
 }
 
-pub async fn show_handler(
-  schema: State<Schema>,
-  _name: Path<String>,
-) -> impl IntoResponse {
-  ShowTemplate {
-    data: schema
-      .execute(ShowQuery::build_query(show_query::Variables {}).query)
-      .await
-      .data
-      .into_json()
-      .map(from_value::<show_query::ResponseData>)
-      .unwrap()
-      .unwrap(),
+impl ShowTemplate {
+  pub async fn handler(
+    schema: State<Schema>,
+    _name: Path<String>,
+  ) -> impl IntoResponse {
+    Self {
+      data: schema
+        .execute(ShowQuery::build_query(show_query::Variables {}).query)
+        .await
+        .data
+        .into_json()
+        .map(from_value::<show_query::ResponseData>)
+        .unwrap()
+        .unwrap(),
+    }
   }
 }
