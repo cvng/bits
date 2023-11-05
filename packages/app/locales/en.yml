@@ -1,6 +1,10 @@
 app.title: "Bits"
 app.logo: "Bits"
 
+# Component: Logo
+
+logo.title: "Bits"
+
 # Component: Header
 
 header.get-started: "Get started"
