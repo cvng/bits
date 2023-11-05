@@ -14,6 +14,11 @@ header.search.label: "Search"
 header.search.placeholder: "Search..."
 header.logo.label: "Bits"
 
+# Component: show-card
+
+show-card.view: "View"
+show-card.duration: "9 mins"
+
 # Page: Index
 
 index.title: "Shows"
