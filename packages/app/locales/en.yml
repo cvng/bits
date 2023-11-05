@@ -1,11 +1,12 @@
+# App
 app.title: "Bits"
 app.logo: "Bits"
 
-# Component: Logo
+# Component: logo
 
 logo.title: "Bits"
 
-# Component: Header
+# Component: header
 
 header.get-started: "Get started"
 header.login: "Login"
@@ -19,10 +20,15 @@ header.logo.label: "Bits"
 show-card.view: "View"
 show-card.duration: "9 mins"
 
-# Page: Index
+# Page: index
 
 index.title: "Shows"
 index.table.id: "ID"
 index.table.created: "Created"
 index.table.creator_id: "Creator ID"
 index.table.name: "Name"
+
+# Page: show
+
+show.bid: "Bid"
+show.comment: "Comment"
