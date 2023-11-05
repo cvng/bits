@@ -1,0 +1,12 @@
+query ShowQuery {
+  shows(filters: { id: { eq: "00000000-0000-0000-0000-000000000000" } }) {
+    nodes {
+      id
+      created
+      updated
+      creatorId
+      name
+      started
+    }
+  }
+}

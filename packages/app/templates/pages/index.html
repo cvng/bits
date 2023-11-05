@@ -1,6 +1,6 @@
-{% extends "base.html" %} {% block content %}
+{% extends "layouts/default.html" %}{% block content %}
 <div class="container">
-  <h1>{{ "index.title"|t }}</h1>
+  <h2>{{ "index.title"|t }}</h2>
 
   <table class="table table-striped table-hover">
     <thead>
@@ -19,7 +19,9 @@
         <td>{{ show.id }}</td>
         <td>{{ show.created }}</td>
         <td>{{ show.creator_id }}</td>
-        <td>{{ show.name }}</td>
+        <td>
+          {% include "components/show-card.html" %}
+        </td>
       </tr>
       {% endfor %}
     </tbody>

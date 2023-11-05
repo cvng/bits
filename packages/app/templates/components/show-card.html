@@ -1,0 +1,8 @@
+<div class="card" style="width: 18rem">
+  <img src="https://picsum.photos/200/300" class="card-img-top" alt="{{ show.name }}" />
+  <div class="card-body">
+    <h5 class="card-title">{{ show.name }}</h5>
+    <p class="card-text">{{ show.created }}</p>
+    <a href="{{ "show-detail"|path(show.name) }}" class="btn btn-primary">{{ show.name }}</a>
+  </div>
+</div>

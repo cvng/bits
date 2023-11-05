@@ -1,5 +1,6 @@
 use crate::filters;
 use askama::Template;
+use axum::extract::Path;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use bits_graphql::Schema;
@@ -9,17 +10,17 @@ use serde_json::from_value;
 #[derive(GraphQLQuery)]
 #[graphql(
   schema_path = "../../docs/schema.gql",
-  query_path = "templates/index.graphql"
+  query_path = "templates/pages/index.graphql"
 )]
 struct IndexQuery;
 
 #[derive(Template)]
-#[template(path = "index.html")]
+#[template(path = "pages/index.html")]
 struct IndexTemplate {
   data: index_query::ResponseData,
 }
 
-pub async fn handler(schema: State<Schema>) -> impl IntoResponse {
+pub async fn index_handler(schema: State<Schema>) -> impl IntoResponse {
   IndexTemplate {
     data: schema
       .execute(IndexQuery::build_query(index_query::Variables {}).query)
@@ -27,6 +28,35 @@ pub async fn handler(schema: State<Schema>) -> impl IntoResponse {
       .data
       .into_json()
       .map(from_value::<index_query::ResponseData>)
+      .unwrap()
+      .unwrap(),
+  }
+}
+
+#[derive(GraphQLQuery)]
+#[graphql(
+  schema_path = "../../docs/schema.gql",
+  query_path = "templates/pages/show.graphql"
+)]
+struct ShowQuery;
+
+#[derive(Template)]
+#[template(path = "pages/show.html")]
+struct ShowTemplate {
+  data: show_query::ResponseData,
+}
+
+pub async fn show_handler(
+  schema: State<Schema>,
+  _name: Path<String>,
+) -> impl IntoResponse {
+  ShowTemplate {
+    data: schema
+      .execute(ShowQuery::build_query(show_query::Variables {}).query)
+      .await
+      .data
+      .into_json()
+      .map(from_value::<show_query::ResponseData>)
       .unwrap()
       .unwrap(),
   }

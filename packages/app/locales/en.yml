@@ -1,4 +1,15 @@
-base.title: "Bits"
+app.title: "Bits"
+app.logo: "Bits"
+
+# Component: Header
+
+header.sell: "Sell"
+header.login: "Login"
+header.signup: "Signup"
+header.search.label: "Search"
+header.search.placeholder: "Search..."
+
+# Page: Index
 
 index.title: "Shows"
 index.table.id: "ID"

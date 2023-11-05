@@ -1,0 +1,14 @@
+{% extends "layouts/default.html" %}{% block content %}
+<!--  -->
+{% set show = data.shows.nodes[0] %}
+<div class="container">
+  <h2>{{ show.name }}</h2>
+
+  <ul>
+    <li>{{ show.id }}</li>
+    <li>{{ show.created }}</li>
+    <li>{{ show.creator_id }}</li>
+    <li>{{ show.name }}</li>
+  </ul>
+</div>
+{% endblock %}
