@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>{{ "app.title"|t }}</title>
+    <title>{% block title %}{% endblock %} - {{ "app.title"|t }}</title>
     <link
       href="https://unpkg.com/bootstrap@5.3.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -13,7 +13,7 @@
     <script src="https://unpkg.com/htmx.org@1.9.6/dist/htmx.min.js"></script>
     <script>htmx.config.globalViewTransitions = true;</script>
   </head>
-  <body>
+  <body data-hx-boost="true">
       {% block layout %}{% endblock %}
   </body>
 </html>

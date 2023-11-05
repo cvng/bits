@@ -1,11 +1,11 @@
 {% extends "app.html" %}
 
-<!--  -->
 {% block layout %}
+  {% include "components/header.html" %}
 
-{% include "components/header.html" %}
+  <main>
+    {% block content %}{% endblock %}
+  </main>
 
-<div class="container">
-  <main data-hx-boost="true">{% block content %}{% endblock %}</main>
-</div>
+  {% include "components/footer.html" %}
 {% endblock %}
