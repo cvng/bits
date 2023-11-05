@@ -3,11 +3,12 @@ app.logo: "Bits"
 
 # Component: Header
 
-header.sell: "Sell"
+header.get-started: "Get started"
 header.login: "Login"
 header.signup: "Signup"
 header.search.label: "Search"
 header.search.placeholder: "Search..."
+header.logo.label: "Bits"
 
 # Page: Index
 
