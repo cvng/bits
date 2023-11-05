@@ -31,21 +31,3 @@ pub async fn setup() -> Setup {
 
   (schema, client, token)
 }
-
-pub fn try_into_request<V>(
-  query_body: graphql_client::QueryBody<V>,
-) -> Result<async_graphql::Request, serde_json::Error>
-where
-  V: serde::Serialize,
-{
-  let query = query_body.query;
-  let operation_name = query_body.operation_name;
-  let variables = serde_json::to_value(query_body.variables)?;
-  let variables = async_graphql::Variables::from_json(variables);
-
-  let request = async_graphql::Request::new(query)
-    .operation_name(operation_name)
-    .variables(variables);
-
-  Ok(request)
-}
