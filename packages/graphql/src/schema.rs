@@ -1,4 +1,3 @@
-use crate::config::BuilderContext;
 use crate::mutations::bid_mutation;
 use crate::mutations::comment_mutation;
 use crate::mutations::create_auction_mutation;
@@ -15,19 +14,18 @@ use bits_core::sea_orm;
 use bits_core::seaography;
 use bits_core::seaography::register_entities;
 use bits_core::seaography::Builder;
+use bits_core::seaography::BuilderContext;
 use bits_core::Client;
-use lazy_static::lazy_static;
-
-lazy_static! {
-  static ref CONTEXT: seaography::BuilderContext = BuilderContext::custom();
-}
 
 /// The GraphQL schema.
 pub type Schema = async_graphql::dynamic::Schema;
 
 /// Build the GraphQL schema.
-pub fn schema(client: &Client) -> SchemaBuilder {
-  let builder = Builder::new(&CONTEXT, client.connection.clone());
+pub fn schema(
+  context: &'static BuilderContext,
+  client: &Client,
+) -> SchemaBuilder {
+  let builder = Builder::new(context, client.connection.clone());
   let builder = register_entities(builder);
   let builder = register_mutations(builder);
 

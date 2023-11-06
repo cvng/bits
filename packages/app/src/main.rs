@@ -5,12 +5,15 @@ use axum::Server;
 use bits_graphql::core;
 use bits_graphql::core::Client;
 use bits_graphql::core::Database;
+use bits_graphql::seaography;
+use bits_graphql::BuilderContext;
+use lazy_static::lazy_static;
 use rust_i18n::i18n;
 use std::env;
 use thiserror::Error;
 use tokio::main;
-use tracing::Level;
 use tracing::info;
+use tracing::Level;
 
 #[derive(Debug, Error)]
 enum Error {
@@ -25,6 +28,10 @@ enum Error {
 }
 
 i18n!("locales", fallback = "en");
+
+lazy_static! {
+  static ref CONTEXT: seaography::BuilderContext = BuilderContext::custom();
+}
 
 #[main]
 async fn main() {
@@ -48,7 +55,7 @@ async fn main() {
 
   let client = Client::default().connection(&connection);
 
-  let schema = bits_graphql::schema(&client)
+  let schema = bits_graphql::schema(&CONTEXT, &client)
     .finish()
     .map_err(Error::Schema)
     .unwrap();
