@@ -469,6 +469,7 @@ dependencies = [
  "graphql_client",
  "http",
  "hyper",
+ "lazy_static",
  "rust-i18n",
  "serde",
  "serde_json",

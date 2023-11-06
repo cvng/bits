@@ -1,0 +1,16 @@
+---
+source: packages/graphql/tests/graphql_test.rs
+expression: response
+---
+{
+  "data": {
+    "bid": {
+      "bid": {
+        "id": "[uuid]",
+        "auctionId": "00000000-0000-0000-0000-000000000000",
+        "bidderId": "00000000-2000-0000-0000-000000000000",
+        "amount": "500"
+      }
+    }
+  }
+}

@@ -10,7 +10,6 @@ doctest = false
 async-graphql = { workspace = true }
 bits-core = { path = "../core" }
 graphql_client = "0.13.0"
-lazy_static = "1.4.0"
 serde =  { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
@@ -18,3 +17,4 @@ tokio = { workspace = true }
 [dev-dependencies]
 dotenv = "0.15.0"
 insta = { version = "1.34.0", features = ["json", "redactions"] }
+lazy_static = "1.4.0"
