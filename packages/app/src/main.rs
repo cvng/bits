@@ -10,6 +10,7 @@ use std::env;
 use thiserror::Error;
 use tokio::main;
 use tracing::Level;
+use tracing::info;
 
 #[derive(Debug, Error)]
 enum Error {
@@ -54,7 +55,7 @@ async fn main() {
 
   let router = router::router(&schema);
 
-  println!("GraphiQL IDE: http://{addr}/graphql");
+  info!(addr = %addr, "listening");
 
   Server::bind(&addr)
     .serve(router.into_make_service())
