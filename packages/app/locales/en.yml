@@ -1,7 +1,34 @@
-base.title: "Bits"
+# App
+app.title: "Bits"
+app.logo: "Bits"
+
+# Component: logo
+
+logo.title: "Bits"
+
+# Component: header
+
+header.get-started: "Get started"
+header.login: "Login"
+header.signup: "Signup"
+header.search.label: "Search"
+header.search.placeholder: "Search..."
+header.logo.label: "Bits"
+
+# Component: show-card
+
+show-card.view: "View"
+show-card.duration: "9 mins"
+
+# Page: index
 
 index.title: "Shows"
 index.table.id: "ID"
 index.table.created: "Created"
 index.table.creator_id: "Creator ID"
 index.table.name: "Name"
+
+# Page: show
+
+show.bid: "Bid"
+show.comment: "Comment"

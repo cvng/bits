@@ -1,0 +1,12 @@
+query ShowQuery($name: String!) {
+  shows(filters: { name: { eq: $name } }) {
+    nodes {
+      id
+      created
+      updated
+      creatorId
+      name
+      started
+    }
+  }
+}

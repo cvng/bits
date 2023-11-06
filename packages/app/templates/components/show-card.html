@@ -1,0 +1,16 @@
+<div class="card shadow-sm">
+ <img src="https://picsum.photos/225" class="bd-placeholder-img card-img-top" width="100%" height="225" alt="{{ show.name }}" />
+  <div class="card-body">
+    <p class="card-text">
+      {{ show.created }}
+    </p>
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="btn-group">
+        <a href="{{ "show-detail"|path(show.name) }}" class="btn btn-sm btn-outline-secondary">
+          {{ "show-card.view"|t }}
+        </a>
+     </div>
+      <small class="text-body-secondary">{{ "show-card.duration"|t }}</small>
+    </div>
+  </div>
+</div>

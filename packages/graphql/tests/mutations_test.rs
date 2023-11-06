@@ -1,8 +1,8 @@
 mod setup;
 
-use crate::setup::try_into_request;
 use graphql_client::GraphQLQuery;
 use tokio::test;
+use bits_graphql::try_into_request;
 
 #[derive(GraphQLQuery)]
 #[graphql(

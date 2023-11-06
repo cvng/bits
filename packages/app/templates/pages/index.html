@@ -1,0 +1,17 @@
+{% extends "layouts/default.html" %}
+
+{% block title %}{{ "index.title"|t }}{% endblock %}
+
+{% block content %}
+<section class="album py-5 bg-body-tertiary">
+  <div class="container">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+      <div class="col">
+        {% for show in data.shows.nodes %}
+          {% include "components/show-card.html" %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
