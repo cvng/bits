@@ -1,11 +1,13 @@
 use crate::filters;
+use crate::utils::into_response;
 use askama::Template;
-use axum::extract::Path;
-use axum::extract::State;
-use axum::response::IntoResponse;
 use bits_graphql::try_into_request;
 use bits_graphql::Schema;
 use graphql_client::GraphQLQuery;
+use poem::handler;
+use poem::web::Data;
+use poem::web::Path;
+use poem::IntoResponse;
 use serde_json::from_value;
 
 #[derive(GraphQLQuery)]
@@ -22,21 +24,27 @@ pub struct IndexTemplate {
 }
 
 impl IndexTemplate {
-  pub async fn handler(schema: State<Schema>) -> impl IntoResponse {
-    Self {
-      data: schema
-        .execute(
-          try_into_request(IndexQuery::build_query(index_query::Variables {}))
-            .unwrap(),
-        )
-        .await
-        .data
-        .into_json()
-        .map(from_value::<index_query::ResponseData>)
-        .unwrap()
-        .unwrap(),
-    }
+  fn into_response(self) -> impl IntoResponse {
+    into_response(&self)
   }
+}
+
+#[handler]
+pub async fn index_handler(schema: Data<&Schema>) -> impl IntoResponse {
+  IndexTemplate {
+    data: schema
+      .execute(
+        try_into_request(IndexQuery::build_query(index_query::Variables {}))
+          .unwrap(),
+      )
+      .await
+      .data
+      .into_json()
+      .map(from_value::<index_query::ResponseData>)
+      .unwrap()
+      .unwrap(),
+  }
+  .into_response()
 }
 
 #[derive(GraphQLQuery)]
@@ -53,24 +61,30 @@ pub struct ShowTemplate {
 }
 
 impl ShowTemplate {
-  pub async fn handler(
-    schema: State<Schema>,
-    Path(name): Path<String>,
-  ) -> impl IntoResponse {
-    Self {
-      data: schema
-        .execute(
-          try_into_request(ShowQuery::build_query(show_query::Variables {
-            name,
-          }))
-          .unwrap(),
-        )
-        .await
-        .data
-        .into_json()
-        .map(from_value::<show_query::ResponseData>)
-        .unwrap()
-        .unwrap(),
-    }
+  fn into_response(self) -> impl IntoResponse {
+    into_response(&self)
   }
+}
+
+#[handler]
+pub async fn show_handler(
+  schema: Data<&Schema>,
+  name: Path<String>,
+) -> impl IntoResponse {
+  ShowTemplate {
+    data: schema
+      .execute(
+        try_into_request(ShowQuery::build_query(show_query::Variables {
+          name: name.0,
+        }))
+        .unwrap(),
+      )
+      .await
+      .data
+      .into_json()
+      .map(from_value::<show_query::ResponseData>)
+      .unwrap()
+      .unwrap(),
+  }
+  .into_response()
 }
