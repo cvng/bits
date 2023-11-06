@@ -11,6 +11,7 @@ use async_graphql::dynamic::TypeRef;
 use bits_data::Event;
 use bits_data::PersonId;
 use bits_data::Product;
+use bits_data::ProductCreated;
 use bits_data::ProductId;
 use serde::Deserialize;
 use serde::Serialize;
@@ -82,11 +83,13 @@ impl Command for CreateProductCommand {
     &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    Ok(vec![Event::product_created(
-      ProductId::new_v4(),
-      input.creator_id,
-      input.name,
-    )])
+    Ok(vec![Event::ProductCreated {
+      data: ProductCreated {
+        id: ProductId::new_v4(),
+        creator_id: input.creator_id,
+        name: input.name,
+      },
+    }])
   }
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {

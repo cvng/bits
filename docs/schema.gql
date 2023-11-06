@@ -192,6 +192,7 @@ type Mutation {
   createAuction(input: CreateAuctionInput!): CreateAuctionResult!
   createProduct(input: CreateProductInput!): CreateProductResult!
   createShow(input: CreateShowInput!): CreateShowResult!
+  start(input: StartInput!): StartResult!
 }
 
 input OffsetInput {
@@ -359,6 +360,14 @@ input ShowOrderInput {
   creatorId: OrderByEnum
   name: OrderByEnum
   started: OrderByEnum
+}
+
+input StartInput {
+  showId: ID!
+}
+
+type StartResult {
+  show: Show!
 }
 
 input StringFilterInput {

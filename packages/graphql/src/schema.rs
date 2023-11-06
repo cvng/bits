@@ -3,6 +3,7 @@ use crate::mutations::comment_mutation;
 use crate::mutations::create_auction_mutation;
 use crate::mutations::create_product_mutation;
 use crate::mutations::create_show_mutation;
+use crate::mutations::start_mutation;
 use async_graphql::dynamic::SchemaBuilder;
 use bits_core::data::auction;
 use bits_core::data::bid;
@@ -48,5 +49,6 @@ fn register_mutations(mut builder: Builder) -> Builder {
   let builder = create_auction_mutation::register(builder);
   let builder = create_product_mutation::register(builder);
   let builder = create_show_mutation::register(builder);
+  let builder = start_mutation::register(builder);
   builder
 }

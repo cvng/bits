@@ -32,4 +32,8 @@ pub use commands::create_show;
 pub use commands::create_show::CreateShowCommand;
 pub use commands::create_show::CreateShowInput;
 pub use commands::create_show::CreateShowResult;
+pub use commands::start;
+pub use commands::start::StartCommand;
+pub use commands::start::StartInput;
+pub use commands::start::StartResult;
 pub use listener::listen;

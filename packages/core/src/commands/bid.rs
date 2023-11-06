@@ -11,6 +11,7 @@ use async_graphql::dynamic::TypeRef;
 use bits_data::Amount;
 use bits_data::AuctionId;
 use bits_data::Bid;
+use bits_data::BidCreated;
 use bits_data::BidId;
 use bits_data::Event;
 use bits_data::PersonId;
@@ -88,12 +89,14 @@ impl Command for BidCommand {
     &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    Ok(vec![Event::bid_created(
-      BidId::new_v4(),
-      input.auction_id,
-      input.bidder_id,
-      input.amount,
-    )])
+    Ok(vec![Event::BidCreated {
+      data: BidCreated {
+        id: BidId::new_v4(),
+        auction_id: input.auction_id,
+        bidder_id: input.bidder_id,
+        amount: input.amount,
+      },
+    }])
   }
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
