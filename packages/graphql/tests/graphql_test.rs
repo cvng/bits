@@ -24,3 +24,22 @@ async fn test_bid_mutation() {
 
   assert_json_snapshot!(response, { ".data.bid.bid.id" => "[uuid]" });
 }
+
+#[derive(GraphQLQuery)]
+#[graphql(
+  schema_path = "../../docs/schema.gql",
+  query_path = "tests/operations.graphql"
+)]
+pub struct StartMutation;
+
+#[test]
+async fn test_start_mutation() {
+  let response = common::execute(
+    TestToken::bidder(),
+    StartMutation::build_query(start_mutation::Variables {}),
+  )
+  .await
+  .unwrap();
+
+  assert_json_snapshot!(response, { ".data.start.show.id" => "[uuid]" });
+}

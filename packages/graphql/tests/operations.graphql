@@ -18,7 +18,7 @@ mutation BidMutation {
 mutation StartMutation {
   start(
     input: {
-      showId: "00000000-3000-0000-0000-000000000000"
+      showId: "00000000-0000-0000-0000-000000000000"
     }
   ) {
     show {

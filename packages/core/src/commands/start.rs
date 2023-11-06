@@ -1,5 +1,6 @@
 use super::Command;
 use crate::dispatcher;
+use crate::dispatcher::DispatchError;
 use crate::Client;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
@@ -8,7 +9,7 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
-use bits_data::sea_orm;
+use bits_data::sea_orm::DbErr;
 use bits_data::sea_orm::EntityTrait;
 use bits_data::show;
 use bits_data::Event;
@@ -68,8 +69,10 @@ impl StartResult {
 
 #[derive(Debug, Error)]
 pub enum Error {
-  #[error("db error")]
-  Db(#[from] sea_orm::DbErr),
+  #[error("internal: db error")]
+  Db(#[from] DbErr),
+  #[error("internal: dispatch error")]
+  Dispatch(#[from] DispatchError),
   #[error("show not created")]
   NotCreated,
   #[error("show not found")]
@@ -122,6 +125,6 @@ pub async fn start(
   dispatcher::dispatch(client, events)
     .await
     .map(StartCommand::apply)
-    .map_err(|_| Error::NotCreated)?
+    .map_err(Error::Dispatch)?
     .ok_or(Error::NotCreated)
 }
