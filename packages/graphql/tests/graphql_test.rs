@@ -15,13 +15,8 @@ pub struct BidMutation;
 
 #[test]
 async fn test_bid_mutation() {
-  let (schema, client) = common::setup().await;
-  let token = TestToken::bidder();
-
   let response = common::execute(
-    schema,
-    client,
-    token,
+    TestToken::bidder(),
     BidMutation::build_query(bid_mutation::Variables {}),
   )
   .await

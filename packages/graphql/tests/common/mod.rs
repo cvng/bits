@@ -12,6 +12,8 @@ use lazy_static::lazy_static;
 use serde::Serialize;
 use std::env;
 
+const BIDDER_TOKEN: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMDAwMDAwMC0yMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.MQf38zuzvH0ZB0zk7QbvzIH_b7jkiP92Jo39JTKy2PY";
+
 lazy_static! {
   static ref CONTEXT: seaography::BuilderContext = BuilderContext::custom();
 }
@@ -22,7 +24,7 @@ pub struct TestToken(pub Token);
 
 impl TestToken {
   pub fn bidder() -> Self {
-    Self(Token("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMDAwMDAwMC0yMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.MQf38zuzvH0ZB0zk7QbvzIH_b7jkiP92Jo39JTKy2PY".to_string()))
+    Self(Token(BIDDER_TOKEN.to_string()))
   }
 }
 
@@ -48,18 +50,18 @@ pub async fn setup() -> Setup {
 }
 
 pub async fn execute<V>(
-  schema: Schema,
-  client: Client,
-  token: TestToken,
+  test_token: TestToken,
   query_body: QueryBody<V>,
 ) -> Result<Response, Vec<ServerError>>
 where
   V: Serialize,
 {
+  let (schema, client) = setup().await;
+
   let request = try_into_request(query_body)
     .unwrap()
     .data(client)
-    .data(token.0);
+    .data(test_token.0);
 
   schema.execute(request).await.into_result()
 }
