@@ -257,7 +257,7 @@ grant update on shop.auction to seller;
 
 -- Table: shop.config
 
-grant select on shop.config to viewer;
+grant select on shop.config to seller;
 grant insert on shop.config to seller;
 
 -- Table: shop.product
@@ -367,7 +367,7 @@ with check (bidder_id = auth.user());
 
 -- Table: shop.config
 
-create policy config_select_policy on shop.config for select to viewer
+create policy config_select_policy on shop.config for select to seller
 using (true);
 
 create policy config_insert_policy on shop.config for insert to seller
