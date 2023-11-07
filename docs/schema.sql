@@ -456,7 +456,13 @@ begin
   from shop.config where show_id = event.show_id;
 
   insert into shop.auction (id, show_id, product_id, timeout_secs, refresh_secs)
-  values (event.id, event.show_id, event.product_id, config.auction_timeout_secs, config.auction_refresh_secs);
+  values (
+    event.id,
+    event.show_id,
+    event.product_id,
+    config.auction_timeout_secs,
+    config.auction_refresh_secs
+  );
 end;
 $$ language plpgsql;
 
