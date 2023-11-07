@@ -104,7 +104,10 @@ impl Command for StartCommand {
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
       Event::ShowStarted { data, .. } => Some(StartResult {
-        show: data.show.clone(),
+        show: Show {
+          started: true,
+          ..data.show.clone()
+        },
       }),
       _ => None,
     })

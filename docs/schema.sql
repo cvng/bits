@@ -499,6 +499,7 @@ create view public.show with (security_invoker = true) as (
     updated,
     creator_id,
     name,
+    started_at,
     started
   from live.show
 );

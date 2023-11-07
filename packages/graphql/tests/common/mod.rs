@@ -14,6 +14,8 @@ use std::env;
 
 const BIDDER_TOKEN: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMDAwMDAwMC0yMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.MQf38zuzvH0ZB0zk7QbvzIH_b7jkiP92Jo39JTKy2PY";
 
+const SELLER_TOKEN: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMDAwMDAwMC0zMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.eQ24VOYN6hRVU0K9jXhvgXyixU-Fi6-i8gBTTmXKy5g";
+
 lazy_static! {
   static ref CONTEXT: seaography::BuilderContext = BuilderContext::custom();
 }
@@ -25,6 +27,10 @@ pub struct TestToken(pub Token);
 impl TestToken {
   pub fn bidder() -> Self {
     Self(Token(BIDDER_TOKEN.to_string()))
+  }
+
+  pub fn seller() -> Self {
+    Self(Token(SELLER_TOKEN.to_string()))
   }
 }
 

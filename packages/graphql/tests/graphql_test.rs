@@ -35,7 +35,7 @@ pub struct StartMutation;
 #[test]
 async fn test_start_mutation() {
   let response = common::execute(
-    TestToken::bidder(),
+    TestToken::seller(),
     StartMutation::build_query(start_mutation::Variables {}),
   )
   .await
