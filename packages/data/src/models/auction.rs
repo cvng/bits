@@ -21,8 +21,8 @@ pub struct Model {
   pub updated: Option<DateTimeWithTimeZone>,
   pub show_id: Uuid,
   pub product_id: Uuid,
-  pub started: Option<DateTimeWithTimeZone>,
-  pub expired: Option<DateTimeWithTimeZone>,
+  pub started_at: Option<DateTimeWithTimeZone>,
+  pub expired_at: Option<DateTimeWithTimeZone>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
@@ -32,8 +32,8 @@ pub enum Column {
   Updated,
   ShowId,
   ProductId,
-  Started,
-  Expired,
+  StartedAt,
+  ExpiredAt,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
@@ -64,8 +64,8 @@ impl ColumnTrait for Column {
       Self::Updated => ColumnType::TimestampWithTimeZone.def().null(),
       Self::ShowId => ColumnType::Uuid.def(),
       Self::ProductId => ColumnType::Uuid.def(),
-      Self::Started => ColumnType::TimestampWithTimeZone.def().null(),
-      Self::Expired => ColumnType::TimestampWithTimeZone.def().null(),
+      Self::StartedAt => ColumnType::TimestampWithTimeZone.def().null(),
+      Self::ExpiredAt => ColumnType::TimestampWithTimeZone.def().null(),
     }
   }
 }
