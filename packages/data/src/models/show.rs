@@ -21,7 +21,8 @@ pub struct Model {
   pub updated: Option<DateTimeWithTimeZone>,
   pub creator_id: Uuid,
   pub name: String,
-  pub started: Option<DateTimeWithTimeZone>,
+  pub started_at: Option<DateTimeWithTimeZone>,
+  pub started: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
@@ -31,6 +32,7 @@ pub enum Column {
   Updated,
   CreatorId,
   Name,
+  StartedAt,
   Started,
 }
 
@@ -62,7 +64,8 @@ impl ColumnTrait for Column {
       Self::Updated => ColumnType::TimestampWithTimeZone.def().null(),
       Self::CreatorId => ColumnType::Uuid.def(),
       Self::Name => ColumnType::Text.def(),
-      Self::Started => ColumnType::TimestampWithTimeZone.def().null(),
+      Self::StartedAt => ColumnType::TimestampWithTimeZone.def().null(),
+      Self::Started => ColumnType::Boolean.def(),
     }
   }
 }

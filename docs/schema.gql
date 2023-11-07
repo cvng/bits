@@ -101,6 +101,19 @@ type BidResult {
   bid: Bid!
 }
 
+input BooleanFilterInput {
+  eq: Boolean
+  ne: Boolean
+  gt: Boolean
+  gte: Boolean
+  lt: Boolean
+  lte: Boolean
+  is_in: [Boolean!]
+  is_not_in: [Boolean!]
+  is_null: Boolean
+  is_not_null: Boolean
+}
+
 type Comment {
   id: String!
   created: String!
@@ -324,7 +337,8 @@ type Show {
   updated: String
   creatorId: String!
   name: String!
-  started: String
+  startedAt: String
+  started: Boolean!
   auction(filters: AuctionFilterInput, orderBy: AuctionOrderInput, pagination: PaginationInput): AuctionConnection!
   comment(filters: CommentFilterInput, orderBy: CommentOrderInput, pagination: PaginationInput): CommentConnection!
   person: Person
@@ -348,7 +362,8 @@ input ShowFilterInput {
   updated: TextFilterInput
   creatorId: TextFilterInput
   name: StringFilterInput
-  started: TextFilterInput
+  startedAt: TextFilterInput
+  started: BooleanFilterInput
   and: [ShowFilterInput!]
   or: [ShowFilterInput!]
 }
@@ -359,6 +374,7 @@ input ShowOrderInput {
   updated: OrderByEnum
   creatorId: OrderByEnum
   name: OrderByEnum
+  startedAt: OrderByEnum
   started: OrderByEnum
 }
 
