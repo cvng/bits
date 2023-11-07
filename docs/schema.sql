@@ -184,7 +184,9 @@ create table shop.auction (
   show_id id not null references live.show (id),
   product_id id not null references shop.product (id),
   started_at timestamptz,
-  expired_at timestamptz
+  expired_at timestamptz,
+  timeout_secs interval not null,
+  refresh_secs interval not null
 );
 
 alter table shop.auction enable row level security;
@@ -205,6 +207,17 @@ create table shop.bid (
 );
 
 alter table shop.bid enable row level security;
+
+-- Table: shop.config
+
+create table shop.config (
+  id id not null primary key,
+  show_id id not null references live.show (id),
+  auction_timeout_secs interval not null default '60',
+  auction_refresh_secs interval not null default '15'
+);
+
+alter table shop.config enable row level security;
 
 --
 -- Privileges
@@ -240,6 +253,12 @@ grant update on live.show to seller;
 
 grant select on shop.auction to viewer;
 grant insert on shop.auction to seller;
+grant update on shop.auction to seller;
+
+-- Table: shop.config
+
+grant select on shop.config to viewer;
+grant insert on shop.config to seller;
 
 -- Table: shop.product
 
@@ -332,6 +351,12 @@ with check (
   product_id in (select id from shop.product where creator_id = auth.user())
 );
 
+create policy auction_update_policy on shop.auction for update to seller
+using (true) with check (
+  show_id in (select id from live.show where creator_id = auth.user()) and
+  product_id in (select id from shop.product where creator_id = auth.user())
+);
+
 -- Table: shop.bid
 
 create policy bid_select_policy on shop.bid for select to viewer
@@ -339,6 +364,16 @@ using (true);
 
 create policy bid_insert_policy on shop.bid for insert to bidder
 with check (bidder_id = auth.user());
+
+-- Table: shop.config
+
+create policy config_select_policy on shop.config for select to viewer
+using (true);
+
+create policy config_insert_policy on shop.config for insert to seller
+with check (
+  show_id in (select id from live.show where creator_id = auth.user())
+);
 
 --
 -- Triggers
@@ -414,9 +449,17 @@ $$ language plpgsql;
 
 create function cqrs.auction_created_handler(event cqrs.auction_created)
 returns void as $$
+declare
+  config shop.config %rowtype;
 begin
-  insert into shop.auction (id, show_id, product_id)
-  values (event.id, event.show_id, event.product_id);
+  config := (
+    select row(id, show_id, auction_timeout_secs, auction_refresh_secs) -- TODO: select *
+    from shop.config
+    where show_id = event.show_id
+  );
+
+  insert into shop.auction (id, show_id, product_id, timeout_secs, refresh_secs)
+  values (event.id, event.show_id, event.product_id, config.auction_timeout_secs, config.auction_refresh_secs);
 end;
 $$ language plpgsql;
 
@@ -468,13 +511,30 @@ returns void as $$
 begin
   insert into live.show (id, creator_id, name)
   values (event.id, event.creator_id, event.name);
+
+  insert into shop.config (id, show_id)
+  values (event.id, event.id); -- TODO: re-use same id?
 end;
 $$ language plpgsql;
 
 create function cqrs.show_started_handler(event cqrs.show_started)
 returns void as $$
+declare
+  v_show_id id;
+  auction_timeout_secs interval;
+  auction_refresh_secs interval;
 begin
+  v_show_id := (select auction.show_id from shop.auction where id = event.id);
+  auction_timeout_secs := (select config.auction_timeout_secs from shop.config where config.show_id = v_show_id); -- TODO: single query
+  auction_refresh_secs := (select config.auction_refresh_secs from shop.config where config.show_id = v_show_id); -- TODO: single query
+
   update live.show set started_at = clock_timestamp(), started = not started
+  where id = v_show_id;
+
+  update shop.auction
+  set
+    started_at = clock_timestamp(),
+    expired_at = clock_timestamp() + auction_timeout_secs
   where id = event.id;
 end;
 $$ language plpgsql;
