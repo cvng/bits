@@ -15,6 +15,7 @@ pub use events::Event;
 pub use events::PersonCreated;
 pub use events::ProductCreated;
 pub use events::ShowCreated;
+pub use events::ShowStarted;
 pub use models::auction;
 pub use models::auction::Model as Auction;
 pub use models::bid;

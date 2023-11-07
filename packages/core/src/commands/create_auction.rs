@@ -9,6 +9,7 @@ use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
 use bits_data::Auction;
+use bits_data::AuctionCreated;
 use bits_data::AuctionId;
 use bits_data::Event;
 use bits_data::ProductId;
@@ -84,11 +85,13 @@ impl Command for CreateAuctionCommand {
     &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    Ok(vec![Event::auction_created(
-      AuctionId::new_v4(),
-      input.show_id,
-      input.product_id,
-    )])
+    Ok(vec![Event::AuctionCreated {
+      data: AuctionCreated {
+        id: AuctionId::new_v4(),
+        show_id: input.show_id,
+        product_id: input.product_id,
+      },
+    }])
   }
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {

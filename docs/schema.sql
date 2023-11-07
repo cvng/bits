@@ -52,7 +52,8 @@ create type cqrs.event_type as enum (
   'comment_created',
   'person_created',
   'product_created',
-  'show_created'
+  'show_created',
+  'show_started'
 );
 
 --
@@ -97,6 +98,10 @@ create type cqrs.show_created as (
   name text
 );
 
+create type cqrs.show_started as (
+  id id
+);
+
 --
 -- Tables
 --
@@ -133,7 +138,14 @@ create table live.show (
   updated timestamptz,
   creator_id id not null references auth.person (id),
   name text not null,
-  started timestamptz
+  started_at timestamptz,
+  started boolean default false,
+
+  -- Check: show can be started only once
+  constraint show_started_check check (
+    (started_at is null and not started) or
+    (started_at is not null and started)
+  )
 );
 
 alter table live.show enable row level security;
@@ -188,7 +200,8 @@ create table shop.bid (
   concurrent_amount amount not null default 0,
   amount amount not null,
 
-  constraint bid_validity_check check (amount > concurrent_amount)
+  -- Check: bid should be higher than the concurrent one
+  constraint bid_amount_check check (amount > concurrent_amount)
 );
 
 alter table shop.bid enable row level security;
@@ -221,6 +234,7 @@ grant insert on shop.bid to bidder;
 
 grant select on live.show to viewer;
 grant insert on live.show to seller;
+grant update on live.show to seller;
 
 -- Table: shop.auction
 
@@ -287,6 +301,9 @@ using (true);
 
 create policy show_insert_policy on live.show for insert to seller
 with check (creator_id = auth.user());
+
+create policy show_update_policy on live.show for update to seller
+using (true) with check (creator_id = auth.user());
 
 -- Table: live.comment
 
@@ -360,6 +377,11 @@ begin
     when 'show_created' then
       perform cqrs.show_created_handler(
         jsonb_populate_record(null::cqrs.show_created, new.data)
+      );
+
+    when 'show_started' then
+      perform cqrs.show_started_handler(
+        jsonb_populate_record(null::cqrs.show_started, new.data)
       );
   end case;
 
@@ -449,6 +471,14 @@ begin
 end;
 $$ language plpgsql;
 
+create function cqrs.show_started_handler(event cqrs.show_started)
+returns void as $$
+begin
+  update live.show set started_at = clock_timestamp(), started = not started
+  where id = event.id;
+end;
+$$ language plpgsql;
+
 --
 -- Views
 --
@@ -469,6 +499,7 @@ create view public.show with (security_invoker = true) as (
     updated,
     creator_id,
     name,
+    started_at,
     started
   from live.show
 );

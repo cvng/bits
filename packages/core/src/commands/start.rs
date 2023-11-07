@@ -1,5 +1,6 @@
 use super::Command;
 use crate::dispatcher;
+use crate::dispatcher::DispatchError;
 use crate::Client;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
@@ -8,42 +9,42 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
+use bits_data::sea_orm::DbErr;
+use bits_data::sea_orm::EntityTrait;
+use bits_data::show;
 use bits_data::Event;
-use bits_data::PersonId;
 use bits_data::Show;
-use bits_data::ShowCreated;
 use bits_data::ShowId;
+use bits_data::ShowStarted;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CreateShowInput {
-  pub creator_id: PersonId,
-  pub name: String,
+pub struct StartInput {
+  pub show_id: ShowId,
 }
 
-impl CreateShowInput {
+impl StartInput {
   pub fn type_name() -> &'static str {
-    "CreateShowInput"
+    "StartInput"
   }
 
   pub fn to_input() -> InputObject {
     InputObject::new(Self::type_name())
-      .field(InputValue::new("creatorId", TypeRef::named_nn(TypeRef::ID)))
-      .field(InputValue::new("name", TypeRef::named_nn(TypeRef::STRING)))
+      .field(InputValue::new("showId", TypeRef::named_nn(TypeRef::ID)))
   }
 }
 
 #[derive(Clone, Serialize)]
-pub struct CreateShowResult {
+pub struct StartResult {
   pub show: Show,
 }
 
-impl CreateShowResult {
+impl StartResult {
   pub fn type_name() -> &'static str {
-    "CreateShowResult"
+    "StartResult"
   }
 
   pub fn to_object() -> Object {
@@ -68,42 +69,44 @@ impl CreateShowResult {
 
 #[derive(Debug, Error)]
 pub enum Error {
+  #[error("internal: db error")]
+  Db(#[from] DbErr),
+  #[error("internal: dispatch error")]
+  Dispatch(#[from] DispatchError),
   #[error("show not created")]
   NotCreated,
+  #[error("show not found")]
+  NotFound,
 }
 
-pub struct CreateShowCommand {}
+pub struct StartCommand {
+  show: Show,
+}
 
-impl Command for CreateShowCommand {
+impl Command for StartCommand {
   type Error = Error;
   type Event = Event;
-  type Input = CreateShowInput;
-  type Result = CreateShowResult;
+  type Input = StartInput;
+  type Result = StartResult;
 
   fn handle(
     &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    Ok(vec![Event::ShowCreated {
-      data: ShowCreated {
-        id: ShowId::new_v4(),
-        creator_id: input.creator_id,
-        name: input.name,
+    Ok(vec![Event::ShowStarted {
+      data: ShowStarted {
+        id: input.show_id,
+        show: self.show.clone(),
       },
     }])
   }
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::ShowCreated { data, .. } => Some(CreateShowResult {
+      Event::ShowStarted { data, .. } => Some(StartResult {
         show: Show {
-          id: data.id,
-          created: None,
-          updated: None,
-          creator_id: data.creator_id,
-          name: data.name.clone(),
-          started_at: None,
-          started: false,
+          started: true,
+          ..data.show.clone()
         },
       }),
       _ => None,
@@ -111,38 +114,20 @@ impl Command for CreateShowCommand {
   }
 }
 
-pub async fn create_show(
+pub async fn start(
   client: &Client,
-  input: CreateShowInput,
-) -> Result<CreateShowResult, Error> {
-  let events = CreateShowCommand {}.handle(input)?;
+  input: StartInput,
+) -> Result<StartResult, Error> {
+  let show = show::Entity::find_by_id(input.show_id)
+    .one(&client.connection)
+    .await?
+    .ok_or(Error::NotFound)?;
+
+  let events = StartCommand { show }.handle(input)?;
 
   dispatcher::dispatch(client, events)
     .await
-    .map(CreateShowCommand::apply)
-    .map_err(|_| Error::NotCreated)?
+    .map(StartCommand::apply)
+    .map_err(Error::Dispatch)?
     .ok_or(Error::NotCreated)
-}
-
-#[test]
-fn test_show() {
-  let input = CreateShowInput {
-    creator_id: "d9bd7c14-d793-47f3-a644-f97921c862ed".parse().unwrap(),
-    name: "name".to_string(),
-  };
-
-  let events = CreateShowCommand {}.handle(input).unwrap();
-
-  insta::assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
-  [
-    {
-      "type": "show_created",
-      "data": {
-        "id": "[uuid]",
-        "creator_id": "d9bd7c14-d793-47f3-a644-f97921c862ed",
-        "name": "name"
-      }
-    }
-  ]
-  "###);
 }

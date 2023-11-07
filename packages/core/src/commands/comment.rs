@@ -9,6 +9,7 @@ use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
 use bits_data::Comment;
+use bits_data::CommentCreated;
 use bits_data::CommentId;
 use bits_data::Event;
 use bits_data::PersonId;
@@ -87,12 +88,14 @@ impl Command for CommentCommand {
     &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    Ok(vec![Event::comment_created(
-      CommentId::new_v4(),
-      input.author_id,
-      input.show_id,
-      input.text,
-    )])
+    Ok(vec![Event::CommentCreated {
+      data: CommentCreated {
+        id: CommentId::new_v4(),
+        author_id: input.author_id,
+        show_id: input.show_id,
+        text: input.text,
+      },
+    }])
   }
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
