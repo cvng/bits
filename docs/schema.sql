@@ -139,13 +139,7 @@ create table live.show (
   creator_id id not null references auth.person (id),
   name text not null,
   started_at timestamptz,
-  started boolean default false,
-
-  -- Check: show can be started only once
-  constraint show_started_check check (
-    (started_at is null and not started) or
-    (started_at is not null and started)
-  )
+  started boolean default false
 );
 
 alter table live.show enable row level security;
@@ -200,10 +194,7 @@ create table shop.bid (
   auction_id id not null references shop.auction (id),
   bidder_id id not null references auth.person (id),
   concurrent_amount amount not null default 0,
-  amount amount not null,
-
-  -- Check: bid should be higher than the concurrent one
-  constraint bid_amount_check check (amount > concurrent_amount)
+  amount amount not null
 );
 
 alter table shop.bid enable row level security;
@@ -218,6 +209,23 @@ create table shop.config (
 );
 
 alter table shop.config enable row level security;
+
+--
+-- Checks
+--
+
+-- Check: show_started_check
+
+alter table live.show add constraint show_started_check
+check (
+  (started_at is null and not started) or
+  (started_at is not null and started)
+);
+
+-- Check: bid_amount_check
+
+alter table shop.bid add constraint bid_amount_check
+check (amount > concurrent_amount);
 
 --
 -- Privileges
@@ -273,8 +281,7 @@ create function auth.login(user_id id) returns void as $$
 declare
   enabled_role auth.role;
 begin
-  enabled_role := (select role from auth.person where id = user_id);
-  assert enabled_role is not null;
+  select role into strict enabled_role from auth.person where id = user_id;
 
   perform set_config('role', enabled_role::text, true);
   perform set_config('auth.user', user_id::text, true);
@@ -386,38 +393,31 @@ begin
   case new.type
     when 'auction_created' then
       perform cqrs.auction_created_handler(
-        jsonb_populate_record(null::cqrs.auction_created, new.data)
-      );
+        jsonb_populate_record(null::cqrs.auction_created, new.data));
 
     when 'bid_created' then
       perform cqrs.bid_created_handler(
-        jsonb_populate_record(null::cqrs.bid_created, new.data)
-      );
+        jsonb_populate_record(null::cqrs.bid_created, new.data));
 
     when 'comment_created' then
       perform cqrs.comment_created_handler(
-        jsonb_populate_record(null::cqrs.comment_created, new.data)
-      );
+        jsonb_populate_record(null::cqrs.comment_created, new.data));
 
     when 'person_created' then
       perform cqrs.person_created_handler(
-        jsonb_populate_record(null::cqrs.person_created, new.data)
-      );
+        jsonb_populate_record(null::cqrs.person_created, new.data));
 
     when 'product_created' then
       perform cqrs.product_created_handler(
-        jsonb_populate_record(null::cqrs.product_created, new.data)
-      );
+        jsonb_populate_record(null::cqrs.product_created, new.data));
 
     when 'show_created' then
       perform cqrs.show_created_handler(
-        jsonb_populate_record(null::cqrs.show_created, new.data)
-      );
+        jsonb_populate_record(null::cqrs.show_created, new.data));
 
     when 'show_started' then
       perform cqrs.show_started_handler(
-        jsonb_populate_record(null::cqrs.show_started, new.data)
-      );
+        jsonb_populate_record(null::cqrs.show_started, new.data));
   end case;
 
   perform cqrs.handler(new);
@@ -450,13 +450,10 @@ $$ language plpgsql;
 create function cqrs.auction_created_handler(event cqrs.auction_created)
 returns void as $$
 declare
-  config shop.config %rowtype;
+  config shop.config;
 begin
-  config := (
-    select row(id, show_id, auction_timeout_secs, auction_refresh_secs) -- TODO: select *
-    from shop.config
-    where show_id = event.show_id
-  );
+  select * into strict config
+  from shop.config where show_id = event.show_id;
 
   insert into shop.auction (id, show_id, product_id, timeout_secs, refresh_secs)
   values (event.id, event.show_id, event.product_id, config.auction_timeout_secs, config.auction_refresh_secs);
@@ -468,8 +465,8 @@ returns void as $$
 declare
   current_max_amount amount;
 begin
-  current_max_amount :=
-    (select max(amount) from shop.bid where auction_id = event.auction_id);
+  select max(amount) into strict current_max_amount
+  from shop.bid where auction_id = event.auction_id;
 
   insert into shop.bid (id, auction_id, bidder_id, concurrent_amount, amount)
   values (
@@ -524,9 +521,9 @@ declare
   auction_timeout_secs interval;
   auction_refresh_secs interval;
 begin
-  v_show_id := (select auction.show_id from shop.auction where id = event.id);
-  auction_timeout_secs := (select config.auction_timeout_secs from shop.config where config.show_id = v_show_id); -- TODO: single query
-  auction_refresh_secs := (select config.auction_refresh_secs from shop.config where config.show_id = v_show_id); -- TODO: single query
+  select auction.show_id into strict v_show_id from shop.auction where id = event.id;
+  select config.auction_timeout_secs into strict auction_timeout_secs from shop.config where config.show_id = v_show_id; -- TODO: single query
+  select config.auction_refresh_secs into strict auction_refresh_secs from shop.config where config.show_id = v_show_id; -- TODO: single query
 
   update live.show set started_at = clock_timestamp(), started = not started
   where id = v_show_id;
