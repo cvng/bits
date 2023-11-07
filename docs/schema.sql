@@ -202,8 +202,7 @@ alter table shop.bid enable row level security;
 -- Table: shop.config
 
 create table shop.config (
-  id id not null primary key,
-  show_id id not null references live.show (id),
+  id bigint not null primary key generated always as identity,
   auction_timeout_secs interval not null default '60',
   auction_refresh_secs interval not null default '15'
 );
@@ -266,7 +265,6 @@ grant update on shop.auction to seller;
 -- Table: shop.config
 
 grant select on shop.config to seller;
-grant insert on shop.config to seller;
 
 -- Table: shop.product
 
@@ -377,11 +375,6 @@ with check (bidder_id = auth.user());
 create policy config_select_policy on shop.config for select to seller
 using (true);
 
-create policy config_insert_policy on shop.config for insert to seller
-with check (
-  show_id in (select id from live.show where creator_id = auth.user())
-);
-
 --
 -- Triggers
 --
@@ -452,8 +445,7 @@ returns void as $$
 declare
   config shop.config;
 begin
-  select * into strict config
-  from shop.config where show_id = event.show_id;
+  select * into strict config from shop.config;
 
   insert into shop.auction (id, show_id, product_id, timeout_secs, refresh_secs)
   values (
@@ -514,31 +506,31 @@ returns void as $$
 begin
   insert into live.show (id, creator_id, name)
   values (event.id, event.creator_id, event.name);
-
-  insert into shop.config (id, show_id)
-  values (event.id, event.id); -- TODO: re-use same id?
 end;
 $$ language plpgsql;
 
 create function cqrs.show_started_handler(event cqrs.show_started)
 returns void as $$
 declare
-  v_show_id id;
-  auction_timeout_secs interval;
-  auction_refresh_secs interval;
+  auction shop.auction;
+  config shop.config;
+  show live.show;
 begin
-  select auction.show_id into strict v_show_id from shop.auction where id = event.id;
-  select config.auction_timeout_secs into strict auction_timeout_secs from shop.config where config.show_id = v_show_id; -- TODO: single query
-  select config.auction_refresh_secs into strict auction_refresh_secs from shop.config where config.show_id = v_show_id; -- TODO: single query
+  select * into strict config from shop.config;
 
-  update live.show set started_at = clock_timestamp(), started = not started
-  where id = v_show_id;
+  update live.show
+  set
+    started_at = clock_timestamp(),
+    started = not started
+  where id = (select show_id from shop.auction where id = event.id)
+  returning id into strict show;
 
   update shop.auction
   set
     started_at = clock_timestamp(),
-    expired_at = clock_timestamp() + auction_timeout_secs
-  where id = event.id;
+    expired_at = clock_timestamp() + config.auction_timeout_secs
+  where id = event.id
+  returning id into strict auction;
 end;
 $$ language plpgsql;
 

@@ -22,6 +22,8 @@ set plpgsql.print_strict_params to true;
 insert into auth.person (id, email, role)
 values ('00000000-0000-0000-0000-000000000000', 'admin@test.dev', 'admin');
 
+insert into shop.config default values;
+
 insert into cqrs.event (user_id, type, data)
 select
     (row->>'user_id')::id,
