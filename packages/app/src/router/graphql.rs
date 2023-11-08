@@ -51,5 +51,5 @@ pub fn router(state: AppState) -> Router {
     .route("/", post(graphql_handler))
     .route("/playground", get(graphiql_handler))
     .route_service("/ws", GraphQLSubscription::new(state.schema.clone()))
-    .with_state(state.to_owned())
+    .with_state(state)
 }
