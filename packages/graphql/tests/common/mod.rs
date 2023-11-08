@@ -51,7 +51,7 @@ pub async fn setup() -> Context {
   let database_url = env::var("DATABASE_URL").unwrap();
   let connection = Database::connect(&database_url).await.unwrap();
   let client = Client::default().connection(connection.clone());
-  let schema = bits_graphql::schema(&BUILDER, connection).finish().unwrap();
+  let schema = bits_graphql::schema(&BUILDER, client.clone()).finish().unwrap();
 
   Context { client, schema }
 }
