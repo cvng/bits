@@ -8,7 +8,6 @@ use bits_core::create_auction::CreateAuctionInput;
 use bits_core::create_auction::CreateAuctionResult;
 use bits_core::seaography::Builder;
 use bits_core::Client;
-use bits_core::Token;
 
 pub struct CreateAuctionMutation;
 
@@ -23,9 +22,7 @@ impl CreateAuctionMutation {
       TypeRef::named_nn(CreateAuctionResult::type_name()),
       |ctx| {
         FieldFuture::new(async move {
-          let client = Client::default()
-            .connection(&ctx.data::<Client>()?.connection)
-            .token(ctx.data::<Token>()?.clone());
+          let client = ctx.data::<Client>()?;
 
           let input = ctx
             .args
@@ -33,7 +30,7 @@ impl CreateAuctionMutation {
             .unwrap()
             .deserialize::<CreateAuctionInput>()?;
 
-          let result = create_auction::create_auction(&client, input).await?;
+          let result = create_auction::create_auction(client, input).await?;
 
           Ok(Some(FieldValue::owned_any(result)))
         })

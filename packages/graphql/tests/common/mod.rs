@@ -1,5 +1,6 @@
 use async_graphql::Response;
 use async_graphql::ServerError;
+use bits_core::sea_orm::prelude::async_trait::async_trait;
 use bits_core::seaography;
 use bits_core::Client;
 use bits_core::Database;
@@ -11,63 +12,63 @@ use graphql_client::QueryBody;
 use lazy_static::lazy_static;
 use serde::Serialize;
 use std::env;
+use test_context::AsyncTestContext;
 
-const BIDDER_TOKEN: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMDAwMDAwMC0yMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.MQf38zuzvH0ZB0zk7QbvzIH_b7jkiP92Jo39JTKy2PY";
-
-const SELLER_TOKEN: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMDAwMDAwMC0zMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.eQ24VOYN6hRVU0K9jXhvgXyixU-Fi6-i8gBTTmXKy5g";
+const BIDDER_TOKEN: &str = include_str!("token_bidder.txt");
+const SELLER_TOKEN: &str = include_str!("token_seller.txt");
 
 lazy_static! {
-  static ref CONTEXT: seaography::BuilderContext = BuilderContext::custom();
+  static ref BUILDER: seaography::BuilderContext = BuilderContext::custom();
 }
 
-pub type Setup = (Schema, Client);
+pub struct Context {
+  schema: Schema,
+  client: Client,
+}
+
+#[async_trait]
+impl AsyncTestContext for Context {
+  async fn setup() -> Self {
+    setup().await
+  }
+}
 
 pub struct TestToken(pub Token);
 
 impl TestToken {
-  pub fn bidder() -> Self {
+  pub fn bidder_token() -> Self {
     Self(Token(BIDDER_TOKEN.to_string()))
   }
 
-  pub fn seller() -> Self {
+  pub fn seller_token() -> Self {
     Self(Token(SELLER_TOKEN.to_string()))
   }
 }
 
-pub async fn setup() -> Setup {
+pub async fn setup() -> Context {
   dotenv::dotenv().ok();
 
-  let database_url = env::var("DATABASE_URL")
-    .expect("DATABASE_URL environment variable not set");
+  let database_url = env::var("DATABASE_URL").unwrap();
+  let connection = Database::connect(&database_url).await.unwrap();
+  let client = Client::default().connection(connection.clone());
+  let schema = bits_graphql::schema(&BUILDER, client.clone()).finish().unwrap();
 
-  let connection = Database::connect(&database_url)
-    .await
-    .expect("Fail to initialize database connection");
-
-  let client = Client::default().connection(&connection);
-
-  let schema = bits_graphql::schema(&CONTEXT, &client)
-    .finish()
-    .expect("Fail to initialize GraphQL schema");
-
-  let client = Client::default().connection(&connection);
-
-  (schema, client)
+  Context { client, schema }
 }
 
 pub async fn execute<V>(
-  test_token: TestToken,
+  ctx: &mut Context,
   query_body: QueryBody<V>,
+  test_token: Option<TestToken>,
 ) -> Result<Response, Vec<ServerError>>
 where
   V: Serialize,
 {
-  let (schema, client) = setup().await;
+  let mut request = try_into_request(query_body).unwrap();
 
-  let request = try_into_request(query_body)
-    .unwrap()
-    .data(client)
-    .data(test_token.0);
+  if let Some(test_token) = test_token {
+    request = request.data(ctx.client.clone().token(test_token.0));
+  }
 
-  schema.execute(request).await.into_result()
+  ctx.schema.execute(request).await.into_result()
 }

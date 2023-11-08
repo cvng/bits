@@ -8,7 +8,6 @@ use bits_core::create_product::CreateProductInput;
 use bits_core::create_product::CreateProductResult;
 use bits_core::seaography::Builder;
 use bits_core::Client;
-use bits_core::Token;
 
 pub struct CreateProductMutation;
 
@@ -23,9 +22,7 @@ impl CreateProductMutation {
       TypeRef::named_nn(CreateProductResult::type_name()),
       |ctx| {
         FieldFuture::new(async move {
-          let client = Client::default()
-            .connection(&ctx.data::<Client>()?.connection)
-            .token(ctx.data::<Token>()?.clone());
+          let client = ctx.data::<Client>()?;
 
           let input = ctx
             .args
@@ -33,7 +30,7 @@ impl CreateProductMutation {
             .unwrap()
             .deserialize::<CreateProductInput>()?;
 
-          let result = create_product::create_product(&client, input).await?;
+          let result = create_product::create_product(client, input).await?;
 
           Ok(Some(FieldValue::owned_any(result)))
         })

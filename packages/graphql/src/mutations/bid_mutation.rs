@@ -8,7 +8,6 @@ use bits_core::bid::BidInput;
 use bits_core::bid::BidResult;
 use bits_core::seaography::Builder;
 use bits_core::Client;
-use bits_core::Token;
 
 pub struct BidMutation;
 
@@ -23,14 +22,12 @@ impl BidMutation {
       TypeRef::named_nn(BidResult::type_name()),
       |ctx| {
         FieldFuture::new(async move {
-          let client = Client::default()
-            .connection(&ctx.data::<Client>()?.connection)
-            .token(ctx.data::<Token>()?.clone());
+          let client = ctx.data::<Client>()?;
 
           let input =
             ctx.args.get("input").unwrap().deserialize::<BidInput>()?;
 
-          let result = bid::bid(&client, input).await?;
+          let result = bid::bid(client, input).await?;
 
           Ok(Some(FieldValue::owned_any(result)))
         })

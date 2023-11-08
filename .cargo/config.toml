@@ -3,6 +3,7 @@
 [alias]
 dev = "watch --clear --exec run"
 lint = "clippy"
+next = "nextest run"
 snap = "insta review"
 task = "run --bin task --quiet --release --"
 

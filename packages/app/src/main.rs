@@ -7,6 +7,7 @@ use bits_graphql::core::Client;
 use bits_graphql::core::Database;
 use bits_graphql::seaography;
 use bits_graphql::BuilderContext;
+use bits_graphql::Schema;
 use lazy_static::lazy_static;
 use rust_i18n::i18n;
 use std::env;
@@ -30,43 +31,46 @@ enum Error {
 i18n!("locales", fallback = "en");
 
 lazy_static! {
-  static ref CONTEXT: seaography::BuilderContext = BuilderContext::custom();
+  static ref BUILDER: seaography::BuilderContext = BuilderContext::custom();
+}
+
+#[derive(Clone)]
+pub struct AppState {
+  pub client: Client,
+  pub schema: Schema,
 }
 
 #[main]
-async fn main() {
+async fn main() -> Result<(), Error> {
   dotenv::dotenv().ok();
   tracing_subscriber::fmt().with_max_level(Level::INFO).init();
 
   let addr = env::var("ADDR")
     .unwrap_or("0.0.0.0:8000".to_string())
     .parse()
-    .map_err(|_| Error::Config("ADDR".to_string()))
-    .unwrap();
+    .map_err(|_| Error::Config("ADDR".to_string()))?;
 
   let database_url = env::var("DATABASE_URL")
-    .map_err(|_| Error::Config("DATABASE_URL".to_string()))
-    .unwrap();
+    .map_err(|_| Error::Config("DATABASE_URL".to_string()))?;
 
   let connection = Database::connect(&database_url)
     .await
-    .map_err(Error::Database)
-    .unwrap();
+    .map_err(Error::Database)?;
 
-  let client = Client::default().connection(&connection);
+  let client = Client::default().connection(connection);
 
-  let schema = bits_graphql::schema(&CONTEXT, &client)
+  let schema = bits_graphql::schema(&BUILDER, client.clone())
     .finish()
-    .map_err(Error::Schema)
-    .unwrap();
+    .map_err(Error::Schema)?;
 
-  let router = router::router(&schema);
+  let shared_state = AppState { client, schema };
+
+  let app = router::router(shared_state);
 
   info!(addr = %addr, "listening");
 
   Server::bind(&addr)
-    .serve(router.into_make_service())
+    .serve(app.into_make_service())
     .await
     .map_err(Error::Server)
-    .unwrap()
 }

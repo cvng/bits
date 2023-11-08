@@ -24,16 +24,17 @@ pub type Schema = async_graphql::dynamic::Schema;
 /// Build the GraphQL schema.
 pub fn schema(
   context: &'static BuilderContext,
-  client: &Client,
+  client: Client,
 ) -> SchemaBuilder {
   let builder = Builder::new(context, client.connection.clone());
   let builder = register_entities(builder);
   let builder = register_mutations(builder);
 
+  // TODO: limit depth & complexity.
   builder
     .schema_builder()
     .data(client.connection.clone())
-    .data(client.clone()) // TODO: limit depth & complexity.
+    .data(client)
 }
 
 fn register_entities(mut builder: Builder) -> Builder {

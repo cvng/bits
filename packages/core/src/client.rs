@@ -10,11 +10,8 @@ pub struct Client {
 }
 
 impl Client {
-  pub fn connection(self, connection: &DatabaseConnection) -> Self {
-    Self {
-      connection: connection.clone(),
-      ..self
-    }
+  pub fn connection(self, connection: DatabaseConnection) -> Self {
+    Self { connection, ..self }
   }
 
   pub fn token(self, token: Token) -> Self {
