@@ -18,15 +18,6 @@ create role bidder;
 create role seller;
 create role viewer noinherit;
 
-grant viewer to bidder;
-grant bidder to seller;
-grant seller to admin;
-
-grant usage on schema auth to viewer;
-grant usage on schema cqrs to viewer;
-grant usage on schema live to bidder;
-grant usage on schema shop to bidder;
-
 --
 -- Domains
 --
@@ -227,8 +218,21 @@ alter table shop.bid add constraint bid_concurrent_amount_check
 check (amount > concurrent_amount);
 
 --
--- Privileges
+-- Permissions
 --
+
+-- Hierarchy
+
+grant viewer to bidder;
+grant bidder to seller;
+grant seller to admin;
+
+-- Schema
+
+grant usage on schema auth to viewer;
+grant usage on schema cqrs to viewer;
+grant usage on schema live to bidder;
+grant usage on schema shop to bidder;
 
 -- Table: cqrs.event
 
@@ -433,6 +437,7 @@ begin
     jsonb_build_object(
       'id', event.id,
       'created', event.created,
+      'user_id', event.user_id,
       'type', event.type,
       'data', event.data
     )::text
