@@ -12,11 +12,11 @@ use bits_core::data::person;
 use bits_core::data::product;
 use bits_core::data::show;
 use bits_core::sea_orm;
+use bits_core::sea_orm::DatabaseConnection;
 use bits_core::seaography;
 use bits_core::seaography::register_entities;
 use bits_core::seaography::Builder;
 use bits_core::seaography::BuilderContext;
-use bits_core::Client;
 
 /// The GraphQL schema.
 pub type Schema = async_graphql::dynamic::Schema;
@@ -24,16 +24,14 @@ pub type Schema = async_graphql::dynamic::Schema;
 /// Build the GraphQL schema.
 pub fn schema(
   context: &'static BuilderContext,
-  client: &Client,
+  connection: DatabaseConnection,
 ) -> SchemaBuilder {
-  let builder = Builder::new(context, client.connection.clone());
+  let builder = Builder::new(context, connection.clone());
   let builder = register_entities(builder);
   let builder = register_mutations(builder);
 
-  builder
-    .schema_builder()
-    .data(client.connection.clone())
-    .data(client.clone()) // TODO: limit depth & complexity.
+  // TODO: limit depth & complexity.
+  builder.schema_builder().data(connection)
 }
 
 fn register_entities(mut builder: Builder) -> Builder {

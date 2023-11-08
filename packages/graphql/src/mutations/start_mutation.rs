@@ -8,7 +8,6 @@ use bits_core::start;
 use bits_core::start::StartInput;
 use bits_core::start::StartResult;
 use bits_core::Client;
-use bits_core::Token;
 
 pub struct StartMutation;
 
@@ -23,14 +22,12 @@ impl StartMutation {
       TypeRef::named_nn(StartResult::type_name()),
       |ctx| {
         FieldFuture::new(async move {
-          let client = Client::default()
-            .connection(&ctx.data::<Client>()?.connection)
-            .token(ctx.data::<Token>()?.clone());
+          let client = ctx.data::<Client>()?;
 
           let input =
             ctx.args.get("input").unwrap().deserialize::<StartInput>()?;
 
-          let result = start::start(&client, input).await?;
+          let result = start::start(client, input).await?;
 
           Ok(Some(FieldValue::owned_any(result)))
         })

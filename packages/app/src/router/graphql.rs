@@ -30,7 +30,7 @@ async fn graphql_handler(
   let mut request = request.into_inner();
 
   if let Some(token) = get_token_from_headers(&headers) {
-    request = request.data(token);
+    request = request.data(state.client.clone().token(token));
   }
 
   state.schema.execute(request).await.into()

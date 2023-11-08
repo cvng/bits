@@ -53,13 +53,13 @@ async fn main() -> Result<(), Error> {
   let database_url = env::var("DATABASE_URL")
     .map_err(|_| Error::Config("DATABASE_URL".to_string()))?;
 
-  let database = Database::connect(&database_url)
+  let connection = Database::connect(&database_url)
     .await
     .map_err(Error::Database)?;
 
-  let client = Client::default().connection(&database);
+  let client = Client::default().connection(&connection);
 
-  let schema = bits_graphql::schema(&BUILDER, &client)
+  let schema = bits_graphql::schema(&BUILDER, connection)
     .finish()
     .map_err(Error::Schema)?;
 
