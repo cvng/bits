@@ -50,7 +50,6 @@ pub async fn setup() -> Context {
 
   let database_url = env::var("DATABASE_URL").unwrap();
   let connection = Database::connect(&database_url).await.unwrap();
-
   let client = Client::default().connection(connection.clone());
   let schema = bits_graphql::schema(&BUILDER, connection).finish().unwrap();
 
@@ -59,15 +58,17 @@ pub async fn setup() -> Context {
 
 pub async fn execute<V>(
   ctx: &mut Context,
-  test_token: TestToken,
   query_body: QueryBody<V>,
+  test_token: Option<TestToken>,
 ) -> Result<Response, Vec<ServerError>>
 where
   V: Serialize,
 {
-  let request = try_into_request(query_body)
-    .unwrap()
-    .data(ctx.client.clone().token(test_token.0));
+  let mut request = try_into_request(query_body).unwrap();
+
+  if let Some(test_token) = test_token {
+    request = request.data(ctx.client.clone().token(test_token.0));
+  }
 
   ctx.schema.execute(request).await.into_result()
 }

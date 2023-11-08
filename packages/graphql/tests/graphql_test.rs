@@ -21,8 +21,8 @@ pub struct BidMutation;
 async fn test_bid_mutation(ctx: &mut Context) {
   let response = execute(
     ctx,
-    TestToken::bidder_token(),
     BidMutation::build_query(bid_mutation::Variables {}),
+    Some(TestToken::bidder_token()),
   )
   .await
   .unwrap();
@@ -42,8 +42,8 @@ pub struct StartMutation;
 async fn test_start_mutation(ctx: &mut Context) {
   let response = execute(
     ctx,
-    TestToken::seller_token(),
     StartMutation::build_query(start_mutation::Variables {}),
+    Some(TestToken::seller_token()),
   )
   .await
   .unwrap();

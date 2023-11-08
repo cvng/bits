@@ -57,9 +57,9 @@ async fn main() -> Result<(), Error> {
     .await
     .map_err(Error::Database)?;
 
-  let client = Client::default().connection(connection.clone());
+  let client = Client::default().connection(connection);
 
-  let schema = bits_graphql::schema(&BUILDER, connection)
+  let schema = bits_graphql::schema(&BUILDER, client.clone())
     .finish()
     .map_err(Error::Schema)?;
 

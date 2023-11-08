@@ -29,14 +29,14 @@ async fn graphql_handler(
 ) -> GraphQLResponse {
   let mut request = request.into_inner();
 
-  if let Some(token) = get_token_from_headers(&headers) {
+  if let Some(token) = get_token_from_headers(headers) {
     request = request.data(state.client.clone().token(token));
   }
 
   state.schema.execute(request).await.into()
 }
 
-fn get_token_from_headers(headers: &HeaderMap) -> Option<Token> {
+fn get_token_from_headers(headers: HeaderMap) -> Option<Token> {
   headers.get(header::AUTHORIZATION).and_then(|value| {
     value
       .to_str()
