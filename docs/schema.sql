@@ -279,7 +279,7 @@ grant insert on shop.product to seller;
 -- Utilities
 --
 
-create function auth.login(user_id id) returns void as $$
+create function auth.login(user_id id) returns auth.role as $$
 declare
   enabled_role auth.role;
 begin
@@ -287,6 +287,8 @@ begin
 
   perform set_config('role', enabled_role::text, true);
   perform set_config('auth.user', user_id::text, true);
+
+  return auth.role();
 end;
 $$ language plpgsql;
 
