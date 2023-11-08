@@ -1,3 +1,4 @@
+use crate::AppState;
 use async_graphql_axum::GraphQLRequest;
 use async_graphql_axum::GraphQLResponse;
 use async_graphql_axum::GraphQLSubscription;
@@ -9,7 +10,6 @@ use axum::routing::post;
 use axum::Router;
 use bits_graphql::core::Token;
 use bits_graphql::GraphiQLSource;
-use bits_graphql::Schema;
 use http::header;
 use http::HeaderMap;
 
@@ -23,7 +23,7 @@ async fn graphiql_handler() -> impl IntoResponse {
 }
 
 async fn graphql_handler(
-  schema: State<Schema>,
+  state: State<AppState>,
   headers: HeaderMap,
   request: GraphQLRequest,
 ) -> GraphQLResponse {
@@ -33,7 +33,7 @@ async fn graphql_handler(
     request = request.data(token);
   }
 
-  schema.execute(request).await.into()
+  state.schema.execute(request).await.into()
 }
 
 fn get_token_from_headers(headers: &HeaderMap) -> Option<Token> {
@@ -46,10 +46,10 @@ fn get_token_from_headers(headers: &HeaderMap) -> Option<Token> {
   })
 }
 
-pub fn router(schema: Schema) -> Router {
+pub fn router(state: AppState) -> Router {
   Router::new()
     .route("/", post(graphql_handler))
     .route("/playground", get(graphiql_handler))
-    .route_service("/ws", GraphQLSubscription::new(schema.clone()))
-    .with_state(schema)
+    .route_service("/ws", GraphQLSubscription::new(state.schema.clone()))
+    .with_state(state.to_owned())
 }

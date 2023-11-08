@@ -1,14 +1,14 @@
 pub mod graphql;
 pub mod index;
 
+use crate::AppState;
 use axum::routing::get;
 use axum::Router;
-use bits_graphql::Schema;
 
-pub fn router(schema: &Schema) -> Router {
+pub fn router(state: AppState) -> Router {
   Router::new()
-    .nest_service("/graphql", graphql::router(schema.clone()))
+    .nest_service("/graphql", graphql::router(state.clone()))
     .route("/", get(index::IndexTemplate::handler))
     .route("/:name", get(index::ShowTemplate::handler))
-    .with_state(schema.clone())
+    .with_state(state)
 }

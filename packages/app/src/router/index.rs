@@ -1,10 +1,10 @@
 use crate::filters;
+use crate::AppState;
 use askama::Template;
 use axum::extract::Path;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use bits_graphql::try_into_request;
-use bits_graphql::Schema;
 use graphql_client::GraphQLQuery;
 use serde_json::from_value;
 
@@ -22,9 +22,10 @@ pub struct IndexTemplate {
 }
 
 impl IndexTemplate {
-  pub async fn handler(schema: State<Schema>) -> impl IntoResponse {
+  pub async fn handler(state: State<AppState>) -> impl IntoResponse {
     Self {
-      data: schema
+      data: state
+        .schema
         .execute(
           try_into_request(IndexQuery::build_query(index_query::Variables {}))
             .unwrap(),
@@ -54,11 +55,12 @@ pub struct ShowTemplate {
 
 impl ShowTemplate {
   pub async fn handler(
-    schema: State<Schema>,
+    state: State<AppState>,
     Path(name): Path<String>,
   ) -> impl IntoResponse {
     Self {
-      data: schema
+      data: state
+        .schema
         .execute(
           try_into_request(ShowQuery::build_query(show_query::Variables {
             name,
