@@ -8,7 +8,6 @@ use bits_core::comment::CommentInput;
 use bits_core::comment::CommentResult;
 use bits_core::seaography::Builder;
 use bits_core::Client;
-use bits_core::Token;
 
 pub struct CommentMutation;
 
@@ -23,9 +22,7 @@ impl CommentMutation {
       TypeRef::named_nn(CommentResult::type_name()),
       |ctx| {
         FieldFuture::new(async move {
-          let client = Client::default()
-            .connection(&ctx.data::<Client>()?.connection)
-            .token(ctx.data::<Token>()?.clone());
+          let client = ctx.data::<Client>()?;
 
           let input = ctx
             .args
@@ -33,7 +30,7 @@ impl CommentMutation {
             .unwrap()
             .deserialize::<CommentInput>()?;
 
-          let result = comment::comment(&client, input).await?;
+          let result = comment::comment(client, input).await?;
 
           Ok(Some(FieldValue::owned_any(result)))
         })

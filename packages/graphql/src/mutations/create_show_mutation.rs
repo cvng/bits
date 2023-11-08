@@ -8,7 +8,6 @@ use bits_core::create_show::CreateShowInput;
 use bits_core::create_show::CreateShowResult;
 use bits_core::seaography::Builder;
 use bits_core::Client;
-use bits_core::Token;
 
 pub struct CreateShowMutation;
 
@@ -23,9 +22,7 @@ impl CreateShowMutation {
       TypeRef::named_nn(CreateShowResult::type_name()),
       |ctx| {
         FieldFuture::new(async move {
-          let client = Client::default()
-            .connection(&ctx.data::<Client>()?.connection)
-            .token(ctx.data::<Token>()?.clone());
+          let client = ctx.data::<Client>()?;
 
           let input = ctx
             .args
@@ -33,7 +30,7 @@ impl CreateShowMutation {
             .unwrap()
             .deserialize::<CreateShowInput>()?;
 
-          let result = create_show::create_show(&client, input).await?;
+          let result = create_show::create_show(client, input).await?;
 
           Ok(Some(FieldValue::owned_any(result)))
         })
