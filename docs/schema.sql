@@ -18,15 +18,6 @@ create role bidder;
 create role seller;
 create role viewer noinherit;
 
-grant viewer to bidder;
-grant bidder to seller;
-grant seller to admin;
-
-grant usage on schema auth to viewer;
-grant usage on schema cqrs to viewer;
-grant usage on schema live to bidder;
-grant usage on schema shop to bidder;
-
 --
 -- Domains
 --
@@ -139,13 +130,7 @@ create table live.show (
   creator_id id not null references auth.person (id),
   name text not null,
   started_at timestamptz,
-  started boolean default false,
-
-  -- Check: show can be started only once
-  constraint show_started_check check (
-    (started_at is null and not started) or
-    (started_at is not null and started)
-  )
+  started boolean default false
 );
 
 alter table live.show enable row level security;
@@ -184,7 +169,9 @@ create table shop.auction (
   show_id id not null references live.show (id),
   product_id id not null references shop.product (id),
   started_at timestamptz,
-  expired_at timestamptz
+  expired_at timestamptz,
+  timeout_secs interval not null,
+  refresh_secs interval not null
 );
 
 alter table shop.auction enable row level security;
@@ -198,17 +185,53 @@ create table shop.bid (
   auction_id id not null references shop.auction (id),
   bidder_id id not null references auth.person (id),
   concurrent_amount amount not null default 0,
-  amount amount not null,
-
-  -- Check: bid should be higher than the concurrent one
-  constraint bid_amount_check check (amount > concurrent_amount)
+  amount amount not null
 );
 
 alter table shop.bid enable row level security;
 
+-- Table: shop.config
+
+create table shop.config (
+  auction_timeout_secs interval not null default '60',
+  auction_refresh_secs interval not null default '15'
+);
+
+alter table shop.config enable row level security;
+
 --
--- Privileges
+-- Checks
 --
+
+-- Check: show_already_started_check
+
+alter table live.show add constraint show_already_started_check
+check (
+  (started_at is null and not started) or
+  (started_at is not null and started)
+);
+
+-- Check: bid_concurrent_amount_check
+
+alter table shop.bid add constraint bid_concurrent_amount_check
+check (amount > concurrent_amount);
+
+--
+-- Permissions
+--
+
+-- Hierarchy
+
+grant viewer to bidder;
+grant bidder to seller;
+grant seller to admin;
+
+-- Schema
+
+grant usage on schema auth to viewer;
+grant usage on schema cqrs to viewer;
+grant usage on schema live to bidder;
+grant usage on schema shop to bidder;
 
 -- Table: cqrs.event
 
@@ -240,6 +263,11 @@ grant update on live.show to seller;
 
 grant select on shop.auction to viewer;
 grant insert on shop.auction to seller;
+grant update on shop.auction to seller;
+
+-- Table: shop.config
+
+grant select on shop.config to seller;
 
 -- Table: shop.product
 
@@ -250,15 +278,16 @@ grant insert on shop.product to seller;
 -- Utilities
 --
 
-create function auth.login(user_id id) returns void as $$
+create function auth.login(user_id id) returns auth.role as $$
 declare
   enabled_role auth.role;
 begin
-  enabled_role := (select role from auth.person where id = user_id);
-  assert enabled_role is not null;
+  select role into strict enabled_role from auth.person where id = user_id;
 
   perform set_config('role', enabled_role::text, true);
   perform set_config('auth.user', user_id::text, true);
+
+  return auth.role();
 end;
 $$ language plpgsql;
 
@@ -332,6 +361,12 @@ with check (
   product_id in (select id from shop.product where creator_id = auth.user())
 );
 
+create policy auction_update_policy on shop.auction for update to seller
+using (true) with check (
+  show_id in (select id from live.show where creator_id = auth.user()) and
+  product_id in (select id from shop.product where creator_id = auth.user())
+);
+
 -- Table: shop.bid
 
 create policy bid_select_policy on shop.bid for select to viewer
@@ -339,6 +374,11 @@ using (true);
 
 create policy bid_insert_policy on shop.bid for insert to bidder
 with check (bidder_id = auth.user());
+
+-- Table: shop.config
+
+create policy config_select_policy on shop.config for select to seller
+using (true);
 
 --
 -- Triggers
@@ -351,38 +391,31 @@ begin
   case new.type
     when 'auction_created' then
       perform cqrs.auction_created_handler(
-        jsonb_populate_record(null::cqrs.auction_created, new.data)
-      );
+        jsonb_populate_record(null::cqrs.auction_created, new.data));
 
     when 'bid_created' then
       perform cqrs.bid_created_handler(
-        jsonb_populate_record(null::cqrs.bid_created, new.data)
-      );
+        jsonb_populate_record(null::cqrs.bid_created, new.data));
 
     when 'comment_created' then
       perform cqrs.comment_created_handler(
-        jsonb_populate_record(null::cqrs.comment_created, new.data)
-      );
+        jsonb_populate_record(null::cqrs.comment_created, new.data));
 
     when 'person_created' then
       perform cqrs.person_created_handler(
-        jsonb_populate_record(null::cqrs.person_created, new.data)
-      );
+        jsonb_populate_record(null::cqrs.person_created, new.data));
 
     when 'product_created' then
       perform cqrs.product_created_handler(
-        jsonb_populate_record(null::cqrs.product_created, new.data)
-      );
+        jsonb_populate_record(null::cqrs.product_created, new.data));
 
     when 'show_created' then
       perform cqrs.show_created_handler(
-        jsonb_populate_record(null::cqrs.show_created, new.data)
-      );
+        jsonb_populate_record(null::cqrs.show_created, new.data));
 
     when 'show_started' then
       perform cqrs.show_started_handler(
-        jsonb_populate_record(null::cqrs.show_started, new.data)
-      );
+        jsonb_populate_record(null::cqrs.show_started, new.data));
   end case;
 
   perform cqrs.handler(new);
@@ -405,6 +438,7 @@ begin
     jsonb_build_object(
       'id', event.id,
       'created', event.created,
+      'user_id', event.user_id,
       'type', event.type,
       'data', event.data
     )::text
@@ -414,9 +448,19 @@ $$ language plpgsql;
 
 create function cqrs.auction_created_handler(event cqrs.auction_created)
 returns void as $$
+declare
+  config shop.config;
 begin
-  insert into shop.auction (id, show_id, product_id)
-  values (event.id, event.show_id, event.product_id);
+  select * into strict config from shop.config;
+
+  insert into shop.auction (id, show_id, product_id, timeout_secs, refresh_secs)
+  values (
+    event.id,
+    event.show_id,
+    event.product_id,
+    config.auction_timeout_secs,
+    config.auction_refresh_secs
+  );
 end;
 $$ language plpgsql;
 
@@ -425,8 +469,8 @@ returns void as $$
 declare
   current_max_amount amount;
 begin
-  current_max_amount :=
-    (select max(amount) from shop.bid where auction_id = event.auction_id);
+  select max(amount) into strict current_max_amount
+  from shop.bid where auction_id = event.auction_id;
 
   insert into shop.bid (id, auction_id, bidder_id, concurrent_amount, amount)
   values (
@@ -473,9 +517,26 @@ $$ language plpgsql;
 
 create function cqrs.show_started_handler(event cqrs.show_started)
 returns void as $$
+declare
+  auction shop.auction;
+  config shop.config;
+  show live.show;
 begin
-  update live.show set started_at = clock_timestamp(), started = not started
-  where id = event.id;
+  select * into strict config from shop.config;
+
+  update live.show
+  set
+    started_at = clock_timestamp(),
+    started = not started
+  where id = (select show_id from shop.auction where id = event.id)
+  returning id into strict show;
+
+  update shop.auction
+  set
+    started_at = clock_timestamp(),
+    expired_at = clock_timestamp() + config.auction_timeout_secs
+  where id = event.id
+  returning id into strict auction;
 end;
 $$ language plpgsql;
 
