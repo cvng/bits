@@ -193,7 +193,6 @@ alter table shop.bid enable row level security;
 -- Table: shop.config
 
 create table shop.config (
-  -- id id not null primary key, -- TODO
   auction_timeout_secs interval not null default '60',
   auction_refresh_secs interval not null default '15'
 );
