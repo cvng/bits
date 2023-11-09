@@ -36,8 +36,7 @@ begin
   end case;
 
   perform cqrs.notify(event);
-end;
-$$;
+end; $$;
 
 -- Handler: cqrs.auction_created_handler
 
@@ -56,8 +55,7 @@ begin
     config.auction_timeout_secs,
     config.auction_refresh_secs
   );
-end;
-$$;
+end; $$;
 
 -- Handler: cqrs.bid_created_handler
 
@@ -77,8 +75,7 @@ begin
     coalesce(current_max_amount, 0),
     event.amount
   );
-end;
-$$;
+end; $$;
 
 -- Handler: cqrs.comment_created_handler
 
@@ -87,8 +84,7 @@ language plpgsql as $$
 begin
   insert into live.comment (id, author_id, show_id, text)
   values (event.id, event.author_id, event.show_id, event.text);
-end;
-$$;
+end; $$;
 
 -- Handler: cqrs.person_created_handler
 
@@ -97,8 +93,7 @@ language plpgsql as $$
 begin
   insert into auth.person (id, email, role)
   values (event.id, event.email, event.role);
-end;
-$$;
+end; $$;
 
 -- Handler: cqrs.product_created_handler
 
@@ -107,8 +102,7 @@ language plpgsql as $$
 begin
   insert into shop.product (id, creator_id, name)
   values (event.id, event.creator_id, event.name);
-end;
-$$;
+end; $$;
 
 -- Handler: cqrs.show_created_handler
 
@@ -117,8 +111,7 @@ language plpgsql as $$
 begin
   insert into live.show (id, creator_id, name)
   values (event.id, event.creator_id, event.name);
-end;
-$$;
+end; $$;
 
 -- Handler: cqrs.show_started_handler
 
@@ -144,5 +137,4 @@ begin
     expired_at = clock_timestamp() + config.auction_timeout_secs
   where id = event.id
   returning id into strict auction;
-end;
-$$;
+end; $$;

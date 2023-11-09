@@ -15,5 +15,4 @@ begin
   );
 
   return event;
-end;
-$$;
+end; $$;

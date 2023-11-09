@@ -11,8 +11,7 @@ begin
   perform set_config('auth.user', user_id::text, true);
 
   return auth.role();
-end;
-$$;
+end; $$;
 
 -- Util: auth.role()
 
@@ -20,8 +19,7 @@ create function auth.role() returns auth.role
 language plpgsql as $$
 begin
   return (current_setting('role'))::auth.role;
-end;
-$$;
+end; $$;
 
 -- Util: auth.user()
 
@@ -29,5 +27,4 @@ create function auth.user() returns id
 language plpgsql as $$
 begin
   return (current_setting('auth.user'))::id;
-end;
-$$;
+end; $$;

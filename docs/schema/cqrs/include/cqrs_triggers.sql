@@ -6,8 +6,7 @@ begin
   perform cqrs.event_insert_handler(new);
 
   return new;
-end;
-$$;
+end; $$;
 
 create trigger event_insert_trigger after insert on cqrs.event
 for each row execute function cqrs.event_insert_trigger();
