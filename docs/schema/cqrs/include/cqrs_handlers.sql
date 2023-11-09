@@ -87,17 +87,35 @@ create function cqrs.bid_created_handler(event cqrs.bid_created) returns void
 language plpgsql as $$
 declare
   current_max_amount amount;
+  auction_expires_at timestamptz;
+  auction shop.auction;
 begin
+  -- TODO: check auction.started
+
   select max(amount) into strict current_max_amount
   from shop.bid where auction_id = event.auction_id;
 
-  insert into shop.bid (id, auction_id, bidder_id, concurrent_amount, amount)
+  select max(shop.bid.auction_expires_at) into strict auction_expires_at
+  from shop.bid where auction_id = event.auction_id; -- TODO: dedupe
+
+  select * into strict auction
+  from shop.auction where id = event.auction_id;
+
+  insert into shop.bid (
+    id,
+    auction_id,
+    bidder_id,
+    concurrent_amount,
+    amount,
+    auction_expires_at
+  )
   values (
     event.id,
     event.auction_id,
     event.bidder_id,
     coalesce(current_max_amount, 0),
-    event.amount
+    event.amount,
+    coalesce(auction_expires_at + auction.refresh_secs, auction.expired_at)
   );
 end; $$;
 

@@ -8,6 +8,7 @@ create table shop.bid (
   bidder_id id not null references auth.person (id),
   concurrent_amount amount not null default 0,
   amount amount not null,
+  auction_expires_at timestamptz not null,
 
   unique (auction_id, amount)
 );
