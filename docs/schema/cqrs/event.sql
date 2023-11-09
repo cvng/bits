@@ -10,6 +10,62 @@ create type cqrs.event_type as enum (
   'show_started'
 );
 
+-- Type: cqrs.auction_created
+
+create type cqrs.auction_created as (
+  id id,
+  show_id id,
+  product_id id
+);
+
+-- Type: cqrs.bid_created
+
+create type cqrs.bid_created as (
+  id id,
+  auction_id id,
+  bidder_id id,
+  amount amount
+);
+
+-- Type: cqrs.comment_created
+
+create type cqrs.comment_created as (
+  id id,
+  author_id id,
+  show_id id,
+  text text
+);
+
+-- Type: cqrs.person_created
+
+create type cqrs.person_created as (
+  id id,
+  email email,
+  role auth.role
+);
+
+-- Type: cqrs.product_created
+
+create type cqrs.product_created as (
+  id id,
+  creator_id id,
+  name text
+);
+
+-- Type: cqrs.show_created
+
+create type cqrs.show_created as (
+  id id,
+  creator_id id,
+  name text
+);
+
+-- Type: cqrs.show_started
+
+create type cqrs.show_started as (
+  id id
+);
+
 -- Table: cqrs.event
 
 create table cqrs.event (
