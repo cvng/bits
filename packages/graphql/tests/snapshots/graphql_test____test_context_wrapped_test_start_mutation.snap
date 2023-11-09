@@ -6,7 +6,7 @@ expression: response
   "data": {
     "start": {
       "auction": {
-        "id": "00000000-2000-0000-0000-000000000000",
+        "id": "[uuid]",
         "startedAt": null
       }
     }
