@@ -5,9 +5,9 @@ expression: response
 {
   "data": {
     "start": {
-      "show": {
-        "id": "[uuid]",
-        "started": true
+      "auction": {
+        "id": "00000000-2000-0000-0000-000000000000",
+        "startedAt": null
       }
     }
   }

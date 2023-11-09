@@ -149,6 +149,6 @@ begin
   set
     started_at = clock_timestamp(),
     started = not started
-  where id = (select show_id from shop.auction where id = event.id)
+  where id = event.id
   returning id into strict show;
 end; $$;

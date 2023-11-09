@@ -51,7 +51,7 @@ impl StartResult {
   pub fn to_object() -> Object {
     Object::new(Self::type_name()).field(Field::new(
       "auction",
-      TypeRef::named_nn("Show"),
+      TypeRef::named_nn("Auction"),
       |ctx| {
         FieldFuture::new(async move {
           Ok(Some(FieldValue::owned_any(
@@ -76,7 +76,7 @@ pub enum Error {
   Dispatch(#[from] DispatchError),
   #[error("show not created")]
   NotCreated,
-  #[error("show not found")]
+  #[error("auction not found")]
   NotFound,
 }
 
@@ -133,6 +133,6 @@ pub async fn start(
   dispatcher::dispatch(client, events)
     .await
     .map(StartCommand::apply)
-    .map_err(Error::Dispatch)?
+    .map_err(Error::Dispatch).unwrap()
     .ok_or(Error::NotCreated)
 }
