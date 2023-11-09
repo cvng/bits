@@ -24,5 +24,5 @@
 
 --
 
-\include_relative schema/perms.sql
+\include_relative schema/permissions.sql
 \include_relative schema/views.sql
