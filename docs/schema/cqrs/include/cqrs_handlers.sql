@@ -1,6 +1,6 @@
--- Handler: cqrs.handler
+-- Handler: cqrs.event_insert_handler
 
-create function cqrs.handler(event cqrs.event) returns void
+create function cqrs.event_insert_handler(event cqrs.event) returns void
 language plpgsql as $$
 begin
   perform auth.login(event.user_id);

@@ -3,7 +3,7 @@
 create function cqrs.event_insert_trigger() returns trigger
 language plpgsql as $$
 begin
-  perform cqrs.handler(new);
+  perform cqrs.event_insert_handler(new);
 
   return new;
 end;
