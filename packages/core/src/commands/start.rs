@@ -9,11 +9,12 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
+use bits_data::auction;
 use bits_data::sea_orm::DbErr;
 use bits_data::sea_orm::EntityTrait;
-use bits_data::show;
+use bits_data::Auction;
+use bits_data::AuctionStarted;
 use bits_data::Event;
-use bits_data::Show;
 use bits_data::ShowId;
 use bits_data::ShowStarted;
 use serde::Deserialize;
@@ -23,7 +24,7 @@ use thiserror::Error;
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StartInput {
-  pub show_id: ShowId,
+  pub auction_id: ShowId,
 }
 
 impl StartInput {
@@ -33,13 +34,13 @@ impl StartInput {
 
   pub fn to_input() -> InputObject {
     InputObject::new(Self::type_name())
-      .field(InputValue::new("showId", TypeRef::named_nn(TypeRef::ID)))
+      .field(InputValue::new("auctionId", TypeRef::named_nn(TypeRef::ID)))
   }
 }
 
 #[derive(Clone, Serialize)]
 pub struct StartResult {
-  pub show: Show,
+  pub auction: Auction,
 }
 
 impl StartResult {
@@ -49,7 +50,7 @@ impl StartResult {
 
   pub fn to_object() -> Object {
     Object::new(Self::type_name()).field(Field::new(
-      "show",
+      "auction",
       TypeRef::named_nn("Show"),
       |ctx| {
         FieldFuture::new(async move {
@@ -59,7 +60,7 @@ impl StartResult {
               .try_downcast_ref::<Self>()
               .cloned()
               .unwrap()
-              .show,
+              .auction,
           )))
         })
       },
@@ -80,7 +81,7 @@ pub enum Error {
 }
 
 pub struct StartCommand {
-  show: Show,
+  auction: Auction,
 }
 
 impl Command for StartCommand {
@@ -93,21 +94,25 @@ impl Command for StartCommand {
     &self,
     input: Self::Input,
   ) -> Result<Vec<Self::Event>, Self::Error> {
-    Ok(vec![Event::ShowStarted {
-      data: ShowStarted {
-        id: input.show_id,
-        show: self.show.clone(),
+    Ok(vec![
+      Event::ShowStarted {
+        data: ShowStarted {
+          id: self.auction.show_id,
+        },
       },
-    }])
+      Event::AuctionStarted {
+        data: AuctionStarted {
+          id: input.auction_id,
+          auction: self.auction.clone(),
+        },
+      },
+    ])
   }
 
   fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
     events.iter().fold(None, |_, event| match event {
-      Event::ShowStarted { data, .. } => Some(StartResult {
-        show: Show {
-          started: true,
-          ..data.show.clone()
-        },
+      Event::AuctionStarted { data, .. } => Some(StartResult {
+        auction: data.auction.clone(),
       }),
       _ => None,
     })
@@ -118,12 +123,12 @@ pub async fn start(
   client: &Client,
   input: StartInput,
 ) -> Result<StartResult, Error> {
-  let show = show::Entity::find_by_id(input.show_id)
+  let auction = auction::Entity::find_by_id(input.auction_id)
     .one(&client.connection)
     .await?
     .ok_or(Error::NotFound)?;
 
-  let events = StartCommand { show }.handle(input)?;
+  let events = StartCommand { auction }.handle(input)?;
 
   dispatcher::dispatch(client, events)
     .await

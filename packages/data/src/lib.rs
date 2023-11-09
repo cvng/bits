@@ -9,6 +9,7 @@ pub use seaography;
 pub use uuid;
 
 pub use events::AuctionCreated;
+pub use events::AuctionStarted;
 pub use events::BidCreated;
 pub use events::CommentCreated;
 pub use events::Event;
