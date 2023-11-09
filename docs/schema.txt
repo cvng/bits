@@ -1,0 +1,8 @@
+schema/schema.sql
+schema/types.sql
+schema/permissions.sql
+schema/utilities.sql
+schema/policies.sql
+schema/triggers.sql
+schema/functions.sql
+schema/views.sql
