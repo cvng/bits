@@ -4,8 +4,8 @@ type Auction {
   updated: String
   showId: String!
   productId: String!
-  started: String
-  expired: String
+  startedAt: String
+  expiredAt: String
   bid(filters: BidFilterInput, orderBy: BidOrderInput, pagination: PaginationInput): BidConnection!
   product: Product
   show: Show
@@ -29,8 +29,8 @@ input AuctionFilterInput {
   updated: TextFilterInput
   showId: TextFilterInput
   productId: TextFilterInput
-  started: TextFilterInput
-  expired: TextFilterInput
+  startedAt: TextFilterInput
+  expiredAt: TextFilterInput
   and: [AuctionFilterInput!]
   or: [AuctionFilterInput!]
 }
@@ -41,8 +41,8 @@ input AuctionOrderInput {
   updated: OrderByEnum
   showId: OrderByEnum
   productId: OrderByEnum
-  started: OrderByEnum
-  expired: OrderByEnum
+  startedAt: OrderByEnum
+  expiredAt: OrderByEnum
 }
 
 type Bid {
@@ -379,11 +379,11 @@ input ShowOrderInput {
 }
 
 input StartInput {
-  showId: ID!
+  auctionId: ID!
 }
 
 type StartResult {
-  show: Show!
+  auction: Auction!
 }
 
 input StringFilterInput {

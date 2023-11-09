@@ -18,12 +18,12 @@ mutation BidMutation {
 mutation StartMutation {
   start(
     input: {
-      showId: "00000000-2000-0000-0000-000000000000"
+      auctionId: "00000000-2000-0000-0000-000000000000"
     }
   ) {
-    show {
+    auction {
       id
-      started
+      startedAt
     }
   }
 }

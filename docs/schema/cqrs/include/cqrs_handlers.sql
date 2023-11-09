@@ -10,6 +10,10 @@ begin
       perform cqrs.auction_created_handler(
         jsonb_populate_record(null::cqrs.auction_created, event.data));
 
+   when 'auction_started' then
+      perform cqrs.auction_started_handler(
+        jsonb_populate_record(null::cqrs.auction_started, event.data));
+
     when 'bid_created' then
       perform cqrs.bid_created_handler(
         jsonb_populate_record(null::cqrs.bid_created, event.data));
@@ -45,7 +49,7 @@ language plpgsql as $$
 declare
   config shop.config;
 begin
-  select * into strict config from shop.config;
+  select * from shop.config() into config;
 
   insert into shop.auction (id, show_id, product_id, timeout_secs, refresh_secs)
   values (
@@ -55,6 +59,26 @@ begin
     config.auction_timeout_secs,
     config.auction_refresh_secs
   );
+end; $$;
+
+-- Handler: cqrs.auction_started_handler
+
+create function cqrs.auction_started_handler(event cqrs.auction_started) returns void
+language plpgsql as $$
+declare
+  now timestamptz;
+  config shop.config;
+  auction shop.auction;
+begin
+  select clock_timestamp() into now;
+  select * from shop.config() into config;
+
+  update shop.auction
+  set
+    started_at = now,
+    expired_at = now + config.auction_timeout_secs
+  where id = event.id
+  returning id into strict auction;
 end; $$;
 
 -- Handler: cqrs.bid_created_handler
@@ -118,23 +142,13 @@ end; $$;
 create function cqrs.show_started_handler(event cqrs.show_started) returns void
 language plpgsql as $$
 declare
-  auction shop.auction;
   config shop.config;
   show live.show;
 begin
-  select * into strict config from shop.config;
-
   update live.show
   set
     started_at = clock_timestamp(),
     started = not started
-  where id = (select show_id from shop.auction where id = event.id)
-  returning id into strict show;
-
-  update shop.auction
-  set
-    started_at = clock_timestamp(),
-    expired_at = clock_timestamp() + config.auction_timeout_secs
   where id = event.id
-  returning id into strict auction;
+  returning id into strict show;
 end; $$;

@@ -5,13 +5,14 @@ use crate::types::CommentId;
 use crate::types::PersonId;
 use crate::types::ProductId;
 use crate::types::ShowId;
-use crate::Show;
+use crate::Auction;
 use serde::Serialize;
 
 #[derive(Clone, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Event {
   AuctionCreated { data: AuctionCreated },
+  AuctionStarted { data: AuctionStarted },
   BidCreated { data: BidCreated },
   CommentCreated { data: CommentCreated },
   PersonCreated { data: PersonCreated },
@@ -25,6 +26,12 @@ pub struct AuctionCreated {
   pub id: AuctionId,
   pub show_id: ShowId,
   pub product_id: ProductId,
+}
+
+#[derive(Clone, Serialize)]
+pub struct AuctionStarted {
+  pub id: AuctionId,
+  pub auction: Auction,
 }
 
 #[derive(Clone, Serialize)]
@@ -67,5 +74,4 @@ pub struct ShowCreated {
 #[derive(Clone, Serialize)]
 pub struct ShowStarted {
   pub id: ShowId,
-  pub show: Show,
 }

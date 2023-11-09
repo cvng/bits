@@ -48,5 +48,5 @@ async fn test_start_mutation(ctx: &mut Context) {
   .await
   .unwrap();
 
-  assert_json_snapshot!(response, { ".data.start.show.id" => "[uuid]" });
+  assert_json_snapshot!(response, { ".data.start.auction.id" => "[uuid]" });
 }
