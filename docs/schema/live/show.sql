@@ -19,3 +19,18 @@ check (
   (started_at is null and not started) or
   (started_at is not null and started)
 );
+
+-- Policy: show_select_policy
+
+create policy show_select_policy on live.show for select to viewer
+using (true);
+
+-- Policy: show_insert_policy
+
+create policy show_insert_policy on live.show for insert to seller
+with check (creator_id = auth.user());
+
+-- Policy: show_update_policy
+
+create policy show_update_policy on live.show for update to seller
+using (true) with check (creator_id = auth.user());

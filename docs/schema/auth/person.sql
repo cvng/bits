@@ -18,3 +18,13 @@ create table auth.person (
 );
 
 alter table auth.person enable row level security;
+
+-- Policy: person_select_policy
+
+create policy person_select_policy on auth.person for select to viewer
+using (true);
+
+-- Policy: person_insert_policy
+
+create policy person_insert_policy on auth.person for insert to admin
+with check (true);

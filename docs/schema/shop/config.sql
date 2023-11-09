@@ -6,3 +6,8 @@ create table shop.config (
 );
 
 alter table shop.config enable row level security;
+
+-- Policy: config_select_policy
+
+create policy config_select_policy on shop.config for select to seller
+using (true);
