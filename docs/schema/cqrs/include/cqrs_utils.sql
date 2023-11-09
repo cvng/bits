@@ -1,10 +1,6 @@
---
--- Utils
---
+-- Util: cqrs.notify()
 
--- Util: cqrs.notify
-
-create function cqrs.notify(event cqrs.event) returns void
+create function cqrs.notify(event cqrs.event) returns cqrs.event
 language plpgsql as $$
 begin
   perform pg_notify(
@@ -17,5 +13,7 @@ begin
       'data', event.data
     )::text
   );
+
+  return event;
 end;
 $$;

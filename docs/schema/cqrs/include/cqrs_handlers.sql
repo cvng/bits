@@ -1,8 +1,4 @@
---
--- Handlers
---
-
--- Trigger: cqrs.handler
+-- Handler: cqrs.handler
 
 create function cqrs.handler(event cqrs.event) returns void
 language plpgsql as $$

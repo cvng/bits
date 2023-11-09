@@ -1,7 +1,3 @@
---
--- Triggers
---
-
 -- Trigger: cqrs.event_insert_trigger
 
 create function cqrs.event_insert_trigger() returns trigger

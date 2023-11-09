@@ -1,6 +1,4 @@
---
--- Utilities
---
+-- Util: auth.login()
 
 create function auth.login(user_id id) returns auth.role
 language plpgsql as $$
@@ -16,12 +14,16 @@ begin
 end;
 $$;
 
+-- Util: auth.role()
+
 create function auth.role() returns auth.role
 language plpgsql as $$
 begin
   return (current_setting('role'))::auth.role;
 end;
 $$;
+
+-- Util: auth.user()
 
 create function auth.user() returns id
 language plpgsql as $$
