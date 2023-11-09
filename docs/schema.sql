@@ -12,6 +12,7 @@
 \include_relative schema/shop/auction.sql
 \include_relative schema/shop/bid.sql
 \include_relative schema/shop/config.sql
+\include_relative schema/shop/include/shop_utils.sql
 
 \include_relative schema/cqrs/event.sql
 \include_relative schema/cqrs/include/cqrs_utils.sql

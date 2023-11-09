@@ -49,7 +49,7 @@ language plpgsql as $$
 declare
   config shop.config;
 begin
-  select * into strict config from shop.config;
+  select * from shop.config() into config;
 
   insert into shop.auction (id, show_id, product_id, timeout_secs, refresh_secs)
   values (
@@ -70,8 +70,8 @@ declare
   config shop.config;
   auction shop.auction;
 begin
-  select clock_timestamp() into strict now;
-  select * into strict config from shop.config;
+  select clock_timestamp() into now;
+  select * from shop.config() into config;
 
   update shop.auction
   set
