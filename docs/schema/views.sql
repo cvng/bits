@@ -1,6 +1,4 @@
---
 -- Views
---
 
 create view public.person with (security_invoker = true) as (
   select

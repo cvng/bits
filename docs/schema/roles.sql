@@ -1,6 +1,4 @@
---
 -- Roles
---
 
 create role admin;
 create role bidder;

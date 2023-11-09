@@ -1,8 +1,8 @@
 --
 
+\include_relative schema/roles.sql
 \include_relative schema/schemas.sql
 \include_relative schema/domains.sql
-\include_relative schema/roles.sql
 
 --
 
@@ -24,5 +24,5 @@
 
 --
 
-\include_relative schema/permissions.sql
+\include_relative schema/perms.sql
 \include_relative schema/views.sql

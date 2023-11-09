@@ -1,6 +1,4 @@
---
--- Schema
---
+-- Schemas
 
 create schema auth;
 create schema cqrs;

@@ -1,6 +1,4 @@
---
 -- Domains
---
 
 create domain id as uuid;
 
