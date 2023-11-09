@@ -133,6 +133,6 @@ pub async fn start(
   dispatcher::dispatch(client, events)
     .await
     .map(StartCommand::apply)
-    .map_err(Error::Dispatch).unwrap()
+    .map_err(Error::Dispatch)?
     .ok_or(Error::NotCreated)
 }
