@@ -1,3 +1,5 @@
+-- Enum: auth.role
+
 create type auth.role as enum (
   'admin',
   'bidder',
