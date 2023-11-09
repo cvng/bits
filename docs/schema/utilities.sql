@@ -2,7 +2,8 @@
 -- Utilities
 --
 
-create function auth.login(user_id id) returns auth.role as $$
+create function auth.login(user_id id) returns auth.role
+language plpgsql as $$
 declare
   enabled_role auth.role;
 begin
@@ -13,16 +14,18 @@ begin
 
   return auth.role();
 end;
-$$ language plpgsql;
+$$;
 
-create function auth.role() returns auth.role as $$
+create function auth.role() returns auth.role
+language plpgsql as $$
 begin
   return (current_setting('role'))::auth.role;
 end;
-$$ language plpgsql;
+$$;
 
-create function auth.user() returns id as $$
+create function auth.user() returns id
+language plpgsql as $$
 begin
   return (current_setting('auth.user'))::id;
 end;
-$$ language plpgsql;
+$$;

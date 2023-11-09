@@ -1,8 +1,13 @@
 \include_relative schema/schema.sql
+\include_relative schema/roles.sql
+\include_relative schema/domains.sql
+\include_relative schema/enums.sql
+\include_relative schema/tables.sql
+\include_relative schema/checks.sql
 \include_relative schema/types.sql
 \include_relative schema/permissions.sql
 \include_relative schema/utilities.sql
 \include_relative schema/policies.sql
 \include_relative schema/triggers.sql
-\include_relative schema/functions.sql
+\include_relative schema/handlers.sql
 \include_relative schema/views.sql

@@ -2,7 +2,10 @@
 -- Handlers
 --
 
-create function cqrs.handler(event cqrs.event) returns void as $$
+-- Handler: cqrs.handler
+
+create function cqrs.handler(event cqrs.event) returns void
+language plpgsql as $$
 begin
   perform pg_notify(
     'cqrs.event',
@@ -15,10 +18,12 @@ begin
     )::text
   );
 end;
-$$ language plpgsql;
+$$;
 
-create function cqrs.auction_created_handler(event cqrs.auction_created)
-returns void as $$
+-- Handler: cqrs.auction_created_handler
+
+create function cqrs.auction_created_handler(event cqrs.auction_created) returns void
+language plpgsql as $$
 declare
   config shop.config;
 begin
@@ -33,10 +38,12 @@ begin
     config.auction_refresh_secs
   );
 end;
-$$ language plpgsql;
+$$;
 
-create function cqrs.bid_created_handler(event cqrs.bid_created)
-returns void as $$
+-- Handler: cqrs.bid_created_handler
+
+create function cqrs.bid_created_handler(event cqrs.bid_created) returns void
+language plpgsql as $$
 declare
   current_max_amount amount;
 begin
@@ -52,42 +59,52 @@ begin
     event.amount
   );
 end;
-$$ language plpgsql;
+$$;
 
-create function cqrs.comment_created_handler(event cqrs.comment_created)
-returns void as $$
+-- Handler: cqrs.comment_created_handler
+
+create function cqrs.comment_created_handler(event cqrs.comment_created) returns void
+language plpgsql as $$
 begin
   insert into live.comment (id, author_id, show_id, text)
   values (event.id, event.author_id, event.show_id, event.text);
 end;
-$$ language plpgsql;
+$$;
 
-create function cqrs.person_created_handler(event cqrs.person_created)
-returns void as $$
+-- Handler: cqrs.person_created_handler
+
+create function cqrs.person_created_handler(event cqrs.person_created) returns void
+language plpgsql as $$
 begin
   insert into auth.person (id, email, role)
   values (event.id, event.email, event.role);
 end;
-$$ language plpgsql;
+$$;
 
-create function cqrs.product_created_handler(event cqrs.product_created)
-returns void as $$
+-- Handler: cqrs.product_created_handler
+
+create function cqrs.product_created_handler(event cqrs.product_created) returns void
+language plpgsql as $$
 begin
   insert into shop.product (id, creator_id, name)
   values (event.id, event.creator_id, event.name);
 end;
-$$ language plpgsql;
+$$;
 
-create function cqrs.show_created_handler(event cqrs.show_created)
-returns void as $$
+-- Handler: cqrs.show_created_handler
+
+create function cqrs.show_created_handler(event cqrs.show_created) returns void
+language plpgsql as $$
 begin
   insert into live.show (id, creator_id, name)
   values (event.id, event.creator_id, event.name);
 end;
-$$ language plpgsql;
+$$;
 
-create function cqrs.show_started_handler(event cqrs.show_started)
-returns void as $$
+-- Handler: cqrs.show_started_handler
+
+create function cqrs.show_started_handler(event cqrs.show_started) returns void
+language plpgsql as $$
 declare
   auction shop.auction;
   config shop.config;
@@ -109,4 +126,4 @@ begin
   where id = event.id
   returning id into strict auction;
 end;
-$$ language plpgsql;
+$$;
