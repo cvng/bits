@@ -383,7 +383,7 @@ input StartInput {
 }
 
 type StartResult {
-  auction: Show!
+  auction: Auction!
 }
 
 input StringFilterInput {
