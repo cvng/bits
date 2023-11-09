@@ -1,6 +1,9 @@
---
--- Tables
---
+create type auth.role as enum (
+  'admin',
+  'bidder',
+  'seller',
+  'viewer'
+);
 
 -- Table: auth.person
 
