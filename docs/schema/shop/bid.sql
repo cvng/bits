@@ -7,7 +7,9 @@ create table shop.bid (
   auction_id id not null references shop.auction (id),
   bidder_id id not null references auth.person (id),
   concurrent_amount amount not null default 0,
-  amount amount not null
+  amount amount not null,
+
+  unique (auction_id, amount)
 );
 
 alter table shop.bid enable row level security;
