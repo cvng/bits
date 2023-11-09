@@ -21,4 +21,4 @@ drop role if exists viewer;
 create database $name;
 SQL
 
-cd docs && cat schema.txt | xargs -n 1 psql "$host" --set=ON_ERROR_STOP=true --file
+psql "$host" --set=ON_ERROR_STOP=true --file=docs/schema.sql
