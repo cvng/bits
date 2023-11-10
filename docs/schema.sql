@@ -21,4 +21,5 @@
 \include_relative schema/cqrs/include/cqrs_handlers.sql
 
 \include_relative schema/permissions.sql
+\include_relative schema/policies.sql
 \include_relative schema/views.sql

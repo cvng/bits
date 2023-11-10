@@ -16,13 +16,3 @@ alter table shop.bid enable row level security;
 
 alter table shop.bid add constraint bid_concurrent_amount_check
 check (amount > concurrent_amount);
-
--- Policy: bid_select_policy
-
-create policy bid_select_policy on shop.bid for select to viewer
-using (true);
-
--- Policy: bid_insert_policy
-
-create policy bid_insert_policy on shop.bid for insert to bidder
-with check (bidder_id = auth.user());

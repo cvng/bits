@@ -11,18 +11,3 @@ create table shop.auction_session (
 );
 
 alter table shop.auction_session enable row level security;
-
--- Policy: shop.auction_session_select_policy
-
-create policy auction_session_select_policy
-on shop.auction_session for select to bidder using (true);
-
--- Policy: shop.auction_session_insert_policy
-
-create policy auction_session_insert_policy
-on shop.auction_session for insert to seller with check (true);
-
--- Policy: shop.auction_session_update_policy
-
-create policy auction_session_update_policy
-on shop.auction_session for update to bidder using (true);

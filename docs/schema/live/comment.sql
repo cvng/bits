@@ -10,13 +10,3 @@ create table live.comment (
 );
 
 alter table live.comment enable row level security;
-
--- Policy: comment_select_policy
-
-create policy comment_select_policy on live.comment for select to viewer
-using (true);
-
--- Policy: comment_insert_policy
-
-create policy comment_insert_policy on live.comment for insert to bidder
-with check (author_id = auth.user());
