@@ -38,7 +38,7 @@ for update to seller using (true) with check (creator_id = auth.user());
 -- Table: shop.auction_session
 
 create policy auction_session_select_policy on shop.auction_session
-for select to bidder using (true);
+for select to viewer using (true);
 
 create policy auction_session_insert_policy on shop.auction_session
 for insert to seller with check (
