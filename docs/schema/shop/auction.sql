@@ -10,24 +10,3 @@ create table shop.auction (
 );
 
 alter table shop.auction enable row level security;
-
--- Policy: auction_select_policy
-
-create policy auction_select_policy on shop.auction for select to viewer
-using (true);
-
--- Policy: auction_insert_policy
-
-create policy auction_insert_policy on shop.auction for insert to seller
-with check (
-  show_id in (select id from live.show where creator_id = auth.user()) and
-  product_id in (select id from shop.product where creator_id = auth.user())
-);
-
--- Policy: auction_update_policy
-
-create policy auction_update_policy on shop.auction for update to seller
-using (true) with check (
-  show_id in (select id from live.show where creator_id = auth.user()) and
-  product_id in (select id from shop.product where creator_id = auth.user())
-);

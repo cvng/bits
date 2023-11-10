@@ -84,13 +84,3 @@ create table cqrs.event (
 );
 
 alter table cqrs.event enable row level security;
-
--- Policy: event_select_policy
-
-create policy event_select_policy on cqrs.event for select to viewer
-using ('admin'::auth.role = auth.role());
-
--- Policy: event_insert_policy
-
-create policy event_insert_policy on cqrs.event for insert to viewer
-with check (true);

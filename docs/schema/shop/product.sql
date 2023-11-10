@@ -9,13 +9,3 @@ create table shop.product (
 );
 
 alter table shop.product enable row level security;
-
--- Policy: product_select_policy
-
-create policy product_select_policy on shop.product for select to viewer
-using (true);
-
--- Policy: product_insert_policy
-
-create policy product_insert_policy on shop.product for insert to seller
-with check (creator_id = auth.user());
