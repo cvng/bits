@@ -14,7 +14,7 @@ create policy event_select_policy on cqrs.event
 for select to admin using (true);
 
 create policy event_insert_policy on cqrs.event
-for insert to viewer with check (true);
+for insert to viewer with check (user_id = auth.user());
 
 -- Table: live.comment
 
@@ -41,7 +41,13 @@ create policy auction_session_select_policy on shop.auction_session
 for select to bidder using (true);
 
 create policy auction_session_insert_policy on shop.auction_session
-for insert to seller with check (true);
+for insert to seller with check (
+  auction_id in (
+    select id
+    from shop.auction
+    where show_id in (select id from live.show where creator_id = auth.user())
+  )
+);
 
 create policy auction_session_update_policy on shop.auction_session
 for update to bidder using (true);
