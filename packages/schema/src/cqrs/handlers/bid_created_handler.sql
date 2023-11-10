@@ -25,7 +25,8 @@ begin
   )
   returning * into strict bid;
 
-  update shop.auction_session set
+  update shop.auction_session
+  set
     max_amount = bid.amount,
     expires_at = session.expires_at + session.refresh_secs
   where id = session.id
