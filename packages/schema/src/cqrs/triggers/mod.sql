@@ -1,0 +1,1 @@
+\include_relative event_insert_trigger.sql
