@@ -104,7 +104,6 @@ impl Command for CreateAuctionCommand {
           show_id: data.show_id,
           product_id: data.product_id,
           started_at: None,
-          expired_at: None,
         },
       }),
       _ => None,

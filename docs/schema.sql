@@ -10,6 +10,7 @@
 
 \include_relative schema/shop/product.sql
 \include_relative schema/shop/auction.sql
+\include_relative schema/shop/auction_session.sql
 \include_relative schema/shop/bid.sql
 \include_relative schema/shop/config.sql
 \include_relative schema/shop/include/shop_utils.sql

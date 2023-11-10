@@ -26,6 +26,10 @@ grant select on shop.auction to viewer;
 grant insert on shop.auction to seller;
 grant update on shop.auction to seller;
 
+grant select on shop.auction_session to bidder;
+grant insert on shop.auction_session to seller;
+grant update on shop.auction_session to bidder;
+
 grant select on shop.bid to viewer;
 grant insert on shop.bid to bidder;
 
