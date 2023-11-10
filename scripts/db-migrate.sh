@@ -21,4 +21,4 @@ drop role if exists viewer;
 create database $name;
 SQL
 
-psql "$host" --set=ON_ERROR_STOP=true --file="docs/schema.sql"
+psql "$host" --set=ON_ERROR_STOP=true --file="packages/schema/schema.sql"

@@ -3,8 +3,12 @@ set -eu -o pipefail
 
 # https://squawkhq.com/docs/cli
 
-npx squawk-cli docs/schema/*.sql
+npx squawk-cli \
+    packages/schema/sql/*.sql \
+    packages/schema/sql/**/*.sql \
+    packages/schema/sql/**/include/*.sql \
+
 
 # https://docs.sqlfluff.com/en/stable/gettingstarted.html
 
-sqlfluff fix docs/schema
+sqlfluff fix packages/schema/sql
