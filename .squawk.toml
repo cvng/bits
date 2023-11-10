@@ -1,5 +1,0 @@
-# https://squawkhq.com/docs/cli
-
-pg_version = "14.0"
-assume_in_transaction = true
-excluded_rules = ["constraint-missing-not-valid"]
