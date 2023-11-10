@@ -7,7 +7,7 @@ create table shop.bid (
   auction_id id not null references shop.auction (id),
   bidder_id id not null references auth.person (id),
   amount amount not null,
-  concurrent_amount amount not null,
+  concurrent_amount amount not null default 0,
   auction_expires_at timestamptz not null,
 
   unique (auction_id, amount) include (auction_expires_at)

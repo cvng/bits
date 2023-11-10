@@ -7,7 +7,7 @@ create table shop.auction (
   show_id id not null references live.show (id),
   product_id id not null references shop.product (id),
   started_at timestamptz,
-  expired_at timestamptz, -- TODO: closed_at?
+  expired_at timestamptz,
   timeout_secs interval not null,
   refresh_secs interval not null
 );
