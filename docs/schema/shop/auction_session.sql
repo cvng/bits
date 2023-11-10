@@ -1,7 +1,7 @@
 -- Table: shop.auction_session
 
 create table shop.auction_session (
-  session_id id not null primary key,
+  id id not null primary key,
   auction_id id not null unique references shop.auction (id),
   created timestamptz not null default clock_timestamp(),
   max_amount amount not null default 0,

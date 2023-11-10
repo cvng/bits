@@ -73,7 +73,7 @@ begin
   select * from shop.config() into config;
 
   insert into shop.auction_session (
-    session_id,
+    id,
     auction_id,
     max_amount,
     timeout_secs,
@@ -124,8 +124,8 @@ begin
   update shop.auction_session set
     max_amount = bid.amount,
     expires_at = session.expires_at + session.refresh_secs
-  where session_id = session.session_id
-  returning session_id into strict session;
+  where id = session.id
+  returning id into strict session;
 end; $$;
 
 -- Handler: cqrs.comment_created_handler
