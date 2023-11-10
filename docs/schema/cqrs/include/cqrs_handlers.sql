@@ -90,8 +90,12 @@ declare
   auction_expires_at timestamptz;
   auction shop.auction;
 begin
-  select amount, shop.bid.auction_expires_at
-  into current_max_amount, auction_expires_at
+  select
+    amount,
+    bid.auction_expires_at
+  into
+    current_max_amount,
+    auction_expires_at
   from shop.bid where auction_id = event.auction_id
   order by amount desc limit 1;
 
