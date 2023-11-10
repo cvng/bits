@@ -22,7 +22,6 @@ pub struct Model {
   pub show_id: Uuid,
   pub product_id: Uuid,
   pub started_at: Option<DateTimeWithTimeZone>,
-  pub expired_at: Option<DateTimeWithTimeZone>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveColumn)]
@@ -33,7 +32,6 @@ pub enum Column {
   ShowId,
   ProductId,
   StartedAt,
-  ExpiredAt,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DerivePrimaryKey)]
@@ -65,7 +63,6 @@ impl ColumnTrait for Column {
       Self::ShowId => ColumnType::Uuid.def(),
       Self::ProductId => ColumnType::Uuid.def(),
       Self::StartedAt => ColumnType::TimestampWithTimeZone.def().null(),
-      Self::ExpiredAt => ColumnType::TimestampWithTimeZone.def().null(),
     }
   }
 }

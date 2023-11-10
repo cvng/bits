@@ -7,7 +7,6 @@ create table shop.auction (
   show_id id not null references live.show (id),
   product_id id not null references shop.product (id),
   started_at timestamptz
-  -- session_id id references shop.auction_session (session_id)
 );
 
 alter table shop.auction enable row level security;
