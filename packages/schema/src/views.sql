@@ -56,7 +56,6 @@ create view public.bid with (security_invoker = true) as (
   select
     id,
     created,
-    updated,
     auction_id,
     bidder_id,
     concurrent_amount,

@@ -18,7 +18,6 @@ impl EntityName for Entity {
 pub struct Model {
   pub id: Uuid,
   pub created: Option<DateTimeWithTimeZone>,
-  pub updated: Option<DateTimeWithTimeZone>,
   pub auction_id: Uuid,
   pub bidder_id: Uuid,
   pub concurrent_amount: Option<Decimal>,
@@ -29,7 +28,6 @@ pub struct Model {
 pub enum Column {
   Id,
   Created,
-  Updated,
   AuctionId,
   BidderId,
   ConcurrentAmount,
@@ -60,7 +58,6 @@ impl ColumnTrait for Column {
     match self {
       Self::Id => ColumnType::Uuid.def(),
       Self::Created => ColumnType::TimestampWithTimeZone.def(),
-      Self::Updated => ColumnType::TimestampWithTimeZone.def().null(),
       Self::AuctionId => ColumnType::Uuid.def(),
       Self::BidderId => ColumnType::Uuid.def(),
       Self::ConcurrentAmount => ColumnType::Decimal(None).def(),

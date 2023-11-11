@@ -105,7 +105,6 @@ impl Command for BidCommand {
         bid: Bid {
           id: data.id,
           created: None,
-          updated: None,
           auction_id: data.auction_id,
           bidder_id: data.bidder_id,
           concurrent_amount: None,
