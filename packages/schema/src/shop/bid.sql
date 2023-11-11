@@ -7,7 +7,7 @@ create table shop.bid (
   bidder_id id not null references auth.person (id),
   amount amount not null,
   concurrent_amount amount not null,
-  session_expires_at timestamptz not null
+  auction_expires_at timestamptz not null
 );
 
 alter table shop.bid enable row level security;
@@ -17,7 +17,7 @@ alter table shop.bid enable row level security;
 alter table shop.bid add constraint bid_concurrent_amount_check
 check (amount > concurrent_amount);
 
--- Check: bid_session_expires_at_check
+-- Check: bid_auction_expires_at_check
 
-alter table shop.bid add constraint bid_session_expires_at_check
-check (created < session_expires_at);
+alter table shop.bid add constraint bid_auction_expires_at_check
+check (created < auction_expires_at);

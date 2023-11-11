@@ -15,7 +15,7 @@ begin
     bidder_id,
     amount,
     concurrent_amount,
-    session_expires_at
+    auction_expires_at
   )
   values (
     event.id,
