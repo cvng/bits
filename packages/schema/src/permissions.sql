@@ -1,9 +1,5 @@
 -- Permissions
 
-grant viewer to bidder;
-grant bidder to seller;
-grant seller to admin;
-
 grant usage on schema auth to viewer;
 grant usage on schema cqrs to viewer;
 grant usage on schema live to bidder;

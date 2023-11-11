@@ -9,6 +9,8 @@ host="$DATABASE_URL"
 name="bits"
 file="scripts/data/events.json"
 
+cargo task db-migrate > /dev/null
+
 # Seed data from JSON event "stream" & test permissions
 
 jq --compact-output ".[]" "$file" | psql "$host" --set=ON_ERROR_STOP=true \
