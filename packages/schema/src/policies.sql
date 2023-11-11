@@ -35,23 +35,6 @@ for insert to seller with check (creator_id = auth.user());
 create policy show_update_policy on live.show
 for update to seller using (true) with check (creator_id = auth.user());
 
--- Table: shop.auction_session
-
-create policy auction_session_select_policy on shop.auction_session
-for select to viewer using (true);
-
-create policy auction_session_insert_policy on shop.auction_session
-for insert to seller with check (
-  auction_id in (
-    select id
-    from shop.auction
-    where show_id in (select id from live.show where creator_id = auth.user())
-  )
-);
-
-create policy auction_session_update_policy on shop.auction_session
-for update to bidder using (true);
-
 -- Table: shop.auction
 
 create policy auction_select_policy on shop.auction
@@ -68,6 +51,23 @@ for update to seller using (true) with check (
   show_id in (select id from live.show where creator_id = auth.user()) and
   product_id in (select id from shop.product where creator_id = auth.user())
 );
+
+-- Table: shop.auction_session
+
+create policy auction_session_select_policy on shop.auction_session
+for select to viewer using (true);
+
+create policy auction_session_insert_policy on shop.auction_session
+for insert to seller with check (
+  auction_id in (
+    select id
+    from shop.auction
+    where show_id in (select id from live.show where creator_id = auth.user())
+  )
+);
+
+create policy auction_session_update_policy on shop.auction_session
+for update to bidder using (true);
 
 -- Table: shop.bid
 
