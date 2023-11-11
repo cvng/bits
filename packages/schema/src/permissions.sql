@@ -1,6 +1,6 @@
 -- Permissions
 
-grant usage on schema auth to viewer; -- TODO: remove viewer
+grant usage on schema auth to viewer;
 grant usage on schema cqrs to viewer;
 grant usage on schema live to bidder;
 grant usage on schema shop to bidder;
