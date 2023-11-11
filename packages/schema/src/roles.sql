@@ -2,7 +2,9 @@
 
 create role anonymous noinherit;
 
-create role buyer in role anonymous;
+create role authenticated in role anonymous;
+
+create role buyer in role authenticated;
 
 create role seller in role buyer;
 
