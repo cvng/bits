@@ -5,7 +5,11 @@ language plpgsql as $$
 declare
   enabled_role auth.role;
 begin
-  select role into strict enabled_role from auth.person where id = user_id;
+  select role into enabled_role from auth.person where id = user_id;
+
+  if not found then
+    enabled_role := 'anonymous'::auth.role;
+  end if;
 
   perform set_config('role', enabled_role::text, true); -- set local role %I
   perform set_config('auth.user', user_id::text, true);

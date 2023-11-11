@@ -5,7 +5,6 @@ type Auction {
   showId: String!
   productId: String!
   startedAt: String
-  expiredAt: String
   bid(filters: BidFilterInput, orderBy: BidOrderInput, pagination: PaginationInput): BidConnection!
   product: Product
   show: Show
@@ -30,7 +29,6 @@ input AuctionFilterInput {
   showId: TextFilterInput
   productId: TextFilterInput
   startedAt: TextFilterInput
-  expiredAt: TextFilterInput
   and: [AuctionFilterInput!]
   or: [AuctionFilterInput!]
 }
@@ -42,15 +40,13 @@ input AuctionOrderInput {
   showId: OrderByEnum
   productId: OrderByEnum
   startedAt: OrderByEnum
-  expiredAt: OrderByEnum
 }
 
 type Bid {
   id: String!
   created: String!
-  updated: String
   auctionId: String!
-  bidderId: String!
+  buyerId: String!
   concurrentAmount: String!
   amount: String!
   auction: Auction
@@ -72,9 +68,8 @@ type BidEdge {
 input BidFilterInput {
   id: TextFilterInput
   created: TextFilterInput
-  updated: TextFilterInput
   auctionId: TextFilterInput
-  bidderId: TextFilterInput
+  buyerId: TextFilterInput
   concurrentAmount: TextFilterInput
   amount: TextFilterInput
   and: [BidFilterInput!]
@@ -83,16 +78,15 @@ input BidFilterInput {
 
 input BidInput {
   auctionId: ID!
-  bidderId: ID!
+  buyerId: ID!
   amount: Int!
 }
 
 input BidOrderInput {
   id: OrderByEnum
   created: OrderByEnum
-  updated: OrderByEnum
   auctionId: OrderByEnum
-  bidderId: OrderByEnum
+  buyerId: OrderByEnum
   concurrentAmount: OrderByEnum
   amount: OrderByEnum
 }

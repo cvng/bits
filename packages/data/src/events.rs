@@ -38,7 +38,7 @@ pub struct AuctionStarted {
 pub struct BidCreated {
   pub id: BidId,
   pub auction_id: AuctionId,
-  pub bidder_id: PersonId,
+  pub buyer_id: PersonId,
   pub amount: Amount,
 }
 

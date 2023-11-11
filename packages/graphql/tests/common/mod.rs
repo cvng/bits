@@ -14,7 +14,7 @@ use serde::Serialize;
 use std::env;
 use test_context::AsyncTestContext;
 
-const BIDDER_TOKEN: &str = include_str!("token_bidder.txt");
+const BUYER_TOKEN: &str = include_str!("token_buyer.txt");
 const SELLER_TOKEN: &str = include_str!("token_seller.txt");
 
 lazy_static! {
@@ -36,8 +36,8 @@ impl AsyncTestContext for Context {
 pub struct TestToken(pub Token);
 
 impl TestToken {
-  pub fn bidder_token() -> Self {
-    Self(Token(BIDDER_TOKEN.to_string()))
+  pub fn buyer_token() -> Self {
+    Self(Token(BUYER_TOKEN.to_string()))
   }
 
   pub fn seller_token() -> Self {

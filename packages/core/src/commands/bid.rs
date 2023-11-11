@@ -23,7 +23,7 @@ use thiserror::Error;
 #[serde(rename_all = "camelCase")]
 pub struct BidInput {
   pub auction_id: AuctionId,
-  pub bidder_id: PersonId,
+  pub buyer_id: PersonId,
   pub amount: Amount,
 }
 
@@ -35,7 +35,7 @@ impl BidInput {
   pub fn to_input() -> InputObject {
     InputObject::new(Self::type_name())
       .field(InputValue::new("auctionId", TypeRef::named_nn(TypeRef::ID)))
-      .field(InputValue::new("bidderId", TypeRef::named_nn(TypeRef::ID)))
+      .field(InputValue::new("buyerId", TypeRef::named_nn(TypeRef::ID)))
       .field(InputValue::new("amount", TypeRef::named_nn(TypeRef::INT)))
   }
 }
@@ -93,7 +93,7 @@ impl Command for BidCommand {
       data: BidCreated {
         id: BidId::new_v4(),
         auction_id: input.auction_id,
-        bidder_id: input.bidder_id,
+        buyer_id: input.buyer_id,
         amount: input.amount,
       },
     }])
@@ -106,7 +106,7 @@ impl Command for BidCommand {
           id: data.id,
           created: None,
           auction_id: data.auction_id,
-          bidder_id: data.bidder_id,
+          buyer_id: data.buyer_id,
           concurrent_amount: None,
           amount: data.amount,
         },
@@ -130,7 +130,7 @@ pub async fn bid(client: &Client, input: BidInput) -> Result<BidResult, Error> {
 fn test_bid() {
   let input = BidInput {
     auction_id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
-    bidder_id: "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68".parse().unwrap(),
+    buyer_id: "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68".parse().unwrap(),
     amount: 100.into(),
   };
 
@@ -143,7 +143,7 @@ fn test_bid() {
       "data": {
         "id": "[uuid]",
         "auction_id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
-        "bidder_id": "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68",
+        "buyer_id": "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68",
         "amount": "100"
       }
     }

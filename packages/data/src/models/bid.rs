@@ -19,7 +19,7 @@ pub struct Model {
   pub id: Uuid,
   pub created: Option<DateTimeWithTimeZone>,
   pub auction_id: Uuid,
-  pub bidder_id: Uuid,
+  pub buyer_id: Uuid,
   pub concurrent_amount: Option<Decimal>,
   pub amount: Decimal,
 }
@@ -29,7 +29,7 @@ pub enum Column {
   Id,
   Created,
   AuctionId,
-  BidderId,
+  BuyerId,
   ConcurrentAmount,
   Amount,
 }
@@ -59,7 +59,7 @@ impl ColumnTrait for Column {
       Self::Id => ColumnType::Uuid.def(),
       Self::Created => ColumnType::TimestampWithTimeZone.def(),
       Self::AuctionId => ColumnType::Uuid.def(),
-      Self::BidderId => ColumnType::Uuid.def(),
+      Self::BuyerId => ColumnType::Uuid.def(),
       Self::ConcurrentAmount => ColumnType::Decimal(None).def(),
       Self::Amount => ColumnType::Decimal(None).def(),
     }
@@ -74,7 +74,7 @@ impl RelationTrait for Relation {
         .to(super::auction::Column::Id)
         .into(),
       Self::Person => Entity::belongs_to(super::person::Entity)
-        .from(Column::BidderId)
+        .from(Column::BuyerId)
         .to(super::person::Column::Id)
         .into(),
     }
