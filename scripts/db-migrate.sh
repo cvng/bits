@@ -5,7 +5,7 @@ set -eu -o pipefail
 
 source .env
 
-host="$DATABASE_URL"
+host="postgresql://postgres:password@localhost:5432/bits"
 name="bits"
 
 psql "$host" --set=ON_ERROR_STOP=true \
@@ -17,8 +17,14 @@ drop role if exists admin;
 drop role if exists bidder;
 drop role if exists seller;
 drop role if exists viewer;
+drop role if exists authenticator;
 
 create database $name;
 SQL
 
 psql "$host" --set=ON_ERROR_STOP=true --file="packages/schema/src/lib.sql"
+
+psql "$host" --set=ON_ERROR_STOP=true \
+<<SQL
+alter role authenticator with password 'password';
+SQL

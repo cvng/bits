@@ -5,7 +5,8 @@ set -eu -o pipefail
 
 source .env
 
-host="$DATABASE_URL"
+env_host="$DATABASE_URL"
+host="postgres://postgres:password@localhost:5432/bits"
 name="bits"
 file="scripts/data/events.json"
 
@@ -15,16 +16,20 @@ cargo task db-migrate > /dev/null
 
 jq --compact-output ".[]" "$file" | psql "$host" --set=ON_ERROR_STOP=true \
     --command="create table tmp (row jsonb);" \
+    --command="grant all on tmp to public;" \
     --command="\copy tmp (row) from stdin;"
 
 psql "$host" --set=ON_ERROR_STOP=true \
 <<SQL
-set plpgsql.print_strict_params to true;
-
 insert into auth.person (id, email, role)
 values ('00000000-0000-0000-0000-000000000000', 'admin@test.dev', 'admin');
 
 insert into shop.config default values;
+SQL
+
+psql "$env_host" --set=ON_ERROR_STOP=true \
+<<SQL
+set plpgsql.print_strict_params to true;
 
 insert into cqrs.event (user_id, type, data)
 select
@@ -32,8 +37,11 @@ select
     (row->>'type')::cqrs.event_type,
     (row->>'data')::jsonb
 from tmp;
-
-select id, created, type, data->>'id' as data_id from cqrs.event;
 SQL
 
-psql "$host" --set=ON_ERROR_STOP=true --command="drop table tmp;"
+psql "$host" --set=ON_ERROR_STOP=true \
+<<SQL
+select id, created, type, data->>'id' as data_id from cqrs.event;
+
+drop table tmp;
+SQL
