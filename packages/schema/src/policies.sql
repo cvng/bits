@@ -75,7 +75,7 @@ create policy bid_select_policy on shop.bid
 for select to anonymous using (true);
 
 create policy bid_insert_policy on shop.bid
-for insert to buyer with check (bidder_id = auth.user());
+for insert to buyer with check (buyer_id = auth.user());
 
 -- Table: shop.config
 

@@ -57,7 +57,7 @@ create view public.bid with (security_invoker = true) as (
     id,
     created,
     auction_id,
-    bidder_id,
+    buyer_id,
     concurrent_amount,
     amount
   from shop.bid

@@ -30,7 +30,7 @@ create type cqrs.auction_started as (
 create type cqrs.bid_created as (
   id id,
   auction_id id,
-  bidder_id id,
+  buyer_id id,
   amount amount
 );
 
