@@ -31,12 +31,17 @@ psql "$env_host" --set=ON_ERROR_STOP=true \
 <<SQL
 set plpgsql.print_strict_params to true;
 
+
+do \$$ declare event jsonb; begin for event in select row from tmp loop
+perform auth.login((event->>'user_id')::id);
+
 insert into cqrs.event (user_id, type, data)
-select
-    (row->>'user_id')::id,
-    (row->>'type')::cqrs.event_type,
-    (row->>'data')::jsonb
-from tmp;
+values (
+    (event->>'user_id')::id,
+    (event->>'type')::cqrs.event_type,
+    (event->>'data')::jsonb
+);
+end loop; end; \$$;
 SQL
 
 psql "$host" --set=ON_ERROR_STOP=true \
