@@ -5,6 +5,7 @@ language plpgsql as $$
 declare
   bid shop.bid;
   session shop.auction_session;
+  new_expires_at timestamptz;
 begin
   select * into strict session
   from shop.auction_session where auction_id = event.auction_id;
@@ -27,10 +28,16 @@ begin
   )
   returning * into strict bid;
 
+  if session.expires_at - bid.created < session.refresh_secs then
+    new_expires_at := session.expires_at + session.refresh_secs;
+  else
+    new_expires_at := session.expires_at;
+  end if;
+
   update shop.auction_session
   set
     max_amount = bid.amount,
-    expires_at = session.expires_at + session.refresh_secs
+    expires_at = new_expires_at
   where id = session.id
   returning id into strict session;
 end; $$;
