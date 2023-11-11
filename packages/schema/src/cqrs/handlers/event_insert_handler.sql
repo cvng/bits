@@ -3,8 +3,6 @@
 create function cqrs.event_insert_handler(event cqrs.event) returns void
 language plpgsql as $$
 begin
-  perform auth.login(event.user_id);
-
   case event.type
     when 'auction_created' then
       perform cqrs.auction_created_handler(
