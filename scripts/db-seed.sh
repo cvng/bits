@@ -31,7 +31,6 @@ psql "$env_host" --set=ON_ERROR_STOP=true \
 <<SQL
 set plpgsql.print_strict_params to true;
 
-
 do \$$ declare event jsonb; begin for event in select row from tmp loop
 perform auth.login((event->>'user_id')::id);
 
