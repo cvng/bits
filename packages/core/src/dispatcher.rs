@@ -13,6 +13,9 @@ use serde_json::to_string;
 use sqlx::error::DatabaseError;
 use thiserror::Error;
 
+const AUTH_LOGIN_QUERY: &str = "
+  select auth.login($1::id)";
+
 const CQRS_EVENT_QUERY: &str = "
   insert into cqrs.event (user_id, type, data)
   values ($1::id, $2::cqrs.event_type, $3::jsonb)";
@@ -54,6 +57,14 @@ pub async fn dispatch(
     let event_type = event.get("type").unwrap().as_str().unwrap();
     let event_data =
       to_string(event.get("data").unwrap().as_object().unwrap()).unwrap();
+
+    txn
+      .execute(Statement::from_sql_and_values(
+        DatabaseBackend::Postgres,
+        AUTH_LOGIN_QUERY,
+        [user_id.into()],
+      ))
+      .await?;
 
     txn
       .execute(Statement::from_sql_and_values(

@@ -13,6 +13,6 @@
 
 -- Postlude
 
+\include_relative views.sql
 \include_relative permissions.sql
 \include_relative policies.sql
-\include_relative views.sql

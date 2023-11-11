@@ -13,7 +13,7 @@ begin
   insert into shop.bid (
     id,
     auction_id,
-    bidder_id,
+    buyer_id,
     amount,
     concurrent_amount,
     auction_expires_at
@@ -21,7 +21,7 @@ begin
   values (
     event.id,
     event.auction_id,
-    event.bidder_id,
+    event.buyer_id,
     event.amount,
     session.max_amount,
     session.expires_at

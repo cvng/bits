@@ -50,9 +50,9 @@ CREATE SCHEMA shop;
 
 CREATE TYPE auth.role AS ENUM (
     'admin',
-    'bidder',
+    'buyer',
     'seller',
-    'viewer'
+    'anonymous'
 );
 
 
@@ -97,7 +97,7 @@ CREATE DOMAIN public.amount AS numeric;
 CREATE TYPE cqrs.bid_created AS (
 	id public.id,
 	auction_id public.id,
-	bidder_id public.id,
+	buyer_id public.id,
 	amount public.amount
 );
 
@@ -192,10 +192,23 @@ declare
 begin
   select role into strict enabled_role from auth.person where id = user_id;
 
-  perform set_config('role', enabled_role::text, true);
+  perform set_config('role', enabled_role::text, true); -- set local role %I
   perform set_config('auth.user', user_id::text, true);
 
   return auth.role();
+end; $$;
+
+
+--
+-- Name: logout(); Type: FUNCTION; Schema: auth; Owner: -
+--
+
+CREATE FUNCTION auth.logout() RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+begin
+  reset "role";
+  reset "auth.user";
 end; $$;
 
 
@@ -207,7 +220,7 @@ CREATE FUNCTION auth.role() RETURNS auth.role
     LANGUAGE plpgsql
     AS $$
 begin
-  return (current_setting('role'))::auth.role;
+  return current_setting('role')::auth.role;
 end; $$;
 
 
@@ -219,7 +232,7 @@ CREATE FUNCTION auth."user"() RETURNS public.id
     LANGUAGE plpgsql
     AS $$
 begin
-  return (current_setting('auth.user'))::id;
+  return current_setting('auth.user')::id;
 end; $$;
 
 
@@ -293,6 +306,7 @@ CREATE FUNCTION cqrs.bid_created_handler(event cqrs.bid_created) RETURNS void
 declare
   bid shop.bid;
   session shop.auction_session;
+  new_expires_at timestamptz;
 begin
   select * into strict session
   from shop.auction_session where auction_id = event.auction_id;
@@ -300,22 +314,31 @@ begin
   insert into shop.bid (
     id,
     auction_id,
-    bidder_id,
+    buyer_id,
     amount,
-    concurrent_amount
+    concurrent_amount,
+    auction_expires_at
   )
   values (
     event.id,
     event.auction_id,
-    event.bidder_id,
+    event.buyer_id,
     event.amount,
-    session.max_amount
+    session.max_amount,
+    session.expires_at
   )
   returning * into strict bid;
 
-  update shop.auction_session set
+  if session.expires_at - bid.created < session.refresh_secs then
+    new_expires_at := session.expires_at + session.refresh_secs;
+  else
+    new_expires_at := session.expires_at;
+  end if;
+
+  update shop.auction_session
+  set
     max_amount = bid.amount,
-    expires_at = session.expires_at + session.refresh_secs
+    expires_at = new_expires_at
   where id = session.id
   returning id into strict session;
 end; $$;
@@ -359,8 +382,6 @@ CREATE FUNCTION cqrs.event_insert_handler(event cqrs.event) RETURNS void
     LANGUAGE plpgsql
     AS $$
 begin
-  perform auth.login(event.user_id);
-
   case event.type
     when 'auction_created' then
       perform cqrs.auction_created_handler(
@@ -530,7 +551,7 @@ CREATE TABLE auth.person (
     created timestamp with time zone DEFAULT clock_timestamp() NOT NULL,
     updated timestamp with time zone,
     email public.email NOT NULL,
-    role auth.role DEFAULT 'viewer'::auth.role NOT NULL
+    role auth.role DEFAULT 'anonymous'::auth.role NOT NULL
 );
 
 
@@ -613,11 +634,12 @@ CREATE VIEW public.auction WITH (security_invoker='true') AS
 CREATE TABLE shop.bid (
     id public.id NOT NULL,
     created timestamp with time zone DEFAULT clock_timestamp() NOT NULL,
-    updated timestamp with time zone,
     auction_id public.id NOT NULL,
-    bidder_id public.id NOT NULL,
+    buyer_id public.id NOT NULL,
     amount public.amount NOT NULL,
     concurrent_amount public.amount NOT NULL,
+    auction_expires_at timestamp with time zone NOT NULL,
+    CONSTRAINT bid_auction_expires_at_check CHECK ((created < auction_expires_at)),
     CONSTRAINT bid_concurrent_amount_check CHECK (((amount)::numeric > (concurrent_amount)::numeric))
 );
 
@@ -629,9 +651,8 @@ CREATE TABLE shop.bid (
 CREATE VIEW public.bid WITH (security_invoker='true') AS
  SELECT bid.id,
     bid.created,
-    bid.updated,
     bid.auction_id,
-    bid.bidder_id,
+    bid.buyer_id,
     bid.concurrent_amount,
     bid.amount
    FROM shop.bid;
@@ -870,11 +891,11 @@ ALTER TABLE ONLY shop.bid
 
 
 --
--- Name: bid bid_bidder_id_fkey; Type: FK CONSTRAINT; Schema: shop; Owner: -
+-- Name: bid bid_buyer_id_fkey; Type: FK CONSTRAINT; Schema: shop; Owner: -
 --
 
 ALTER TABLE ONLY shop.bid
-    ADD CONSTRAINT bid_bidder_id_fkey FOREIGN KEY (bidder_id) REFERENCES auth.person(id);
+    ADD CONSTRAINT bid_buyer_id_fkey FOREIGN KEY (buyer_id) REFERENCES auth.person(id);
 
 
 --
@@ -902,7 +923,7 @@ CREATE POLICY person_insert_policy ON auth.person FOR INSERT TO admin WITH CHECK
 -- Name: person person_select_policy; Type: POLICY; Schema: auth; Owner: -
 --
 
-CREATE POLICY person_select_policy ON auth.person FOR SELECT TO viewer USING (true);
+CREATE POLICY person_select_policy ON auth.person FOR SELECT TO anonymous USING (true);
 
 
 --
@@ -915,7 +936,7 @@ ALTER TABLE cqrs.event ENABLE ROW LEVEL SECURITY;
 -- Name: event event_insert_policy; Type: POLICY; Schema: cqrs; Owner: -
 --
 
-CREATE POLICY event_insert_policy ON cqrs.event FOR INSERT TO viewer WITH CHECK (((user_id)::uuid = (auth."user"())::uuid));
+CREATE POLICY event_insert_policy ON cqrs.event FOR INSERT TO anonymous WITH CHECK (true);
 
 
 --
@@ -935,14 +956,14 @@ ALTER TABLE live.comment ENABLE ROW LEVEL SECURITY;
 -- Name: comment comment_insert_policy; Type: POLICY; Schema: live; Owner: -
 --
 
-CREATE POLICY comment_insert_policy ON live.comment FOR INSERT TO bidder WITH CHECK (((author_id)::uuid = (auth."user"())::uuid));
+CREATE POLICY comment_insert_policy ON live.comment FOR INSERT TO buyer WITH CHECK (((author_id)::uuid = (auth."user"())::uuid));
 
 
 --
 -- Name: comment comment_select_policy; Type: POLICY; Schema: live; Owner: -
 --
 
-CREATE POLICY comment_select_policy ON live.comment FOR SELECT TO viewer USING (true);
+CREATE POLICY comment_select_policy ON live.comment FOR SELECT TO anonymous USING (true);
 
 
 --
@@ -962,7 +983,7 @@ CREATE POLICY show_insert_policy ON live.show FOR INSERT TO seller WITH CHECK ((
 -- Name: show show_select_policy; Type: POLICY; Schema: live; Owner: -
 --
 
-CREATE POLICY show_select_policy ON live.show FOR SELECT TO viewer USING (true);
+CREATE POLICY show_select_policy ON live.show FOR SELECT TO anonymous USING (true);
 
 
 --
@@ -993,7 +1014,7 @@ CREATE POLICY auction_insert_policy ON shop.auction FOR INSERT TO seller WITH CH
 -- Name: auction auction_select_policy; Type: POLICY; Schema: shop; Owner: -
 --
 
-CREATE POLICY auction_select_policy ON shop.auction FOR SELECT TO viewer USING (true);
+CREATE POLICY auction_select_policy ON shop.auction FOR SELECT TO anonymous USING (true);
 
 
 --
@@ -1017,14 +1038,14 @@ CREATE POLICY auction_session_insert_policy ON shop.auction_session FOR INSERT T
 -- Name: auction_session auction_session_select_policy; Type: POLICY; Schema: shop; Owner: -
 --
 
-CREATE POLICY auction_session_select_policy ON shop.auction_session FOR SELECT TO viewer USING (true);
+CREATE POLICY auction_session_select_policy ON shop.auction_session FOR SELECT TO anonymous USING (true);
 
 
 --
 -- Name: auction_session auction_session_update_policy; Type: POLICY; Schema: shop; Owner: -
 --
 
-CREATE POLICY auction_session_update_policy ON shop.auction_session FOR UPDATE TO bidder USING (true);
+CREATE POLICY auction_session_update_policy ON shop.auction_session FOR UPDATE TO buyer USING (true);
 
 
 --
@@ -1048,14 +1069,14 @@ ALTER TABLE shop.bid ENABLE ROW LEVEL SECURITY;
 -- Name: bid bid_insert_policy; Type: POLICY; Schema: shop; Owner: -
 --
 
-CREATE POLICY bid_insert_policy ON shop.bid FOR INSERT TO bidder WITH CHECK (((bidder_id)::uuid = (auth."user"())::uuid));
+CREATE POLICY bid_insert_policy ON shop.bid FOR INSERT TO buyer WITH CHECK (((buyer_id)::uuid = (auth."user"())::uuid));
 
 
 --
 -- Name: bid bid_select_policy; Type: POLICY; Schema: shop; Owner: -
 --
 
-CREATE POLICY bid_select_policy ON shop.bid FOR SELECT TO viewer USING (true);
+CREATE POLICY bid_select_policy ON shop.bid FOR SELECT TO anonymous USING (true);
 
 
 --
@@ -1088,42 +1109,42 @@ CREATE POLICY product_insert_policy ON shop.product FOR INSERT TO seller WITH CH
 -- Name: product product_select_policy; Type: POLICY; Schema: shop; Owner: -
 --
 
-CREATE POLICY product_select_policy ON shop.product FOR SELECT TO viewer USING (true);
+CREATE POLICY product_select_policy ON shop.product FOR SELECT TO anonymous USING (true);
 
 
 --
 -- Name: SCHEMA auth; Type: ACL; Schema: -; Owner: -
 --
 
-GRANT USAGE ON SCHEMA auth TO viewer;
+GRANT USAGE ON SCHEMA auth TO anonymous;
 
 
 --
 -- Name: SCHEMA cqrs; Type: ACL; Schema: -; Owner: -
 --
 
-GRANT USAGE ON SCHEMA cqrs TO viewer;
+GRANT USAGE ON SCHEMA cqrs TO anonymous;
 
 
 --
 -- Name: SCHEMA live; Type: ACL; Schema: -; Owner: -
 --
 
-GRANT USAGE ON SCHEMA live TO bidder;
+GRANT USAGE ON SCHEMA live TO buyer;
 
 
 --
 -- Name: SCHEMA shop; Type: ACL; Schema: -; Owner: -
 --
 
-GRANT USAGE ON SCHEMA shop TO bidder;
+GRANT USAGE ON SCHEMA shop TO buyer;
 
 
 --
 -- Name: TABLE event; Type: ACL; Schema: cqrs; Owner: -
 --
 
-GRANT SELECT,INSERT ON TABLE cqrs.event TO viewer;
+GRANT SELECT,INSERT ON TABLE cqrs.event TO anonymous;
 
 
 --
@@ -1137,7 +1158,7 @@ GRANT SELECT ON TABLE shop.config TO seller;
 -- Name: TABLE person; Type: ACL; Schema: auth; Owner: -
 --
 
-GRANT SELECT ON TABLE auth.person TO viewer;
+GRANT SELECT ON TABLE auth.person TO anonymous;
 GRANT INSERT ON TABLE auth.person TO admin;
 
 
@@ -1145,15 +1166,15 @@ GRANT INSERT ON TABLE auth.person TO admin;
 -- Name: TABLE comment; Type: ACL; Schema: live; Owner: -
 --
 
-GRANT SELECT ON TABLE live.comment TO viewer;
-GRANT INSERT ON TABLE live.comment TO bidder;
+GRANT SELECT ON TABLE live.comment TO anonymous;
+GRANT INSERT ON TABLE live.comment TO buyer;
 
 
 --
 -- Name: TABLE show; Type: ACL; Schema: live; Owner: -
 --
 
-GRANT SELECT ON TABLE live.show TO viewer;
+GRANT SELECT ON TABLE live.show TO anonymous;
 GRANT INSERT,UPDATE ON TABLE live.show TO seller;
 
 
@@ -1161,23 +1182,30 @@ GRANT INSERT,UPDATE ON TABLE live.show TO seller;
 -- Name: TABLE auction; Type: ACL; Schema: shop; Owner: -
 --
 
-GRANT SELECT ON TABLE shop.auction TO viewer;
+GRANT SELECT ON TABLE shop.auction TO anonymous;
 GRANT INSERT,UPDATE ON TABLE shop.auction TO seller;
+
+
+--
+-- Name: TABLE auction; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT ON TABLE public.auction TO anonymous;
 
 
 --
 -- Name: TABLE bid; Type: ACL; Schema: shop; Owner: -
 --
 
-GRANT SELECT ON TABLE shop.bid TO viewer;
-GRANT INSERT ON TABLE shop.bid TO bidder;
+GRANT SELECT ON TABLE shop.bid TO anonymous;
+GRANT INSERT ON TABLE shop.bid TO buyer;
 
 
 --
 -- Name: TABLE product; Type: ACL; Schema: shop; Owner: -
 --
 
-GRANT SELECT ON TABLE shop.product TO viewer;
+GRANT SELECT ON TABLE shop.product TO anonymous;
 GRANT INSERT ON TABLE shop.product TO seller;
 
 
@@ -1185,7 +1213,7 @@ GRANT INSERT ON TABLE shop.product TO seller;
 -- Name: TABLE auction_session; Type: ACL; Schema: shop; Owner: -
 --
 
-GRANT SELECT,UPDATE ON TABLE shop.auction_session TO bidder;
+GRANT SELECT,UPDATE ON TABLE shop.auction_session TO buyer;
 GRANT INSERT ON TABLE shop.auction_session TO seller;
 
 

@@ -2,14 +2,14 @@ mutation BidMutation {
   bid(
     input: {
       auctionId: "00000000-0000-0000-0000-000000000000"
-      bidderId: "00000000-2000-0000-0000-000000000000"
+      buyerId: "00000000-2000-0000-0000-000000000000"
       amount: 500
     }
   ) {
     bid {
       id
       auctionId
-      bidderId
+      buyerId
       amount
     }
   }

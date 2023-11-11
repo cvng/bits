@@ -22,7 +22,7 @@ async fn test_bid_mutation(ctx: &mut Context) {
   let response = execute(
     ctx,
     BidMutation::build_query(bid_mutation::Variables {}),
-    Some(TestToken::bidder_token()),
+    Some(TestToken::buyer_token()),
   )
   .await
   .unwrap();
