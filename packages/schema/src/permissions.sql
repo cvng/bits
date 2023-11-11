@@ -54,9 +54,4 @@ grant insert on shop.product to seller;
 
 -- Views
 
-grant select on public.person to anonymous;
-grant select on public.show to anonymous;
-grant select on public.comment to anonymous;
-grant select on public.product to anonymous;
-grant select on public.auction to anonymous;
-grant select on public.bid to anonymous;
+grant select on all tables in schema public to anonymous;
