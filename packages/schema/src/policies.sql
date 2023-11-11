@@ -14,7 +14,7 @@ create policy event_select_policy on cqrs.event
 for select to admin using (true);
 
 create policy event_insert_policy on cqrs.event
-for insert to anonymous with check (true);
+for insert to anonymous with check (user_id = auth.user());
 
 -- Table: live.comment
 
