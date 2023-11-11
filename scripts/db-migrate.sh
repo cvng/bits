@@ -18,6 +18,7 @@ drop role if exists buyer;
 drop role if exists seller;
 drop role if exists anonymous;
 drop role if exists authenticator;
+drop role if exists authenticated;
 
 create database $name;
 SQL
