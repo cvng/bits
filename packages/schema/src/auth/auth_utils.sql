@@ -7,12 +7,12 @@ declare
 begin
   select role into enabled_role from auth.person where id = user_id;
 
-  if not found then
-    enabled_role := 'anonymous'::auth.role;
+  if enabled_role is not null then
+    perform set_config('role', enabled_role::text, true); -- set local role %I
+    perform set_config('auth.user', user_id::text, true);
+  else
+    perform set_config('role', 'anonymous'::auth.role::text, true);
   end if;
-
-  perform set_config('role', enabled_role::text, true); -- set local role %I
-  perform set_config('auth.user', user_id::text, true);
 
   return auth.role();
 end; $$;
