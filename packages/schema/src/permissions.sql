@@ -51,3 +51,7 @@ grant select on shop.config to seller;
 
 grant select on shop.product to viewer;
 grant insert on shop.product to seller;
+
+-- Views
+
+grant select on public.auction to public;
