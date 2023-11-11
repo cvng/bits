@@ -14,9 +14,9 @@ psql "$host" --set=ON_ERROR_STOP=true \
 
 drop database if exists $name with (force);
 drop role if exists admin;
-drop role if exists bidder;
+drop role if exists buyer;
 drop role if exists seller;
-drop role if exists viewer;
+drop role if exists anonymous;
 drop role if exists authenticator;
 
 create database $name;

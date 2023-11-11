@@ -54,8 +54,8 @@
     "type": "person_created",
     "data": {
       "id": "00000000-2000-0000-0000-000000000000",
-      "email": "bidder@test.dev",
-      "role": "bidder"
+      "email": "buyer@test.dev",
+      "role": "buyer"
     }
   },
   {
