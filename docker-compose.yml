@@ -3,11 +3,12 @@
  version: "3.6"
 
  services:
-   # https://github.com/docker-library/docs/blob/master/postgres
-   postgres:
-     image: postgres:15
-     restart: always
-     ports:
-     - "5432:5432"
-     environment:
-       POSTGRES_PASSWORD: password
+  # https://github.com/docker-library/docs/blob/master/postgres
+  postgres:
+    build:
+      context: "."
+      dockerfile: "Dockerfile"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: "password"
