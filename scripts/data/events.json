@@ -3,7 +3,8 @@
     "user_id": "00000000-0000-0000-0000-000000000000",
     "type": "config_updated",
     "data": {
-      "auction_timeout_secs": 30
+      "auction_timeout_secs": 60,
+      "auction_refresh_secs": 15
     }
   },
   {
