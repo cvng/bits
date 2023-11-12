@@ -1,8 +1,8 @@
-mod common;
+mod utils;
 
-use crate::common::execute;
-use crate::common::Context;
-use crate::common::TestToken;
+use crate::utils::execute;
+use crate::utils::Context;
+use crate::utils::TestToken;
 use graphql_client::GraphQLQuery;
 #[cfg(test)]
 use insta::assert_json_snapshot;

@@ -1,14 +1,14 @@
 ---
-source: packages/graphql/tests/graphql_test.rs
+source: packages/graphql/tests/integrations_tests.rs
 expression: response
 ---
 {
   "data": {
-    "createProduct": {
-      "product": {
+    "createShow": {
+      "show": {
         "id": "[uuid]",
         "creatorId": "00000000-3000-0000-0000-000000000000",
-        "name": "Product Name"
+        "name": "Show Name"
       }
     }
   }
