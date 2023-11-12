@@ -37,6 +37,7 @@ create view public.product with (security_invoker = true) as (
     id,
     created,
     updated,
+    creator_id,
     name
   from shop.product
 );
