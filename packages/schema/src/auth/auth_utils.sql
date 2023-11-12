@@ -27,7 +27,7 @@ end; $$;
 
 -- Util: auth.user()
 
-create function auth.user() returns text -- TODO: uuid (option<id>)
+create function auth.user() returns uuid
 language plpgsql as $$
 begin
   begin return current_setting('auth.user')::text; -- TODO: ::id;
