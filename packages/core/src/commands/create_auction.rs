@@ -1,5 +1,5 @@
-use super::Command;
-use crate::dispatcher;
+use crate::command::Command;
+use crate::dispatcher::DispatchError;
 use crate::Client;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
@@ -8,6 +8,8 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
+use bits_data::auction;
+use bits_data::sea_orm::EntityTrait;
 use bits_data::Auction;
 use bits_data::AuctionCreated;
 use bits_data::AuctionId;
@@ -18,7 +20,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateAuctionInput {
   pub show_id: ShowId,
@@ -69,22 +71,29 @@ impl CreateAuctionResult {
 
 #[derive(Debug, Error)]
 pub enum Error {
-  #[error("auction not created")]
-  NotCreated,
+  #[error("internal: db error")]
+  Dx(#[from] DispatchError),
+  #[error("auction {0:?} not found")]
+  NotFound(AuctionId),
 }
 
-pub struct CreateAuctionCommand {}
+pub struct CreateAuctionCommand<'a> {
+  client: &'a Client,
+}
 
-impl Command for CreateAuctionCommand {
+impl<'a> Command for CreateAuctionCommand<'a> {
   type Error = Error;
-  type Event = Event;
   type Input = CreateAuctionInput;
   type Result = CreateAuctionResult;
 
-  fn handle(
+  fn client(&self) -> &Client {
+    self.client
+  }
+
+  async fn handle(
     &self,
     input: Self::Input,
-  ) -> Result<Vec<Self::Event>, Self::Error> {
+  ) -> Result<Vec<Event>, Self::Error> {
     Ok(vec![Event::AuctionCreated {
       data: AuctionCreated {
         id: AuctionId::new_v4(),
@@ -94,20 +103,26 @@ impl Command for CreateAuctionCommand {
     }])
   }
 
-  fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
-    events.iter().fold(None, |_, event| match event {
-      Event::AuctionCreated { data, .. } => Some(CreateAuctionResult {
-        auction: Auction {
-          id: data.id,
-          created: None,
-          updated: None,
-          show_id: data.show_id,
-          product_id: data.product_id,
-          started_at: None,
-        },
-      }),
-      _ => None,
-    })
+  async fn apply(
+    &self,
+    _input: Self::Input,
+    events: Vec<Event>,
+  ) -> Result<Self::Result, Self::Error> {
+    let auction_id = events
+      .iter()
+      .find_map(|event| match event {
+        Event::AuctionCreated { data, .. } => Some(data.id),
+        _ => None,
+      })
+      .unwrap();
+
+    let auction = auction::Entity::find_by_id(auction_id)
+      .one(&self.client.connection)
+      .await
+      .map_err(DispatchError::Database)?
+      .ok_or(Error::NotFound(auction_id))?;
+
+    Ok(Self::Result { auction })
   }
 }
 
@@ -115,11 +130,5 @@ pub async fn create_auction(
   client: &Client,
   input: CreateAuctionInput,
 ) -> Result<CreateAuctionResult, Error> {
-  let events = CreateAuctionCommand {}.handle(input)?;
-
-  dispatcher::dispatch(client, events)
-    .await
-    .map(CreateAuctionCommand::apply)
-    .map_err(|_| Error::NotCreated)?
-    .ok_or(Error::NotCreated)
+  CreateAuctionCommand { client }.run(input).await
 }
