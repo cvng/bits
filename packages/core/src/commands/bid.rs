@@ -1,5 +1,5 @@
 use crate::command::Command;
-use crate::dispatcher::DispatchError;
+use crate::dispatcher::InternalError;
 use crate::Client;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
@@ -75,7 +75,7 @@ impl BidResult {
 #[derive(Debug, Error)]
 pub enum Error {
   #[error("internal: db error")]
-  Dx(#[from] DispatchError),
+  Internal(#[from] InternalError),
   #[error("bid {0:?} not found")]
   NotFound(BidId),
 }
@@ -123,7 +123,7 @@ impl<'a> Command for BidCommand<'a> {
     let bid = bid::Entity::find_by_id(bid_id)
       .one(&self.client.connection)
       .await
-      .map_err(DispatchError::Database)?
+      .map_err(InternalError::Database)?
       .ok_or(Error::NotFound(bid_id))?;
 
     Ok(Self::Result { bid })

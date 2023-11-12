@@ -27,7 +27,7 @@ pub enum ConstraintError {
 }
 
 #[derive(Debug, Error)]
-pub enum DispatchError {
+pub enum InternalError {
   #[error("database error: {0}")]
   Database(#[from] DbErr),
   #[error("serde error: {0}")]
@@ -41,7 +41,7 @@ pub enum DispatchError {
 pub async fn dispatch(
   client: &Client,
   events: Vec<Event>,
-) -> Result<Vec<Event>, DispatchError> {
+) -> Result<Vec<Event>, InternalError> {
   let user_id = client
     .token
     .as_ref()

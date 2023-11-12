@@ -1,5 +1,5 @@
 use crate::command::Command;
-use crate::dispatcher::DispatchError;
+use crate::dispatcher::InternalError;
 use crate::Client;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
@@ -71,7 +71,7 @@ impl CreateShowResult {
 #[derive(Debug, Error)]
 pub enum Error {
   #[error("internal: db error")]
-  Dx(#[from] DispatchError),
+  Internal(#[from] InternalError),
   #[error("show {0:?} not found")]
   NotFound(ShowId),
 }
@@ -118,7 +118,7 @@ impl<'a> Command for CreateShowCommand<'a> {
     let show = show::Entity::find_by_id(show_id)
       .one(&self.client.connection)
       .await
-      .map_err(DispatchError::Database)?
+      .map_err(InternalError::Database)?
       .ok_or(Error::NotFound(show_id))?;
 
     Ok(Self::Result { show })

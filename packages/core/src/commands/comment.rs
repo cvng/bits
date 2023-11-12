@@ -1,5 +1,5 @@
 use crate::command::Command;
-use crate::dispatcher::DispatchError;
+use crate::dispatcher::InternalError;
 use crate::Client;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
@@ -74,7 +74,7 @@ impl CommentResult {
 #[derive(Debug, Error)]
 pub enum Error {
   #[error("internal: db error")]
-  Dx(#[from] DispatchError),
+  Internal(#[from] InternalError),
   #[error("comment {0:?} not found")]
   NotFound(CommentId),
 }
@@ -122,7 +122,7 @@ impl<'a> Command for CommentCommand<'a> {
     let comment = comment::Entity::find_by_id(comment_id)
       .one(&self.client.connection)
       .await
-      .map_err(DispatchError::Database)?
+      .map_err(InternalError::Database)?
       .ok_or(Error::NotFound(comment_id))?;
 
     Ok(Self::Result { comment })

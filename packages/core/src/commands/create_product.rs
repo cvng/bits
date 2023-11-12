@@ -1,5 +1,5 @@
 use crate::command::Command;
-use crate::dispatcher::DispatchError;
+use crate::dispatcher::InternalError;
 use crate::Client;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
@@ -71,7 +71,7 @@ impl CreateProductResult {
 #[derive(Debug, Error)]
 pub enum Error {
   #[error("internal: db error")]
-  Dx(#[from] DispatchError),
+  Internal(#[from] InternalError),
   #[error("product {0:?} not found")]
   NotFound(ProductId),
 }
@@ -118,7 +118,7 @@ impl<'a> Command for CreateProductCommand<'a> {
     let product = product::Entity::find_by_id(product_id)
       .one(&self.client.connection)
       .await
-      .map_err(DispatchError::Database)?
+      .map_err(InternalError::Database)?
       .ok_or(Error::NotFound(product_id))?;
 
     Ok(Self::Result { product })

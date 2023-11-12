@@ -1,5 +1,5 @@
 use crate::command::Command;
-use crate::dispatcher::DispatchError;
+use crate::dispatcher::InternalError;
 use crate::Client;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
@@ -69,7 +69,7 @@ impl StartResult {
 #[derive(Debug, Error)]
 pub enum Error {
   #[error("internal: db error")]
-  Dx(#[from] DispatchError),
+  Internal(#[from] InternalError),
   #[error("auction {0:?} not found")]
   NotFound(AuctionId),
 }
@@ -94,7 +94,7 @@ impl<'a> Command for StartCommand<'a> {
     let auction = auction::Entity::find_by_id(input.auction_id)
       .one(&self.client.connection)
       .await
-      .map_err(DispatchError::Database)?
+      .map_err(InternalError::Database)?
       .ok_or(Error::NotFound(input.auction_id))?;
 
     Ok(vec![
@@ -119,7 +119,7 @@ impl<'a> Command for StartCommand<'a> {
     let auction = auction::Entity::find_by_id(input.auction_id)
       .one(&self.client.connection)
       .await
-      .map_err(DispatchError::Database)?
+      .map_err(InternalError::Database)?
       .ok_or(Error::NotFound(input.auction_id))?;
 
     Ok(Self::Result { auction })

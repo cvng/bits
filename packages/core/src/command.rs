@@ -1,11 +1,11 @@
 use crate::dispatcher;
-use crate::dispatcher::DispatchError;
+use crate::dispatcher::InternalError;
 use crate::Client;
 use bits_data::Event;
 
 /// Generic async command trait.
 pub trait Command {
-  type Error: From<DispatchError>;
+  type Error: From<InternalError>;
   type Input: Clone;
   type Result;
 
