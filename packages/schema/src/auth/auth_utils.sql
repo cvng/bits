@@ -34,6 +34,14 @@ begin
   exception when undefined_object then return null; end;
 end; $$;
 
+-- Util: auth.admin()
+
+create function auth.admin() returns id
+language plpgsql as $$
+begin
+  return '00000000-0000-0000-0000-000000000000'::id;
+end; $$;
+
 -- Util: auth.logout()
 
 create function auth.logout() returns void
