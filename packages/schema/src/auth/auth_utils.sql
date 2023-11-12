@@ -30,7 +30,7 @@ end; $$;
 create function auth.user() returns uuid
 language plpgsql as $$
 begin
-  begin return current_setting('auth.user')::text; -- TODO: ::id;
+  begin return current_setting('auth.user')::id;
   exception when undefined_object then return null; end;
 end; $$;
 
