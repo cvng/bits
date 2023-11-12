@@ -31,6 +31,7 @@ impl CreateProductInput {
 
   pub fn to_input() -> InputObject {
     InputObject::new(Self::type_name())
+      .field(InputValue::new("creatorId", TypeRef::named_nn(TypeRef::ID)))
       .field(InputValue::new("name", TypeRef::named_nn(TypeRef::STRING)))
   }
 }
@@ -119,27 +120,4 @@ pub async fn create_product(
     .map(CreateProductCommand::apply)
     .map_err(|_| Error::NotCreated)?
     .ok_or(Error::NotCreated)
-}
-
-#[test]
-fn test_create_product() {
-  let input = CreateProductInput {
-    creator_id: "abbba031-f122-42b8-b6ff-585ad245aadd".parse().unwrap(),
-    name: "name".to_string(),
-  };
-
-  let events = CreateProductCommand {}.handle(input).unwrap();
-
-  insta::assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" },  @r###"
-  [
-    {
-      "type": "product_created",
-      "data": {
-        "id": "[uuid]",
-        "creator_id": "abbba031-f122-42b8-b6ff-585ad245aadd",
-        "name": "name"
-      }
-    }
-  ]
-  "###);
 }

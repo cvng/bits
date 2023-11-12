@@ -123,26 +123,3 @@ pub async fn create_show(
     .map_err(|_| Error::NotCreated)?
     .ok_or(Error::NotCreated)
 }
-
-#[test]
-fn test_show() {
-  let input = CreateShowInput {
-    creator_id: "d9bd7c14-d793-47f3-a644-f97921c862ed".parse().unwrap(),
-    name: "name".to_string(),
-  };
-
-  let events = CreateShowCommand {}.handle(input).unwrap();
-
-  insta::assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
-  [
-    {
-      "type": "show_created",
-      "data": {
-        "id": "[uuid]",
-        "creator_id": "d9bd7c14-d793-47f3-a644-f97921c862ed",
-        "name": "name"
-      }
-    }
-  ]
-  "###);
-}

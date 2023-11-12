@@ -1,5 +1,5 @@
 ---
-source: packages/graphql/tests/graphql_test.rs
+source: packages/graphql/tests/integrations_tests.rs
 expression: response
 ---
 {

@@ -125,28 +125,3 @@ pub async fn bid(client: &Client, input: BidInput) -> Result<BidResult, Error> {
     .map_err(|_| Error::NotCreated)?
     .ok_or(Error::NotCreated)
 }
-
-#[test]
-fn test_bid() {
-  let input = BidInput {
-    auction_id: "f7223b3f-4045-4ef2-a8c3-058e1f742f2e".parse().unwrap(),
-    buyer_id: "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68".parse().unwrap(),
-    amount: 100.into(),
-  };
-
-  let events = BidCommand {}.handle(input).unwrap();
-
-  insta::assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
-  [
-    {
-      "type": "bid_created",
-      "data": {
-        "id": "[uuid]",
-        "auction_id": "f7223b3f-4045-4ef2-a8c3-058e1f742f2e",
-        "buyer_id": "0a0ccd87-2c7e-4dd6-b7d9-51d5a41c9c68",
-        "amount": "100"
-      }
-    }
-  ]
-  "###);
-}

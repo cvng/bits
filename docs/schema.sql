@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.4 (Debian 15.4-2.pgdg120+1)
--- Dumped by pg_dump version 15.4 (Homebrew)
+-- Dumped from database version 16.0 (Debian 16.0-1.pgdg120+1)
+-- Dumped by pg_dump version 16.1 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -28,6 +28,27 @@ CREATE SCHEMA auth;
 --
 
 CREATE SCHEMA cqrs;
+
+
+--
+-- Name: pg_cron; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pg_cron WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION pg_cron; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pg_cron IS 'Job scheduler for PostgreSQL';
+
+
+--
+-- Name: jobs; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA jobs;
 
 
 --
@@ -60,7 +81,8 @@ CREATE TYPE auth.role AS ENUM (
 -- Name: id; Type: DOMAIN; Schema: public; Owner: -
 --
 
-CREATE DOMAIN public.id AS uuid;
+CREATE DOMAIN public.id AS uuid
+	CONSTRAINT id_check CHECK ((VALUE IS NOT NULL));
 
 
 --
@@ -71,6 +93,16 @@ CREATE TYPE cqrs.auction_created AS (
 	id public.id,
 	show_id public.id,
 	product_id public.id
+);
+
+
+--
+-- Name: auction_expired; Type: TYPE; Schema: cqrs; Owner: -
+--
+
+CREATE TYPE cqrs.auction_expired AS (
+	id public.id,
+	expired_at timestamp with time zone
 );
 
 
@@ -87,7 +119,8 @@ CREATE TYPE cqrs.auction_started AS (
 -- Name: amount; Type: DOMAIN; Schema: public; Owner: -
 --
 
-CREATE DOMAIN public.amount AS numeric;
+CREATE DOMAIN public.amount AS numeric
+	CONSTRAINT amount_check CHECK ((VALUE >= (0)::numeric));
 
 
 --
@@ -115,14 +148,26 @@ CREATE TYPE cqrs.comment_created AS (
 
 
 --
+-- Name: config_updated; Type: TYPE; Schema: cqrs; Owner: -
+--
+
+CREATE TYPE cqrs.config_updated AS (
+	auction_timeout_secs interval,
+	auction_refresh_secs interval
+);
+
+
+--
 -- Name: event_type; Type: TYPE; Schema: cqrs; Owner: -
 --
 
 CREATE TYPE cqrs.event_type AS ENUM (
     'auction_created',
+    'auction_expired',
     'auction_started',
     'bid_created',
     'comment_created',
+    'config_updated',
     'person_created',
     'product_created',
     'show_created',
@@ -181,6 +226,18 @@ CREATE TYPE cqrs.show_started AS (
 
 
 --
+-- Name: admin(); Type: FUNCTION; Schema: auth; Owner: -
+--
+
+CREATE FUNCTION auth.admin() RETURNS public.id
+    LANGUAGE plpgsql
+    AS $$
+begin
+  return '00000000-0000-0000-0000-000000000000'::id;
+end; $$;
+
+
+--
 -- Name: login(public.id); Type: FUNCTION; Schema: auth; Owner: -
 --
 
@@ -190,10 +247,14 @@ CREATE FUNCTION auth.login(user_id public.id) RETURNS auth.role
 declare
   enabled_role auth.role;
 begin
-  select role into strict enabled_role from auth.person where id = user_id;
+  select role into enabled_role from auth.person where id = user_id;
 
-  perform set_config('role', enabled_role::text, true); -- set local role %I
-  perform set_config('auth.user', user_id::text, true);
+  if enabled_role is not null then
+    perform set_config('role', enabled_role::text, true); -- set local role %I
+    perform set_config('auth.user', user_id::text, true);
+  else
+    perform set_config('role', 'anonymous'::auth.role::text, true);
+  end if;
 
   return auth.role();
 end; $$;
@@ -228,11 +289,12 @@ end; $$;
 -- Name: user(); Type: FUNCTION; Schema: auth; Owner: -
 --
 
-CREATE FUNCTION auth."user"() RETURNS public.id
+CREATE FUNCTION auth."user"() RETURNS uuid
     LANGUAGE plpgsql
     AS $$
 begin
-  return current_setting('auth.user')::id;
+  begin return current_setting('auth.user')::id;
+  exception when undefined_object then return null; end;
 end; $$;
 
 
@@ -254,6 +316,23 @@ begin
     event.show_id,
     event.product_id
   );
+end; $$;
+
+
+--
+-- Name: auction_expired_handler(cqrs.auction_expired); Type: FUNCTION; Schema: cqrs; Owner: -
+--
+
+CREATE FUNCTION cqrs.auction_expired_handler(event cqrs.auction_expired) RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+declare
+  auction shop.auction;
+begin
+  update shop.auction
+  set expired_at = event.expired_at
+  where id = event.id
+  returning * into strict auction;
 end; $$;
 
 
@@ -292,7 +371,7 @@ begin
    returning * into strict session;
 
   update shop.auction set started_at = session.created
-  where id = event.id returning id into strict auction;
+  where id = event.id returning * into strict auction;
 end; $$;
 
 
@@ -330,7 +409,7 @@ begin
   returning * into strict bid;
 
   if session.expires_at - bid.created < session.refresh_secs then
-    new_expires_at := session.expires_at + session.refresh_secs;
+    new_expires_at := session.created + session.refresh_secs;
   else
     new_expires_at := session.expires_at;
   end if;
@@ -340,7 +419,7 @@ begin
     max_amount = bid.amount,
     expires_at = new_expires_at
   where id = session.id
-  returning id into strict session;
+  returning * into strict session;
 end; $$;
 
 
@@ -354,6 +433,24 @@ CREATE FUNCTION cqrs.comment_created_handler(event cqrs.comment_created) RETURNS
 begin
   insert into live.comment (id, author_id, show_id, text)
   values (event.id, event.author_id, event.show_id, event.text);
+end; $$;
+
+
+--
+-- Name: config_updated_handler(cqrs.config_updated); Type: FUNCTION; Schema: cqrs; Owner: -
+--
+
+CREATE FUNCTION cqrs.config_updated_handler(event cqrs.config_updated) RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+declare
+  config shop.config;
+begin
+  update shop.config
+  set
+    auction_timeout_secs = coalesce(event.auction_timeout_secs, auction_timeout_secs),
+    auction_refresh_secs = coalesce(event.auction_refresh_secs, auction_refresh_secs)
+  returning * into strict config;
 end; $$;
 
 
@@ -387,6 +484,10 @@ begin
       perform cqrs.auction_created_handler(
         jsonb_populate_record(null::cqrs.auction_created, event.data));
 
+   when 'auction_expired' then
+      perform cqrs.auction_expired_handler(
+        jsonb_populate_record(null::cqrs.auction_expired, event.data));
+
    when 'auction_started' then
       perform cqrs.auction_started_handler(
         jsonb_populate_record(null::cqrs.auction_started, event.data));
@@ -398,6 +499,10 @@ begin
     when 'comment_created' then
       perform cqrs.comment_created_handler(
         jsonb_populate_record(null::cqrs.comment_created, event.data));
+
+    when 'config_updated' then
+      perform cqrs.config_updated_handler(
+        jsonb_populate_record(null::cqrs.config_updated, event.data));
 
     when 'person_created' then
       perform cqrs.person_created_handler(
@@ -512,7 +617,48 @@ begin
     started_at = clock_timestamp(),
     started = not started
   where id = event.id
-  returning id into strict show;
+  returning * into strict show;
+end; $$;
+
+
+--
+-- Name: check_expired_auctions(); Type: FUNCTION; Schema: jobs; Owner: -
+--
+
+CREATE FUNCTION jobs.check_expired_auctions() RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+declare
+  expired_auction shop.auction_session;
+begin
+  for expired_auction in
+    select *
+    from shop.auction_session
+    where expires_at < clock_timestamp()
+  loop
+    insert into cqrs.event (user_id, type, data)
+    values (
+      auth.admin(),
+      'auction_expired'::cqrs.event_type,
+      json_build_object(
+        'id', expired_auction.auction_id,
+        'expired_at', expired_auction.expires_at
+      )::jsonb
+    );
+  end loop;
+end; $$;
+
+
+--
+-- Name: schedule(); Type: FUNCTION; Schema: jobs; Owner: -
+--
+
+CREATE FUNCTION jobs.schedule() RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+begin
+  perform cron.schedule(
+    'check-expired-auctions', '2 seconds', 'select jobs.check_expired_auctions()');
 end; $$;
 
 
@@ -609,7 +755,8 @@ CREATE TABLE shop.auction (
     updated timestamp with time zone,
     show_id public.id NOT NULL,
     product_id public.id NOT NULL,
-    started_at timestamp with time zone
+    started_at timestamp with time zone,
+    expired_at timestamp with time zone
 );
 
 
@@ -618,12 +765,13 @@ CREATE TABLE shop.auction (
 --
 
 CREATE VIEW public.auction WITH (security_invoker='true') AS
- SELECT auction.id,
-    auction.created,
-    auction.updated,
-    auction.show_id,
-    auction.product_id,
-    auction.started_at
+ SELECT id,
+    created,
+    updated,
+    show_id,
+    product_id,
+    started_at,
+    expired_at
    FROM shop.auction;
 
 
@@ -649,12 +797,12 @@ CREATE TABLE shop.bid (
 --
 
 CREATE VIEW public.bid WITH (security_invoker='true') AS
- SELECT bid.id,
-    bid.created,
-    bid.auction_id,
-    bid.buyer_id,
-    bid.concurrent_amount,
-    bid.amount
+ SELECT id,
+    created,
+    auction_id,
+    buyer_id,
+    concurrent_amount,
+    amount
    FROM shop.bid;
 
 
@@ -663,12 +811,12 @@ CREATE VIEW public.bid WITH (security_invoker='true') AS
 --
 
 CREATE VIEW public.comment WITH (security_invoker='true') AS
- SELECT comment.id,
-    comment.created,
-    comment.updated,
-    comment.author_id,
-    comment.show_id,
-    comment.text
+ SELECT id,
+    created,
+    updated,
+    author_id,
+    show_id,
+    text
    FROM live.comment;
 
 
@@ -677,10 +825,10 @@ CREATE VIEW public.comment WITH (security_invoker='true') AS
 --
 
 CREATE VIEW public.person WITH (security_invoker='true') AS
- SELECT person.id,
-    person.created,
-    person.updated,
-    person.email
+ SELECT id,
+    created,
+    updated,
+    email
    FROM auth.person;
 
 
@@ -702,10 +850,10 @@ CREATE TABLE shop.product (
 --
 
 CREATE VIEW public.product WITH (security_invoker='true') AS
- SELECT product.id,
-    product.created,
-    product.updated,
-    product.name
+ SELECT id,
+    created,
+    updated,
+    name
    FROM shop.product;
 
 
@@ -714,13 +862,13 @@ CREATE VIEW public.product WITH (security_invoker='true') AS
 --
 
 CREATE VIEW public.show WITH (security_invoker='true') AS
- SELECT show.id,
-    show.created,
-    show.updated,
-    show.creator_id,
-    show.name,
-    show.started_at,
-    show.started
+ SELECT id,
+    created,
+    updated,
+    creator_id,
+    name,
+    started_at,
+    started
    FROM live.show;
 
 
@@ -801,6 +949,14 @@ ALTER TABLE ONLY shop.auction_session
 
 ALTER TABLE ONLY shop.auction_session
     ADD CONSTRAINT auction_session_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: auction auction_show_id_product_id_key; Type: CONSTRAINT; Schema: shop; Owner: -
+--
+
+ALTER TABLE ONLY shop.auction
+    ADD CONSTRAINT auction_show_id_product_id_key UNIQUE (show_id, product_id);
 
 
 --
@@ -936,7 +1092,7 @@ ALTER TABLE cqrs.event ENABLE ROW LEVEL SECURITY;
 -- Name: event event_insert_policy; Type: POLICY; Schema: cqrs; Owner: -
 --
 
-CREATE POLICY event_insert_policy ON cqrs.event FOR INSERT TO anonymous WITH CHECK (true);
+CREATE POLICY event_insert_policy ON cqrs.event FOR INSERT TO authenticated WITH CHECK (((user_id)::uuid = auth."user"()));
 
 
 --
@@ -945,6 +1101,32 @@ CREATE POLICY event_insert_policy ON cqrs.event FOR INSERT TO anonymous WITH CHE
 
 CREATE POLICY event_select_policy ON cqrs.event FOR SELECT TO admin USING (true);
 
+
+--
+-- Name: job cron_job_policy; Type: POLICY; Schema: cron; Owner: -
+--
+
+CREATE POLICY cron_job_policy ON cron.job USING ((username = CURRENT_USER));
+
+
+--
+-- Name: job_run_details cron_job_run_details_policy; Type: POLICY; Schema: cron; Owner: -
+--
+
+CREATE POLICY cron_job_run_details_policy ON cron.job_run_details USING ((username = CURRENT_USER));
+
+
+--
+-- Name: job; Type: ROW SECURITY; Schema: cron; Owner: -
+--
+
+ALTER TABLE cron.job ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: job_run_details; Type: ROW SECURITY; Schema: cron; Owner: -
+--
+
+ALTER TABLE cron.job_run_details ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: comment; Type: ROW SECURITY; Schema: live; Owner: -
@@ -956,7 +1138,7 @@ ALTER TABLE live.comment ENABLE ROW LEVEL SECURITY;
 -- Name: comment comment_insert_policy; Type: POLICY; Schema: live; Owner: -
 --
 
-CREATE POLICY comment_insert_policy ON live.comment FOR INSERT TO buyer WITH CHECK (((author_id)::uuid = (auth."user"())::uuid));
+CREATE POLICY comment_insert_policy ON live.comment FOR INSERT TO buyer WITH CHECK (((author_id)::uuid = auth."user"()));
 
 
 --
@@ -976,7 +1158,7 @@ ALTER TABLE live.show ENABLE ROW LEVEL SECURITY;
 -- Name: show show_insert_policy; Type: POLICY; Schema: live; Owner: -
 --
 
-CREATE POLICY show_insert_policy ON live.show FOR INSERT TO seller WITH CHECK (((creator_id)::uuid = (auth."user"())::uuid));
+CREATE POLICY show_insert_policy ON live.show FOR INSERT TO seller WITH CHECK (((creator_id)::uuid = auth."user"()));
 
 
 --
@@ -990,7 +1172,7 @@ CREATE POLICY show_select_policy ON live.show FOR SELECT TO anonymous USING (tru
 -- Name: show show_update_policy; Type: POLICY; Schema: live; Owner: -
 --
 
-CREATE POLICY show_update_policy ON live.show FOR UPDATE TO seller USING (true) WITH CHECK (((creator_id)::uuid = (auth."user"())::uuid));
+CREATE POLICY show_update_policy ON live.show FOR UPDATE TO seller USING (true) WITH CHECK (((creator_id)::uuid = auth."user"()));
 
 
 --
@@ -1005,9 +1187,9 @@ ALTER TABLE shop.auction ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY auction_insert_policy ON shop.auction FOR INSERT TO seller WITH CHECK ((((show_id)::uuid IN ( SELECT show.id
    FROM live.show
-  WHERE ((show.creator_id)::uuid = (auth."user"())::uuid))) AND ((product_id)::uuid IN ( SELECT product.id
+  WHERE ((show.creator_id)::uuid = auth."user"()))) AND ((product_id)::uuid IN ( SELECT product.id
    FROM shop.product
-  WHERE ((product.creator_id)::uuid = (auth."user"())::uuid)))));
+  WHERE ((product.creator_id)::uuid = auth."user"())))));
 
 
 --
@@ -1031,7 +1213,7 @@ CREATE POLICY auction_session_insert_policy ON shop.auction_session FOR INSERT T
    FROM shop.auction
   WHERE ((auction.show_id)::uuid IN ( SELECT show.id
            FROM live.show
-          WHERE ((show.creator_id)::uuid = (auth."user"())::uuid))))));
+          WHERE ((show.creator_id)::uuid = auth."user"()))))));
 
 
 --
@@ -1054,9 +1236,9 @@ CREATE POLICY auction_session_update_policy ON shop.auction_session FOR UPDATE T
 
 CREATE POLICY auction_update_policy ON shop.auction FOR UPDATE TO seller USING (true) WITH CHECK ((((show_id)::uuid IN ( SELECT show.id
    FROM live.show
-  WHERE ((show.creator_id)::uuid = (auth."user"())::uuid))) AND ((product_id)::uuid IN ( SELECT product.id
+  WHERE ((show.creator_id)::uuid = auth."user"()))) AND ((product_id)::uuid IN ( SELECT product.id
    FROM shop.product
-  WHERE ((product.creator_id)::uuid = (auth."user"())::uuid)))));
+  WHERE ((product.creator_id)::uuid = auth."user"())))));
 
 
 --
@@ -1069,7 +1251,7 @@ ALTER TABLE shop.bid ENABLE ROW LEVEL SECURITY;
 -- Name: bid bid_insert_policy; Type: POLICY; Schema: shop; Owner: -
 --
 
-CREATE POLICY bid_insert_policy ON shop.bid FOR INSERT TO buyer WITH CHECK (((buyer_id)::uuid = (auth."user"())::uuid));
+CREATE POLICY bid_insert_policy ON shop.bid FOR INSERT TO buyer WITH CHECK (((buyer_id)::uuid = auth."user"()));
 
 
 --
@@ -1102,7 +1284,7 @@ ALTER TABLE shop.product ENABLE ROW LEVEL SECURITY;
 -- Name: product product_insert_policy; Type: POLICY; Schema: shop; Owner: -
 --
 
-CREATE POLICY product_insert_policy ON shop.product FOR INSERT TO seller WITH CHECK (((creator_id)::uuid = (auth."user"())::uuid));
+CREATE POLICY product_insert_policy ON shop.product FOR INSERT TO seller WITH CHECK (((creator_id)::uuid = auth."user"()));
 
 
 --
@@ -1124,6 +1306,13 @@ GRANT USAGE ON SCHEMA auth TO anonymous;
 --
 
 GRANT USAGE ON SCHEMA cqrs TO anonymous;
+
+
+--
+-- Name: SCHEMA jobs; Type: ACL; Schema: -; Owner: -
+--
+
+GRANT USAGE ON SCHEMA jobs TO admin;
 
 
 --
@@ -1152,6 +1341,7 @@ GRANT SELECT,INSERT ON TABLE cqrs.event TO anonymous;
 --
 
 GRANT SELECT ON TABLE shop.config TO seller;
+GRANT UPDATE ON TABLE shop.config TO admin;
 
 
 --
@@ -1202,11 +1392,46 @@ GRANT INSERT ON TABLE shop.bid TO buyer;
 
 
 --
+-- Name: TABLE bid; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT ON TABLE public.bid TO anonymous;
+
+
+--
+-- Name: TABLE comment; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT ON TABLE public.comment TO anonymous;
+
+
+--
+-- Name: TABLE person; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT ON TABLE public.person TO anonymous;
+
+
+--
 -- Name: TABLE product; Type: ACL; Schema: shop; Owner: -
 --
 
 GRANT SELECT ON TABLE shop.product TO anonymous;
 GRANT INSERT ON TABLE shop.product TO seller;
+
+
+--
+-- Name: TABLE product; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT ON TABLE public.product TO anonymous;
+
+
+--
+-- Name: TABLE show; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT ON TABLE public.show TO anonymous;
 
 
 --

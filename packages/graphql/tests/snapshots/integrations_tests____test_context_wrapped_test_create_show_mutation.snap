@@ -1,0 +1,15 @@
+---
+source: packages/graphql/tests/integrations_tests.rs
+expression: response
+---
+{
+  "data": {
+    "createShow": {
+      "show": {
+        "id": "[uuid]",
+        "creatorId": "00000000-3000-0000-0000-000000000000",
+        "name": "Show Name"
+      }
+    }
+  }
+}
