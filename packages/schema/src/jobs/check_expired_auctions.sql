@@ -14,7 +14,10 @@ begin
     values (
       '00000000-0000-0000-0000-000000000000', -- TODO: auction.creator_id?
       'auction_expired'::cqrs.event_type,
-      json_build_object('id', expired_auction.auction_id)::jsonb
+      json_build_object(
+        'id', expired_auction.auction_id,
+        'expired_at', expired_auction.expires_at
+      )::jsonb
     );
   end loop;
 end; $$;

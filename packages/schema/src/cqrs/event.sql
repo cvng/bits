@@ -23,7 +23,8 @@ create type cqrs.auction_created as (
 -- Type: cqrs.auction_expired
 
 create type cqrs.auction_expired as (
-  id id
+  id id,
+  expired_at timestamptz
 );
 
 -- Type: cqrs.auction_started

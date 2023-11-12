@@ -6,7 +6,7 @@ declare
   auction shop.auction;
 begin
   update shop.auction
-  set expired_at = clock_timestamp() -- TODO: use session.expires_at
+  set expired_at = event.expired_at
   where id = event.id
   returning * into strict auction;
 end; $$;
