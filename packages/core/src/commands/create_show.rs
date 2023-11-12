@@ -1,5 +1,5 @@
-use super::Command;
-use crate::dispatcher;
+use crate::command::Command;
+use crate::dispatcher::InternalError;
 use crate::Client;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
@@ -8,6 +8,8 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
+use bits_data::sea_orm::EntityTrait;
+use bits_data::show;
 use bits_data::Event;
 use bits_data::PersonId;
 use bits_data::Show;
@@ -17,7 +19,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateShowInput {
   pub creator_id: PersonId,
@@ -68,22 +70,29 @@ impl CreateShowResult {
 
 #[derive(Debug, Error)]
 pub enum Error {
-  #[error("show not created")]
-  NotCreated,
+  #[error("internal: db error")]
+  Internal(#[from] InternalError),
+  #[error("show {0:?} not found")]
+  NotFound(ShowId),
 }
 
-pub struct CreateShowCommand {}
+pub struct CreateShowCommand<'a> {
+  pub client: &'a Client,
+}
 
-impl Command for CreateShowCommand {
+impl<'a> Command for CreateShowCommand<'a> {
   type Error = Error;
-  type Event = Event;
   type Input = CreateShowInput;
   type Result = CreateShowResult;
 
-  fn handle(
+  fn client(&self) -> &Client {
+    self.client
+  }
+
+  async fn handle(
     &self,
     input: Self::Input,
-  ) -> Result<Vec<Self::Event>, Self::Error> {
+  ) -> Result<Vec<Event>, Self::Error> {
     Ok(vec![Event::ShowCreated {
       data: ShowCreated {
         id: ShowId::new_v4(),
@@ -93,21 +102,26 @@ impl Command for CreateShowCommand {
     }])
   }
 
-  fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
-    events.iter().fold(None, |_, event| match event {
-      Event::ShowCreated { data, .. } => Some(CreateShowResult {
-        show: Show {
-          id: data.id,
-          created: None,
-          updated: None,
-          creator_id: data.creator_id,
-          name: data.name.clone(),
-          started_at: None,
-          started: false,
-        },
-      }),
-      _ => None,
-    })
+  async fn apply(
+    &self,
+    _input: Self::Input,
+    events: Vec<Event>,
+  ) -> Result<Self::Result, Self::Error> {
+    let show_id = events
+      .iter()
+      .find_map(|event| match event {
+        Event::ShowCreated { data, .. } => Some(data.id),
+        _ => None,
+      })
+      .unwrap();
+
+    let show = show::Entity::find_by_id(show_id)
+      .one(&self.client.connection)
+      .await
+      .map_err(InternalError::Database)?
+      .ok_or(Error::NotFound(show_id))?;
+
+    Ok(Self::Result { show })
   }
 }
 
@@ -115,11 +129,5 @@ pub async fn create_show(
   client: &Client,
   input: CreateShowInput,
 ) -> Result<CreateShowResult, Error> {
-  let events = CreateShowCommand {}.handle(input)?;
-
-  dispatcher::dispatch(client, events)
-    .await
-    .map(CreateShowCommand::apply)
-    .map_err(|_| Error::NotCreated)?
-    .ok_or(Error::NotCreated)
+  CreateShowCommand { client }.run(input).await
 }

@@ -12,6 +12,7 @@ use bits_data::Event;
 use serde_json::to_string;
 use sqlx::error::DatabaseError;
 use thiserror::Error;
+use tracing::info;
 
 const AUTH_LOGIN_QUERY: &str = "
   select auth.login($1::id)";
@@ -27,7 +28,7 @@ pub enum ConstraintError {
 }
 
 #[derive(Debug, Error)]
-pub enum DispatchError {
+pub enum InternalError {
   #[error("database error: {0}")]
   Database(#[from] DbErr),
   #[error("serde error: {0}")]
@@ -41,7 +42,7 @@ pub enum DispatchError {
 pub async fn dispatch(
   client: &Client,
   events: Vec<Event>,
-) -> Result<Vec<Event>, DispatchError> {
+) -> Result<Vec<Event>, InternalError> {
   let user_id = client
     .token
     .as_ref()
@@ -53,6 +54,8 @@ pub async fn dispatch(
   let txn = client.connection.begin().await?;
 
   for event in &events {
+    info!(event = ?event, "dispatching");
+
     let event = serde_json::to_value(event)?;
     let event_type = event.get("type").unwrap().as_str().unwrap();
     let event_data =

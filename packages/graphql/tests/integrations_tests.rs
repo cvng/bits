@@ -82,7 +82,10 @@ async fn test_start_mutation(ctx: &mut Context) {
   .await
   .unwrap();
 
-  assert_json_snapshot!(response, { ".data.start.auction.id" => "[uuid]" });
+  assert_json_snapshot!(response, {
+    ".data.start.auction.id" => "[uuid]",
+    ".data.start.auction.startedAt" => "[timestamptz]",
+  });
 }
 
 #[rustfmt::skip]

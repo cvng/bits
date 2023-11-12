@@ -5,10 +5,9 @@ use crate::types::CommentId;
 use crate::types::PersonId;
 use crate::types::ProductId;
 use crate::types::ShowId;
-use crate::Auction;
 use serde::Serialize;
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Event {
   AuctionCreated { data: AuctionCreated },
@@ -21,20 +20,19 @@ pub enum Event {
   ShowStarted { data: ShowStarted },
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct AuctionCreated {
   pub id: AuctionId,
   pub show_id: ShowId,
   pub product_id: ProductId,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct AuctionStarted {
   pub id: AuctionId,
-  pub auction: Auction,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct BidCreated {
   pub id: BidId,
   pub auction_id: AuctionId,
@@ -42,7 +40,7 @@ pub struct BidCreated {
   pub amount: Amount,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct CommentCreated {
   pub id: CommentId,
   pub author_id: PersonId,
@@ -50,28 +48,28 @@ pub struct CommentCreated {
   pub text: String,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct PersonCreated {
   pub id: PersonId,
   pub email: String,
   pub role: String,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct ProductCreated {
   pub id: ProductId,
   pub creator_id: PersonId,
   pub name: String,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct ShowCreated {
   pub id: ShowId,
   pub creator_id: PersonId,
   pub name: String,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct ShowStarted {
   pub id: ShowId,
 }
