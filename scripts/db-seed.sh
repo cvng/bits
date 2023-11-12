@@ -25,6 +25,8 @@ insert into auth.person (id, email, role)
 values ('00000000-0000-0000-0000-000000000000', 'admin@test.dev', 'admin');
 
 insert into shop.config default values;
+
+do \$$ begin perform jobs.run(); end; \$$;
 SQL
 
 psql "$env_host" --set=ON_ERROR_STOP=true \
