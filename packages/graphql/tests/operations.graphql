@@ -18,8 +18,8 @@ mutation BidMutation {
 mutation CommentMutation {
   comment(
     input: {
-      authorId: "00000000-0000-0000-0000-000000000000"
-      showId: "00000000-2000-0000-0000-000000000000"
+      authorId: "00000000-2000-0000-0000-000000000000"
+      showId: "00000000-0000-0000-0000-000000000000"
       text: "This is a comment"
     }
   ) {
@@ -36,7 +36,7 @@ mutation CreateAuctionMutation {
   createAuction(
     input: {
       showId: "00000000-2000-0000-0000-000000000000",
-      productId: "00000000-1000-0000-0000-000000000000"
+      productId: "00000000-2000-0000-0000-000000000000"
     }
   ) {
     auction {
@@ -50,6 +50,7 @@ mutation CreateAuctionMutation {
 mutation CreateProductMutation {
   createProduct(
     input: {
+      creatorId: "00000000-3000-0000-0000-000000000000",
       name: "Product Name"
     }
   ) {
@@ -64,7 +65,7 @@ mutation CreateProductMutation {
 mutation CreateShowMutation {
   createShow(
     input: {
-      creatorId: "00000000-2000-0000-0000-000000000000",
+      creatorId: "00000000-3000-0000-0000-000000000000",
       name: "Show Name"
     }
   ) {

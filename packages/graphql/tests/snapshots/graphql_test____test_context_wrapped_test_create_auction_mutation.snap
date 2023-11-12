@@ -1,0 +1,15 @@
+---
+source: packages/graphql/tests/graphql_test.rs
+expression: response
+---
+{
+  "data": {
+    "createAuction": {
+      "auction": {
+        "id": "[uuid]",
+        "showId": "00000000-2000-0000-0000-000000000000",
+        "productId": "00000000-2000-0000-0000-000000000000"
+      }
+    }
+  }
+}

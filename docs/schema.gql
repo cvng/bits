@@ -171,6 +171,7 @@ type CreateAuctionResult {
 }
 
 input CreateProductInput {
+  creatorId: ID!
   name: String!
 }
 

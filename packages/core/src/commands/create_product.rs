@@ -31,6 +31,7 @@ impl CreateProductInput {
 
   pub fn to_input() -> InputObject {
     InputObject::new(Self::type_name())
+      .field(InputValue::new("creatorId", TypeRef::named_nn(TypeRef::ID)))
       .field(InputValue::new("name", TypeRef::named_nn(TypeRef::STRING)))
   }
 }

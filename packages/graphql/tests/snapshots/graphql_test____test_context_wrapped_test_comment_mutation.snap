@@ -1,0 +1,16 @@
+---
+source: packages/graphql/tests/graphql_test.rs
+expression: response
+---
+{
+  "data": {
+    "comment": {
+      "comment": {
+        "id": "[uuid]",
+        "authorId": "00000000-2000-0000-0000-000000000000",
+        "showId": "00000000-0000-0000-0000-000000000000",
+        "text": "This is a comment"
+      }
+    }
+  }
+}
