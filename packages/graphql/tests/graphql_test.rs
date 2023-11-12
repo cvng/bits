@@ -50,3 +50,85 @@ async fn test_start_mutation(ctx: &mut Context) {
 
   assert_json_snapshot!(response, { ".data.start.auction.id" => "[uuid]" });
 }
+
+#[derive(GraphQLQuery)]
+#[graphql(
+  schema_path = "../../docs/schema.gql",
+  query_path = "tests/operations.graphql"
+)]
+pub struct CommentMutation;
+
+#[test_context(Context)]
+#[test]
+async fn test_comment_mutation(ctx: &mut Context) {
+  let response = execute(
+    ctx,
+    CommentMutation::build_query(comment_mutation::Variables {}),
+    Some(TestToken::buyer_token()),
+  )
+  .await
+  .unwrap();
+
+  assert_json_snapshot!(response, { ".data.comment.comment.id" => "[uuid]" });
+}
+
+#[derive(GraphQLQuery)]
+#[graphql(
+  schema_path = "../../docs/schema.gql",
+  query_path = "tests/operations.graphql"
+)]
+pub struct CreateAuctionMutation;
+
+#[test_context(Context)]
+#[test]
+async fn test_create_auction_mutation(ctx: &mut Context) {
+  let response = execute(
+    ctx,
+    CreateAuctionMutation::build_query(create_auction_mutation::Variables {}),
+    Some(TestToken::seller_token()),
+  )
+  .await
+  .unwrap();
+
+  assert_json_snapshot!(response, { ".data.createAuction.auction.id" => "[uuid]" });
+}
+#[derive(GraphQLQuery)]
+#[graphql(
+  schema_path = "../../docs/schema.gql",
+  query_path = "tests/operations.graphql"
+)]
+pub struct CreateProductMutation;
+
+#[test_context(Context)]
+#[test]
+async fn test_create_product_mutation(ctx: &mut Context) {
+  let response = execute(
+    ctx,
+    CreateProductMutation::build_query(create_product_mutation::Variables {}),
+    Some(TestToken::seller_token()),
+  )
+  .await
+  .unwrap();
+
+  assert_json_snapshot!(response, { ".data.createProduct.product.id" => "[uuid]" });
+}
+#[derive(GraphQLQuery)]
+#[graphql(
+  schema_path = "../../docs/schema.gql",
+  query_path = "tests/operations.graphql"
+)]
+pub struct CreateShowMutation;
+
+#[test_context(Context)]
+#[test]
+async fn test_create_show_mutation(ctx: &mut Context) {
+  let response = execute(
+    ctx,
+    CreateShowMutation::build_query(create_show_mutation::Variables {}),
+    Some(TestToken::seller_token()),
+  )
+  .await
+  .unwrap();
+
+  assert_json_snapshot!(response, { ".data.createShow.show.id" => "[uuid]" });
+}

@@ -32,7 +32,7 @@ mutation CommentMutation {
   }
 }
 
-mutation CreateAuction {
+mutation CreateAuctionMutation {
   createAuction(
     input: {
       showId: "00000000-2000-0000-0000-000000000000",
@@ -47,10 +47,9 @@ mutation CreateAuction {
   }
 }
 
-mutation CreateProduct {
+mutation CreateProductMutation {
   createProduct(
     input: {
-      creatorId: "00000000-1000-0000-0000-000000000000",
       name: "Product Name"
     }
   ) {
@@ -62,7 +61,7 @@ mutation CreateProduct {
   }
 }
 
-mutation CreateShow {
+mutation CreateShowMutation {
   createShow(
     input: {
       creatorId: "00000000-2000-0000-0000-000000000000",
