@@ -15,7 +15,6 @@ use bits_data::Auction;
 use bits_data::AuctionId;
 use bits_data::AuctionStarted;
 use bits_data::Event;
-use bits_data::ShowId;
 use bits_data::ShowStarted;
 use serde::Deserialize;
 use serde::Serialize;
@@ -24,7 +23,7 @@ use thiserror::Error;
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StartInput {
-  pub auction_id: ShowId,
+  pub auction_id: AuctionId,
 }
 
 impl StartInput {
