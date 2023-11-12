@@ -92,6 +92,7 @@ async fn test_create_auction_mutation(ctx: &mut Context) {
 
   assert_json_snapshot!(response, { ".data.createAuction.auction.id" => "[uuid]" });
 }
+
 #[derive(GraphQLQuery)]
 #[graphql(
   schema_path = "../../docs/schema.gql",
@@ -112,6 +113,7 @@ async fn test_create_product_mutation(ctx: &mut Context) {
 
   assert_json_snapshot!(response, { ".data.createProduct.product.id" => "[uuid]" });
 }
+
 #[derive(GraphQLQuery)]
 #[graphql(
   schema_path = "../../docs/schema.gql",
