@@ -47,6 +47,7 @@ grant insert on shop.bid to buyer;
 -- Table: shop.config
 
 grant select on shop.config to seller;
+grant update on shop.config to admin;
 
 -- Table: shop.product
 

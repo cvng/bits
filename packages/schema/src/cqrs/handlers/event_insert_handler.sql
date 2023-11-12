@@ -24,6 +24,10 @@ begin
       perform cqrs.comment_created_handler(
         jsonb_populate_record(null::cqrs.comment_created, event.data));
 
+    when 'config_updated' then
+      perform cqrs.config_updated_handler(
+        jsonb_populate_record(null::cqrs.config_updated, event.data));
+
     when 'person_created' then
       perform cqrs.person_created_handler(
         jsonb_populate_record(null::cqrs.person_created, event.data));

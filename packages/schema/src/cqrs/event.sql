@@ -6,6 +6,7 @@ create type cqrs.event_type as enum (
   'auction_started',
   'bid_created',
   'comment_created',
+  'config_updated',
   'person_created',
   'product_created',
   'show_created',
@@ -49,6 +50,13 @@ create type cqrs.comment_created as (
   author_id id,
   show_id id,
   text text
+);
+
+-- Type: cqrs.config_updated
+
+create type cqrs.config_updated as (
+  auction_timeout_secs interval,
+  auction_refresh_secs interval
 );
 
 -- Type: cqrs.person_created
