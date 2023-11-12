@@ -1,5 +1,5 @@
-use super::Command;
-use crate::dispatcher;
+use crate::command::Command;
+use crate::dispatcher::DispatchError;
 use crate::Client;
 use async_graphql::dynamic::Field;
 use async_graphql::dynamic::FieldFuture;
@@ -8,6 +8,8 @@ use async_graphql::dynamic::InputObject;
 use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
+use bits_data::bid;
+use bits_data::sea_orm::EntityTrait;
 use bits_data::Amount;
 use bits_data::AuctionId;
 use bits_data::Bid;
@@ -19,7 +21,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BidInput {
   pub auction_id: AuctionId,
@@ -72,23 +74,29 @@ impl BidResult {
 
 #[derive(Debug, Error)]
 pub enum Error {
-  #[error("bid not created")]
-  NotCreated,
+  #[error("internal: db error")]
+  Dx(#[from] DispatchError),
+  #[error("bid {0:?} not found")]
+  NotFound(BidId),
 }
 
-#[derive(Default)]
-pub struct BidCommand {}
+pub struct BidCommand<'a> {
+  client: &'a Client,
+}
 
-impl Command for BidCommand {
+impl<'a> Command for BidCommand<'a> {
   type Error = Error;
-  type Event = Event;
   type Input = BidInput;
   type Result = BidResult;
 
-  fn handle(
+  fn client(&self) -> &Client {
+    self.client
+  }
+
+  async fn handle(
     &self,
     input: Self::Input,
-  ) -> Result<Vec<Self::Event>, Self::Error> {
+  ) -> Result<Vec<Event>, Self::Error> {
     Ok(vec![Event::BidCreated {
       data: BidCreated {
         id: BidId::new_v4(),
@@ -99,29 +107,29 @@ impl Command for BidCommand {
     }])
   }
 
-  fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
-    events.iter().fold(None, |_, event| match event {
-      Event::BidCreated { data, .. } => Some(BidResult {
-        bid: Bid {
-          id: data.id,
-          created: None,
-          auction_id: data.auction_id,
-          buyer_id: data.buyer_id,
-          concurrent_amount: None,
-          amount: data.amount,
-        },
-      }),
-      _ => None,
-    })
+  async fn apply(
+    &self,
+    _input: Self::Input,
+    events: Vec<Event>,
+  ) -> Result<Self::Result, Self::Error> {
+    let bid_id = events
+      .iter()
+      .find_map(|event| match event {
+        Event::BidCreated { data, .. } => Some(data.id),
+        _ => None,
+      })
+      .unwrap();
+
+    let bid = bid::Entity::find_by_id(bid_id)
+      .one(&self.client.connection)
+      .await
+      .map_err(DispatchError::Database)?
+      .ok_or(Error::NotFound(bid_id))?;
+
+    Ok(Self::Result { bid })
   }
 }
 
 pub async fn bid(client: &Client, input: BidInput) -> Result<BidResult, Error> {
-  let events = BidCommand {}.handle(input)?;
-
-  dispatcher::dispatch(client, events)
-    .await
-    .map(BidCommand::apply)
-    .map_err(|_| Error::NotCreated)?
-    .ok_or(Error::NotCreated)
+  BidCommand { client }.run(input).await
 }

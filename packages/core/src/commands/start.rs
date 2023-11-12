@@ -9,7 +9,6 @@ use async_graphql::dynamic::InputValue;
 use async_graphql::dynamic::Object;
 use async_graphql::dynamic::TypeRef;
 use bits_data::auction;
-use bits_data::sea_orm::DbErr;
 use bits_data::sea_orm::EntityTrait;
 use bits_data::Auction;
 use bits_data::AuctionId;
@@ -69,11 +68,9 @@ impl StartResult {
 
 #[derive(Debug, Error)]
 pub enum Error {
-  #[error("internal: database error")]
-  Db(#[from] DbErr),
-  #[error("internal: dispatch error")]
+  #[error("internal: db error")]
   Dx(#[from] DispatchError),
-  #[error("auction {0} not found")]
+  #[error("auction {0:?} not found")]
   NotFound(AuctionId),
 }
 
@@ -96,7 +93,8 @@ impl<'a> Command for StartCommand<'a> {
   ) -> Result<Vec<Event>, Self::Error> {
     let auction = auction::Entity::find_by_id(input.auction_id)
       .one(&self.client.connection)
-      .await?
+      .await
+      .map_err(DispatchError::Database)?
       .ok_or(Error::NotFound(input.auction_id))?;
 
     Ok(vec![
@@ -120,10 +118,11 @@ impl<'a> Command for StartCommand<'a> {
   ) -> Result<Self::Result, Self::Error> {
     let auction = auction::Entity::find_by_id(input.auction_id)
       .one(&self.client.connection)
-      .await?
+      .await
+      .map_err(DispatchError::Database)?
       .ok_or(Error::NotFound(input.auction_id))?;
 
-    Ok(StartResult { auction })
+    Ok(Self::Result { auction })
   }
 }
 
