@@ -952,6 +952,14 @@ ALTER TABLE ONLY shop.auction_session
 
 
 --
+-- Name: auction auction_show_id_product_id_key; Type: CONSTRAINT; Schema: shop; Owner: -
+--
+
+ALTER TABLE ONLY shop.auction
+    ADD CONSTRAINT auction_show_id_product_id_key UNIQUE (show_id, product_id);
+
+
+--
 -- Name: bid bid_pkey; Type: CONSTRAINT; Schema: shop; Owner: -
 --
 
