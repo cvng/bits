@@ -1,5 +1,4 @@
-use super::Command;
-use crate::dispatcher;
+use crate::command::Command;
 use crate::dispatcher::DispatchError;
 use crate::Client;
 use async_graphql::dynamic::Field;
@@ -13,6 +12,7 @@ use bits_data::auction;
 use bits_data::sea_orm::DbErr;
 use bits_data::sea_orm::EntityTrait;
 use bits_data::Auction;
+use bits_data::AuctionId;
 use bits_data::AuctionStarted;
 use bits_data::Event;
 use bits_data::ShowId;
@@ -21,7 +21,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StartInput {
   pub auction_id: ShowId,
@@ -74,48 +74,57 @@ pub enum Error {
   Db(#[from] DbErr),
   #[error("internal: dispatch error")]
   Dispatch(#[from] DispatchError),
-  #[error("show not created")]
-  NotCreated,
-  #[error("auction not found")]
-  NotFound,
+  #[error("auction {0} not found")]
+  NotFound(AuctionId),
 }
 
-pub struct StartCommand {
-  auction: Auction,
+pub struct StartCommand<'a> {
+  client: &'a Client,
+  input: StartInput,
 }
 
-impl Command for StartCommand {
+impl<'a> Command for StartCommand<'a> {
   type Error = Error;
-  type Event = Event;
   type Input = StartInput;
   type Result = StartResult;
 
-  fn handle(
+  fn client(&self) -> &Client {
+    self.client
+  }
+
+  async fn handle(
     &self,
     input: Self::Input,
-  ) -> Result<Vec<Self::Event>, Self::Error> {
+  ) -> Result<Vec<Event>, Self::Error> {
+    let auction = auction::Entity::find_by_id(input.auction_id)
+      .one(&self.client.connection)
+      .await?
+      .ok_or(Error::NotFound(input.auction_id))?;
+
     Ok(vec![
       Event::ShowStarted {
         data: ShowStarted {
-          id: self.auction.show_id,
+          id: auction.show_id,
         },
       },
       Event::AuctionStarted {
         data: AuctionStarted {
           id: input.auction_id,
-          auction: self.auction.clone(),
         },
       },
     ])
   }
 
-  fn apply(events: Vec<Self::Event>) -> Option<Self::Result> {
-    events.iter().fold(None, |_, event| match event {
-      Event::AuctionStarted { data, .. } => Some(StartResult {
-        auction: data.auction.clone(),
-      }),
-      _ => None,
-    })
+  async fn apply(
+    &self,
+    _events: Vec<Event>,
+  ) -> Result<Self::Result, Self::Error> {
+    let auction = auction::Entity::find_by_id(self.input.auction_id)
+      .one(&self.client.connection)
+      .await?
+      .ok_or(Error::NotFound(self.input.auction_id))?;
+
+    Ok(StartResult { auction })
   }
 }
 
@@ -123,16 +132,10 @@ pub async fn start(
   client: &Client,
   input: StartInput,
 ) -> Result<StartResult, Error> {
-  let auction = auction::Entity::find_by_id(input.auction_id)
-    .one(&client.connection)
-    .await?
-    .ok_or(Error::NotFound)?;
-
-  let events = StartCommand { auction }.handle(input)?;
-
-  dispatcher::dispatch(client, events)
-    .await
-    .map(StartCommand::apply)
-    .map_err(Error::Dispatch)?
-    .ok_or(Error::NotCreated)
+  StartCommand {
+    client,
+    input: input.clone(),
+  }
+  .run(input)
+  .await
 }

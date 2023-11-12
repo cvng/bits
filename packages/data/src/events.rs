@@ -5,7 +5,6 @@ use crate::types::CommentId;
 use crate::types::PersonId;
 use crate::types::ProductId;
 use crate::types::ShowId;
-use crate::Auction;
 use serde::Serialize;
 
 #[derive(Clone, Serialize)]
@@ -31,7 +30,6 @@ pub struct AuctionCreated {
 #[derive(Clone, Serialize)]
 pub struct AuctionStarted {
   pub id: AuctionId,
-  pub auction: Auction,
 }
 
 #[derive(Clone, Serialize)]
