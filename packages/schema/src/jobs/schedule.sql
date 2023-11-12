@@ -1,6 +1,6 @@
--- Function: jobs.run()
+-- Function: jobs.schedule()
 
-create function jobs.run() returns void
+create function jobs.schedule() returns void
 language plpgsql as $$
 begin
   perform cron.schedule(
