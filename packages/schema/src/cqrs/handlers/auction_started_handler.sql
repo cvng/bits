@@ -30,5 +30,5 @@ begin
    returning * into strict session;
 
   update shop.auction set started_at = session.created
-  where id = event.id returning id into strict auction;
+  where id = event.id returning * into strict auction;
 end; $$;

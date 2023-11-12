@@ -8,6 +8,10 @@ begin
       perform cqrs.auction_created_handler(
         jsonb_populate_record(null::cqrs.auction_created, event.data));
 
+   when 'auction_expired' then
+      perform cqrs.auction_expired_handler(
+        jsonb_populate_record(null::cqrs.auction_expired, event.data));
+
    when 'auction_started' then
       perform cqrs.auction_started_handler(
         jsonb_populate_record(null::cqrs.auction_started, event.data));

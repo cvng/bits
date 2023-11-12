@@ -2,6 +2,7 @@
 
 create type cqrs.event_type as enum (
   'auction_created',
+  'auction_expired',
   'auction_started',
   'bid_created',
   'comment_created',
@@ -17,6 +18,13 @@ create type cqrs.auction_created as (
   id id,
   show_id id,
   product_id id
+);
+
+-- Type: cqrs.auction_expired
+
+create type cqrs.auction_expired as (
+  id id,
+  expired_at timestamptz
 );
 
 -- Type: cqrs.auction_started

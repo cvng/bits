@@ -10,6 +10,7 @@
 \include_relative live/mod.sql
 \include_relative shop/mod.sql
 \include_relative cqrs/mod.sql
+\include_relative jobs/mod.sql
 
 -- Postlude
 

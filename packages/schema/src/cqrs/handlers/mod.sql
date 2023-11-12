@@ -1,4 +1,5 @@
 \include_relative auction_created_handler.sql
+\include_relative auction_expired_handler.sql
 \include_relative auction_started_handler.sql
 \include_relative bid_created_handler.sql
 \include_relative comment_created_handler.sql

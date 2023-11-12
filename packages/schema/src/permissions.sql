@@ -2,6 +2,7 @@
 
 grant usage on schema auth to anonymous;
 grant usage on schema cqrs to anonymous;
+grant usage on schema jobs to admin;
 grant usage on schema live to buyer;
 grant usage on schema shop to buyer;
 

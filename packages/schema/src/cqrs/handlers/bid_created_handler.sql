@@ -39,5 +39,5 @@ begin
     max_amount = bid.amount,
     expires_at = new_expires_at
   where id = session.id
-  returning id into strict session;
+  returning * into strict session;
 end; $$;
