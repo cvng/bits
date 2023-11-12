@@ -10,6 +10,7 @@ pub trait Command {
   type Result;
 
   fn client(&self) -> &Client;
+  fn input(&self) -> Self::Input;
 
   async fn handle(&self, input: Self::Input)
     -> Result<Vec<Event>, Self::Error>;
@@ -19,8 +20,8 @@ pub trait Command {
     events: Vec<Event>,
   ) -> Result<Self::Result, Self::Error>;
 
-  async fn run(&self, input: Self::Input) -> Result<Self::Result, Self::Error> {
-    let events = self.handle(input).await?;
+  async fn run(&self) -> Result<Self::Result, Self::Error> {
+    let events = self.handle(self.input()).await?;
 
     dispatcher::dispatch(self.client(), events.clone()).await?;
 

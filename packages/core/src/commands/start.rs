@@ -70,10 +70,10 @@ impl StartResult {
 
 #[derive(Debug, Error)]
 pub enum Error {
-  #[error("internal: db error")]
+  #[error("internal: database error")]
   Db(#[from] DbErr),
   #[error("internal: dispatch error")]
-  Dispatch(#[from] DispatchError),
+  Dx(#[from] DispatchError),
   #[error("auction {0} not found")]
   NotFound(AuctionId),
 }
@@ -90,6 +90,10 @@ impl<'a> Command for StartCommand<'a> {
 
   fn client(&self) -> &Client {
     self.client
+  }
+
+  fn input(&self) -> Self::Input {
+    self.input.clone()
   }
 
   async fn handle(
@@ -132,10 +136,5 @@ pub async fn start(
   client: &Client,
   input: StartInput,
 ) -> Result<StartResult, Error> {
-  StartCommand {
-    client,
-    input: input.clone(),
-  }
-  .run(input)
-  .await
+  StartCommand { client, input }.run().await
 }
