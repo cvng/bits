@@ -29,7 +29,7 @@ begin
   returning * into strict bid;
 
   if session.expires_at - bid.created < session.refresh_secs then
-    new_expires_at := session.expires_at + session.refresh_secs;
+    new_expires_at := session.created + session.refresh_secs;
   else
     new_expires_at := session.expires_at;
   end if;
