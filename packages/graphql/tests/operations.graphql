@@ -15,6 +15,68 @@ mutation BidMutation {
   }
 }
 
+mutation CommentMutation {
+  comment(
+    input: {
+      authorId: "00000000-0000-0000-0000-000000000000"
+      showId: "00000000-2000-0000-0000-000000000000"
+      text: "This is a comment"
+    }
+  ) {
+    comment {
+      id
+      authorId
+      showId
+      text
+    }
+  }
+}
+
+mutation CreateAuction {
+  createAuction(
+    input: {
+      showId: "00000000-2000-0000-0000-000000000000",
+      productId: "00000000-1000-0000-0000-000000000000"
+    }
+  ) {
+    auction {
+      id
+      showId
+      productId
+    }
+  }
+}
+
+mutation CreateProduct {
+  createProduct(
+    input: {
+      creatorId: "00000000-1000-0000-0000-000000000000",
+      name: "Product Name"
+    }
+  ) {
+    product {
+      id
+      creatorId
+      name
+    }
+  }
+}
+
+mutation CreateShow {
+  createShow(
+    input: {
+      creatorId: "00000000-2000-0000-0000-000000000000",
+      name: "Show Name"
+    }
+  ) {
+    show {
+      id
+      creatorId
+      name
+    }
+  }
+}
+
 mutation StartMutation {
   start(
     input: {

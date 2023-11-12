@@ -123,26 +123,3 @@ pub async fn create_auction(
     .map_err(|_| Error::NotCreated)?
     .ok_or(Error::NotCreated)
 }
-
-#[test]
-fn test_create_auction() {
-  let input = CreateAuctionInput {
-    show_id: "048b47f4-3010-43ae-84c1-8088ab8488a8".parse().unwrap(),
-    product_id: "2b1af787-2d94-4224-a2fc-1d8d155537c0".parse().unwrap(),
-  };
-
-  let events = CreateAuctionCommand {}.handle(input).unwrap();
-
-  insta::assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" },  @r###"
-  [
-    {
-      "type": "auction_created",
-      "data": {
-        "id": "[uuid]",
-        "show_id": "048b47f4-3010-43ae-84c1-8088ab8488a8",
-        "product_id": "2b1af787-2d94-4224-a2fc-1d8d155537c0"
-      }
-    }
-  ]
-  "###);
-}

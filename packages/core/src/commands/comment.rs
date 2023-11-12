@@ -33,7 +33,7 @@ impl CommentInput {
 
   pub fn to_input() -> InputObject {
     InputObject::new(Self::type_name())
-      .field(InputValue::new("userId", TypeRef::named_nn(TypeRef::ID)))
+      .field(InputValue::new("authorId", TypeRef::named_nn(TypeRef::ID)))
       .field(InputValue::new("showId", TypeRef::named_nn(TypeRef::ID)))
       .field(InputValue::new("text", TypeRef::named_nn(TypeRef::STRING)))
   }
@@ -126,29 +126,4 @@ pub async fn comment(
     .map(CommentCommand::apply)
     .map_err(|_| Error::NotCreated)?
     .ok_or(Error::NotCreated)
-}
-
-#[test]
-fn test_comment() {
-  let input = CommentInput {
-    author_id: "9ad4e977-8156-450e-ad00-944f9fc730ab".parse().unwrap(),
-    show_id: "f5e84179-7f8d-461b-a1d9-497974de10a6".parse().unwrap(),
-    text: "text".to_string(),
-  };
-
-  let events = CommentCommand {}.handle(input).unwrap();
-
-  insta::assert_json_snapshot!(events, { "[0].data.id" => "[uuid]" }, @r###"
-  [
-    {
-      "type": "comment_created",
-      "data": {
-        "id": "[uuid]",
-        "author_id": "9ad4e977-8156-450e-ad00-944f9fc730ab",
-        "show_id": "f5e84179-7f8d-461b-a1d9-497974de10a6",
-        "text": "text"
-      }
-    }
-  ]
-  "###);
 }
