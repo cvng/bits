@@ -9,9 +9,9 @@
       context: "."
       dockerfile: "Dockerfile"
       args:
-        POSTGRES_DB: bits
+        POSTGRES_DB: "bits"
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: bits
+      POSTGRES_DB: "bits"
       POSTGRES_PASSWORD: "password"
