@@ -12,6 +12,7 @@ use bits_data::Event;
 use serde_json::to_string;
 use sqlx::error::DatabaseError;
 use thiserror::Error;
+use tracing::info;
 
 const AUTH_LOGIN_QUERY: &str = "
   select auth.login($1::id)";
@@ -53,6 +54,8 @@ pub async fn dispatch(
   let txn = client.connection.begin().await?;
 
   for event in &events {
+    info!(event = ?event, "event");
+
     let event = serde_json::to_value(event)?;
     let event_type = event.get("type").unwrap().as_str().unwrap();
     let event_data =
