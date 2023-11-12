@@ -80,7 +80,6 @@ pub enum Error {
 
 pub struct StartCommand<'a> {
   client: &'a Client,
-  input: StartInput,
 }
 
 impl<'a> Command for StartCommand<'a> {
@@ -90,10 +89,6 @@ impl<'a> Command for StartCommand<'a> {
 
   fn client(&self) -> &Client {
     self.client
-  }
-
-  fn input(&self) -> Self::Input {
-    self.input.clone()
   }
 
   async fn handle(
@@ -121,12 +116,13 @@ impl<'a> Command for StartCommand<'a> {
 
   async fn apply(
     &self,
+    input: Self::Input,
     _events: Vec<Event>,
   ) -> Result<Self::Result, Self::Error> {
-    let auction = auction::Entity::find_by_id(self.input.auction_id)
+    let auction = auction::Entity::find_by_id(input.auction_id)
       .one(&self.client.connection)
       .await?
-      .ok_or(Error::NotFound(self.input.auction_id))?;
+      .ok_or(Error::NotFound(input.auction_id))?;
 
     Ok(StartResult { auction })
   }
@@ -136,5 +132,5 @@ pub async fn start(
   client: &Client,
   input: StartInput,
 ) -> Result<StartResult, Error> {
-  StartCommand { client, input }.run().await
+  StartCommand { client }.run(input).await
 }

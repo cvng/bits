@@ -6,25 +6,26 @@ use bits_data::Event;
 /// Generic async command trait.
 pub trait Command {
   type Error: From<DispatchError>;
-  type Input;
+  type Input: Clone;
   type Result;
 
   fn client(&self) -> &Client;
-  fn input(&self) -> Self::Input;
 
   async fn handle(&self, input: Self::Input)
     -> Result<Vec<Event>, Self::Error>;
 
   async fn apply(
     &self,
+    input: Self::Input,
     events: Vec<Event>,
   ) -> Result<Self::Result, Self::Error>;
 
-  async fn run(&self) -> Result<Self::Result, Self::Error> {
-    let events = self.handle(self.input()).await?;
+  async fn run(&self, input: Self::Input) -> Result<Self::Result, Self::Error> {
+    let client = self.client();
 
-    dispatcher::dispatch(self.client(), events.clone()).await?;
+    let events = self.handle(input.clone()).await?;
+    dispatcher::dispatch(client, events.clone()).await?;
 
-    self.apply(events).await
+    self.apply(input, events).await
   }
 }
