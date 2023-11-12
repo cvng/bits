@@ -1,0 +1,1 @@
+\include_relative check_expired_auctions.sql

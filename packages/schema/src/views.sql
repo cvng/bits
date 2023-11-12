@@ -48,7 +48,8 @@ create view public.auction with (security_invoker = true) as (
     updated,
     show_id,
     product_id,
-    started_at
+    started_at,
+    expired_at
   from shop.auction
 );
 

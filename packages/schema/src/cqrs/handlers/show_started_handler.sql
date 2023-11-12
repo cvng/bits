@@ -11,5 +11,5 @@ begin
     started_at = clock_timestamp(),
     started = not started
   where id = event.id
-  returning id into strict show;
+  returning * into strict show;
 end; $$;

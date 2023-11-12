@@ -27,10 +27,11 @@ end; $$;
 
 -- Util: auth.user()
 
-create function auth.user() returns id
+create function auth.user() returns text -- TODO: uuid (option<id>)
 language plpgsql as $$
 begin
-  return current_setting('auth.user')::id;
+  begin return current_setting('auth.user')::text; -- TODO: ::id;
+  exception when undefined_object then return null; end;
 end; $$;
 
 -- Util: auth.logout()
