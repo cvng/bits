@@ -1,6 +1,6 @@
 -- Roles
 
-create role anonymous noinherit;
+create role anonymous with noinherit;
 
 create role authenticated in role anonymous;
 
