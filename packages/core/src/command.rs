@@ -21,10 +21,9 @@ pub trait Command {
   ) -> Result<Self::Result, Self::Error>;
 
   async fn run(&self, input: Self::Input) -> Result<Self::Result, Self::Error> {
-    let client = self.client();
-
     let events = self.handle(input.clone()).await?;
-    dispatcher::dispatch(client, events.clone()).await?;
+
+    dispatcher::dispatch(self.client(), events.clone()).await?;
 
     self.apply(input, events).await
   }
