@@ -54,7 +54,7 @@ pub async fn dispatch(
   let txn = client.connection.begin().await?;
 
   for event in &events {
-    info!(event = ?event, "event");
+    info!(event = ?event, "dispatching");
 
     let event = serde_json::to_value(event)?;
     let event_type = event.get("type").unwrap().as_str().unwrap();
