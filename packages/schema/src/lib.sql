@@ -1,5 +1,6 @@
 -- Prelude
 
+\include_relative extensions.sql
 \include_relative roles.sql
 \include_relative schemas.sql
 \include_relative domains.sql
