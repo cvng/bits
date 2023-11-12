@@ -3,7 +3,8 @@ set -eu -o pipefail
 
 source .env
 
-host="$DATABASE_URL"
+env_host="$DATABASE_URL"
+host="postgres://postgres:password@localhost:5432/bits"
 
 cargo task db-migrate > /dev/null
 cargo task db-seed > /dev/null
@@ -17,6 +18,12 @@ where auction_id = (
     select id from shop.auction
     where id = '00000000-0000-0000-0000-000000000000'
 );
+SQL
+
+psql "$env_host" --set=ON_ERROR_STOP=true \
+<<SQL
+do \$$ begin
+perform auth.login('00000000-2000-0000-0000-000000000000'::id);
 
 insert into cqrs.event (user_id, type, data)
 values (
@@ -28,4 +35,5 @@ values (
         "buyer_id": "00000000-2000-0000-0000-000000000000",
         "amount": 500}'
 );
+end; \$$;
 SQL
